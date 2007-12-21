@@ -1,0 +1,45 @@
+object frmHueSettings: TfrmHueSettings
+  Left = 290
+  Height = 207
+  Top = 171
+  Width = 217
+  HorzScrollBar.Page = 216
+  VertScrollBar.Page = 206
+  ActiveControl = lbHue
+  BorderIcons = []
+  BorderStyle = bsToolWindow
+  Caption = 'Hue Settings'
+  ClientHeight = 207
+  ClientWidth = 217
+  FormStyle = fsStayOnTop
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnDeactivate = FormDeactivate
+  object lblHue: TLabel
+    Left = 8
+    Height = 16
+    Top = 12
+    Width = 26
+    Caption = 'Hue:'
+    ParentColor = False
+  end
+  object lbHue: TListBox
+    Left = 8
+    Height = 160
+    Top = 40
+    Width = 200
+    ItemHeight = 16
+    OnDrawItem = lbHueDrawItem
+    OnSelectionChange = lbHueSelectionChange
+    Style = lbOwnerDrawFixed
+    TabOrder = 0
+  end
+  object edHue: TEdit
+    Left = 48
+    Height = 23
+    Top = 10
+    Width = 80
+    OnEditingDone = edHueEditingDone
+    TabOrder = 1
+  end
+end

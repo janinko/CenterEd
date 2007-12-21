@@ -1,0 +1,246 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="6"/>
+    <General>
+      <SessionStorage Value="InProjectDir"/>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="4">
+      <Item1>
+        <PackageName Value="virtualtreeview_package"/>
+        <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="lnetvisual"/>
+        <MinVersion Minor="5" Release="3" Valid="True"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="LCL"/>
+      </Item3>
+      <Item4>
+        <PackageName Value="LazOpenGLContext"/>
+        <MinVersion Valid="True"/>
+      </Item4>
+    </RequiredPackages>
+    <Units Count="24">
+      <Unit0>
+        <Filename Value="CentrED.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CentrED"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="UfrmMain.pas"/>
+        <ComponentName Value="frmMain"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmMain.lrs"/>
+        <UnitName Value="UfrmMain"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="UdmNetwork.pas"/>
+        <ComponentName Value="dmNetwork"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UdmNetwork.lrs"/>
+        <UnitName Value="UdmNetwork"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="UfrmLogin.pas"/>
+        <ComponentName Value="frmLogin"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmLogin.lrs"/>
+        <UnitName Value="UfrmLogin"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="UfrmInitialize.pas"/>
+        <ComponentName Value="frmInitialize"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmInitialize.lrs"/>
+        <UnitName Value="UfrmInitialize"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="UOpenGLUI.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UOpenGLUI"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="UfrmAccountControl.pas"/>
+        <ComponentName Value="frmAccountControl"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmAccountControl.lrs"/>
+        <UnitName Value="UfrmAccountControl"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="UfrmEditAccount.pas"/>
+        <ComponentName Value="frmEditAccount"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmEditAccount.lrs"/>
+        <UnitName Value="UfrmEditAccount"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="Tools/UfrmDrawSettings.pas"/>
+        <ComponentName Value="frmDrawSettings"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="Tools/UfrmDrawSettings.lrs"/>
+        <UnitName Value="UfrmDrawSettings"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="Tools/UfrmBoundaries.pas"/>
+        <ComponentName Value="frmBoundaries"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="Tools/UfrmBoundaries.lrs"/>
+        <UnitName Value="UfrmBoundaries"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="Tools/UfrmElevateSettings.pas"/>
+        <ComponentName Value="frmElevateSettings"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="Tools/UfrmElevateSettings.lrs"/>
+        <UnitName Value="UfrmElevateSettings"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="UOverlayUI.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UOverlayUI"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="UResourceManager.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UResourceManager"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="Tools/UfrmConfirmation.pas"/>
+        <ComponentName Value="frmConfirmation"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="Tools/UfrmConfirmation.lrs"/>
+        <UnitName Value="UfrmConfirmation"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="Tools/UfrmMoveSettings.pas"/>
+        <ComponentName Value="frmMoveSettings"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="Tools/UfrmMoveSettings.lrs"/>
+        <UnitName Value="UfrmMoveSettings"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="UfrmAbout.pas"/>
+        <ComponentName Value="frmAbout"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmAbout.lrs"/>
+        <UnitName Value="UfrmAbout"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="Tools/UfrmHueSettings.pas"/>
+        <ComponentName Value="frmHueSettings"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="Tools/UfrmHueSettings.lrs"/>
+        <UnitName Value="UfrmHueSettings"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="UfrmRadar.pas"/>
+        <ComponentName Value="frmRadarMap"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmRadar.lrs"/>
+        <UnitName Value="UfrmRadar"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="UfrmLargeScaleCommand.pas"/>
+        <ComponentName Value="frmLargeScaleCommand"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmLargeScaleCommand.lrs"/>
+        <UnitName Value="UfrmLargeScaleCommand"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="Tools/UfrmVirtualLayer.pas"/>
+        <ComponentName Value="frmVirtualLayer"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="Tools/UfrmVirtualLayer.lrs"/>
+        <UnitName Value="UfrmVirtualLayer"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="Tools/UfrmFilter.pas"/>
+        <ComponentName Value="frmFilter"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="Tools/UfrmFilter.lrs"/>
+        <UnitName Value="UfrmFilter"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="UfrmTileInfo.pas"/>
+        <ComponentName Value="frmTileInfo"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceFilename Value="UfrmTileInfo.lrs"/>
+        <UnitName Value="UfrmTileInfo"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="UGUIPlatformUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UGUIPlatformUtils"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="UPlatformTypes.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UPlatformTypes"/>
+      </Unit23>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <Target>
+      <Filename Value="../bin/CentrED"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="../Imaging/;../"/>
+      <OtherUnitFiles Value="../;../UOLib/;../MulProvider/;../Imaging/;../Imaging/JpegLib/;../Imaging/ZLib/;Tools/"/>
+      <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
+      <LCLWidgetType Value="gtk"/>
+      <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/;../;../UOLib/;../MulProvider/;../Imaging/;../Imaging/JpegLib/;../Imaging/ZLib/;Tools/"/>
+    </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <UseAnsiStrings Value="True"/>
+      </SyntaxOptions>
+    </Parsing>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <Generate Value="Faster"/>
+      <TargetCPU Value="i386"/>
+      <Optimizations>
+        <OptimizationLevel Value="3"/>
+      </Optimizations>
+      <TargetOS Value="Linux"/>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <UseLineInfoUnit Value="False"/>
+        <StripSymbols Value="True"/>
+      </Debugging>
+      <LinkSmart Value="True"/>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+    <Other>
+      <CustomOptions Value="-FE..\bin\
+"/>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+</CONFIG>

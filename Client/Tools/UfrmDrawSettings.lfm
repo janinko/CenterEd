@@ -1,0 +1,74 @@
+object frmDrawSettings: TfrmDrawSettings
+  Left = 290
+  Height = 138
+  Top = 171
+  Width = 186
+  HorzScrollBar.Page = 185
+  VertScrollBar.Page = 137
+  ActiveControl = rbTileList
+  BorderIcons = []
+  BorderStyle = bsToolWindow
+  Caption = 'Draw settings'
+  ClientHeight = 138
+  ClientWidth = 186
+  FormStyle = fsStayOnTop
+  OnClose = FormClose
+  OnDeactivate = FormDeactivate
+  OnShow = FormShow
+  object rbTileList: TRadioButton
+    Left = 8
+    Height = 15
+    Top = 8
+    Width = 113
+    Caption = 'Use tile from the list'
+    Checked = True
+    State = cbChecked
+    TabOrder = 0
+    UseOnChange = True
+  end
+  object rbRandom: TRadioButton
+    Left = 8
+    Height = 15
+    Top = 32
+    Width = 164
+    Caption = 'Use tiles from the random pool'
+    TabOrder = 1
+    UseOnChange = True
+  end
+  object cbForceAltitude: TCheckBox
+    Left = 8
+    Height = 15
+    Top = 60
+    Width = 89
+    Caption = 'Force altitude:'
+    TabOrder = 2
+  end
+  object seForceAltitude: TSpinEdit
+    Left = 104
+    Height = 23
+    Top = 56
+    Width = 50
+    MaxValue = 127
+    MinValue = -128
+    OnChange = seForceAltitudeChange
+    TabOrder = 3
+  end
+  object gbHue: TGroupBox
+    Height = 49
+    Top = 88
+    Width = 185
+    Caption = 'Hue (Statics only)'
+    ClientHeight = 31
+    ClientWidth = 181
+    TabOrder = 4
+    object pbHue: TPaintBox
+      Cursor = crHandPoint
+      Left = 6
+      Height = 16
+      Top = 1
+      Width = 169
+      OnClick = pbHueClick
+      OnPaint = pbHuePaint
+    end
+  end
+end

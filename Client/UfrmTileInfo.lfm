@@ -1,0 +1,64 @@
+object frmTileInfo: TfrmTileInfo
+  Left = 290
+  Height = 107
+  Top = 171
+  Width = 250
+  HorzScrollBar.Page = 249
+  VertScrollBar.Page = 106
+  AutoSize = True
+  BorderIcons = []
+  BorderStyle = bsNone
+  Caption = 'Tile info'
+  ClientHeight = 107
+  ClientWidth = 250
+  Color = clInfoBk
+  Constraints.MinWidth = 250
+  Font.Color = clInfoText
+  FormStyle = fsStayOnTop
+  OnShow = FormShow
+  object lblTileID: TLabel
+    Left = 8
+    Height = 17
+    Top = 27
+    Width = 234
+    Align = alTop
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 2
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 8
+    Font.Color = clInfoText
+    Font.Style = [fsItalic]
+    ParentColor = False
+  end
+  object lblFlags: TLabel
+    Left = 8
+    Height = 47
+    Top = 52
+    Width = 234
+    Align = alTop
+    BorderSpacing.Around = 8
+    Font.Color = clInfoText
+    ParentColor = False
+    WordWrap = True
+  end
+  object lblName: TLabel
+    Left = 8
+    Height = 17
+    Top = 8
+    Width = 234
+    Align = alTop
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 2
+    Font.Style = [fsBold]
+    ParentColor = False
+  end
+  object tmHide: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = tmHideTimer
+    left = 216
+    top = 8
+  end
+end

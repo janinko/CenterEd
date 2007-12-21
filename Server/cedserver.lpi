@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="6"/>
+    <General>
+      <SessionStorage Value="InProjectDir"/>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="1">
+      <Item1>
+        <PackageName Value="lnetbase"/>
+      </Item1>
+    </RequiredPackages>
+    <Units Count="8">
+      <Unit0>
+        <Filename Value="cedserver.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="cedserver"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="UConfig.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UConfig"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="UCEDServer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UCEDServer"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="UNetState.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UNetState"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="UAccount.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UAccount"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="UConnectionHandling.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UConnectionHandling"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="URadarMap.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="URadarMap"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="ULargeScaleOperations.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULargeScaleOperations"/>
+      </Unit7>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <Target>
+      <Filename Value="../bin/cedserver"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="../;../Imaging/"/>
+      <OtherUnitFiles Value="../;../UOLib/;../MulProvider/;../Imaging/ZLib/"/>
+      <UnitOutputDirectory Value="../obj"/>
+      <SrcPath Value="../;../UOLib/;../MulProvider/;../Imaging/ZLib/"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <Generate Value="Faster"/>
+      <Optimizations>
+        <OptimizationLevel Value="3"/>
+      </Optimizations>
+      <TargetOS Value="Win32"/>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <UseLineInfoUnit Value="False"/>
+        <StripSymbols Value="True"/>
+      </Debugging>
+      <LinkSmart Value="True"/>
+    </Linking>
+    <Other>
+      <CustomOptions Value="-FE..\bin\
+"/>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+</CONFIG>

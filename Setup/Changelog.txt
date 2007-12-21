@@ -1,0 +1,77 @@
+Changelog:
+[C] = Client, [S] = Server
+
+Version 0.3.6
+=============
+[C] Added support for translucent tiles
+[C] Added Jump-To-TileID to the tile list (just enter the number and press enter)
+[C] Improved Linux support
+ *  Switched to GTK instead of GTK2 to improve stability
+ *  Fixed the filter dialog
+ *  Added correct parent window behavior
+ *  Added (internal) drag & drop between the tile lists
+ *  Disabled the tooltip due to inconsistent behavior (will be reenabled later)
+
+Version 0.3.5
+=============
+[C] Added ability to hide No-Draw tiles
+[C] Added flat-view (where everything is drawn with Z = 0)
+[C] Added tooltip to the tile list (showing the flags and the name of the tiles)
+[C] Fixed crash when dragging the mouse over an arrow
+[C] Fixed some crashes in the linux version
+
+Version 0.3.4
+=============
+[S] Softened timeout checks to prevent unnecessary kicks
+[S] Added validation for the map size on startup
+
+Version 0.3.3
+=============
+[C] Optimized responsiveness
+[S] Changed to a more stable zlib implementation
+[S] Fixed bug in disconnect handling, which could lead to a server crash
+
+Version 0.3.2
+=============
+[C] Added statics filter (by Tile ID and Hue)
+[C] Fixed occasional error when selecting tiles
+
+Version 0.3.1
+=============
+[C] Added access level change notification
+[C] Changed ordering of tiles for the move tool
+[C] Fixed radar handling on first start
+[C] Fixed invalid numbering of statics in the tile list
+[C] Fixed strange scrolling behavior of the tile list
+[S] Added timeout of 30secs to client connections
+[S] Fixed possible memory corruption
+
+Version 0.3
+===========
+[C] Added large scale commands
+[C] Added (re)storing ability of Random-Presets
+[C] Added Location list to store coordinates
+[C] Added radar map
+[C] Added virtual layer
+[C] Added fields to directly enter values to the Boundaries and the Hue settings
+[C] Added left-click menu to the selection tool (pops up after holding the left mouse button for a second)
+[C] Added hotkeys (F1 to F8, one for each tool)
+[C] Added new access levels (None [= locked] and Viewer [= can only see the map and chat])
+[C] Fixed problems with the Move-tool
+[C] Fixed some memory leaks and several other bugs
+[S] Added support for the new client features
+[S] Changed config file: REFER TO THE INCLUDED UPGRADE NOTES!!!
+[S] Fixed the netcode handling (that could have lead to crashes in some cases)
+
+Version 0.2
+===========
+[C] Added client list
+[C] Added ability to jump to other clients positions
+[C] Added chat
+[C] Added support to add hued tiles
+[C] Added tool to hue existing tiles
+[C] Added automatical movement while the movement arrows are pressed
+[C] Changed tile info shown when hovering (more details)
+[S] Added timestamps
+[S] Added storage of clients last position
+[S] Changed win32 version to no longer require "--init"

@@ -1,0 +1,46 @@
+object frmVirtualLayer: TfrmVirtualLayer
+  Left = 290
+  Height = 73
+  Top = 171
+  Width = 178
+  HorzScrollBar.Page = 177
+  VertScrollBar.Page = 72
+  BorderIcons = []
+  BorderStyle = bsToolWindow
+  Caption = 'Virtual Layer'
+  ClientHeight = 73
+  ClientWidth = 178
+  OnClose = FormClose
+  OnDeactivate = FormDeactivate
+  object seZ: TSpinEdit
+    Left = 120
+    Height = 23
+    Top = 8
+    Width = 50
+    MaxValue = 127
+    MinValue = -128
+    OnChange = seZChange
+    TabOrder = 0
+  end
+  object cbShowLayer: TCheckBox
+    Left = 11
+    Height = 15
+    Top = 12
+    Width = 103
+    Caption = 'Show Layer at Z:'
+    TabOrder = 1
+  end
+  object tbZ: TTrackBar
+    Left = 8
+    Height = 33
+    Top = 32
+    Width = 162
+    Frequency = 10
+    Max = 127
+    Min = -128
+    OnChange = tbZChange
+    PageSize = 1
+    ScalePos = trTop
+    TabOrder = 2
+  end
+end

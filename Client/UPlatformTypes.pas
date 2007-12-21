@@ -1,0 +1,53 @@
+(*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License, Version 1.0 only
+ * (the "License").  You may not use this file except in compliance
+ * with the License.
+ *
+ * You can obtain a copy of the license at
+ * http://www.opensource.org/licenses/cddl1.php.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at
+ * http://www.opensource.org/licenses/cddl1.php.  If applicable,
+ * add the following below this CDDL HEADER, with the fields enclosed
+ * by brackets "[]" replaced with your own identifying * information:
+ *      Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ *
+ *
+ *      Portions Copyright 2007 Andreas Schneider
+ *)
+unit UPlatformTypes;
+
+{$mode objfpc}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils, ActiveX;
+  
+type
+  IDataObject = ActiveX.IDataObject;
+  {IDataObject = Interface (IUnknown)
+  ['{0000010e-0000-0000-C000-000000000046}']
+    function GetData(const formatetcIn: FORMATETC; out medium: STGMEDIUM): HRESULT; stdcall;
+    function GetDataHere(const pformatetc: FormatETC; out medium: STGMEDIUM): HRESULT; stdcall;
+    function QueryGetData(const pformatetc: FORMATETC): HRESULT; stdcall;
+    function GetCanonicalFormatTEtc(const pformatetcIn: FORMATETC; out pformatetcOut: FORMATETC): HResult; stdcall;
+    function SetData (const pformatetc: FORMATETC;const medium:STGMEDIUM;FRelease : BOOL):HRESULT; stdcall;
+    function EnumFormatEtc(dwDirection: DWord; out enumformatetcpara: IENUMFORMATETC): HRESULT; stdcall;
+    function DAdvise(const formatetc: FORMATETC; advf: DWORD; const AdvSink: IAdviseSink; out dwConnection: DWORD): HRESULT; stdcall;
+    function DUnadvise(dwconnection: DWord): HRESULT; stdcall;
+    function EnumDAvise(out enumAdvise: IEnumStatData): HRESULT; stdcall;
+  end;}
+
+implementation
+
+end.
+

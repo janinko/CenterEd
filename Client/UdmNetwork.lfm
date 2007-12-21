@@ -1,0 +1,24 @@
+object dmNetwork: TdmNetwork
+  OnCreate = DataModuleCreate
+  OnDestroy = DataModuleDestroy
+  Height = 300
+  HorizontalOffset = 290
+  VerticalOffset = 171
+  Width = 400
+  object TCPClient: TLTCPComponent
+    OnReceive = TCPClientReceive
+    OnError = TCPClientError
+    OnDisconnect = TCPClientDisconnect
+    OnConnect = TCPClientConnect
+    left = 40
+    top = 24
+  end
+  object tmNoOp: TTimer
+    Enabled = False
+    Interval = 30000
+    OnTimer = tmNoOpTimer
+    OnStartTimer = tmNoOpStartTimer
+    left = 72
+    top = 24
+  end
+end

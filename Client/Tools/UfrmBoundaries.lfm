@@ -1,0 +1,82 @@
+object frmBoundaries: TfrmBoundaries
+  Left = 290
+  Height = 105
+  Top = 171
+  Width = 187
+  HorzScrollBar.Page = 186
+  VertScrollBar.Page = 104
+  ActiveControl = tbMinZ
+  BorderIcons = []
+  BorderStyle = bsToolWindow
+  Caption = 'Boundaries'
+  ClientHeight = 105
+  ClientWidth = 187
+  OnClose = FormClose
+  OnDeactivate = FormDeactivate
+  object lblMinZ: TLabel
+    Left = 8
+    Height = 16
+    Top = 8
+    Width = 67
+    Caption = 'Minimum Z:'
+    ParentColor = False
+  end
+  object lblMaxZ: TLabel
+    Left = 8
+    Height = 16
+    Top = 56
+    Width = 68
+    Caption = 'Maximum Z:'
+    ParentColor = False
+  end
+  object tbMinZ: TTrackBar
+    Left = 8
+    Height = 17
+    Top = 32
+    Width = 172
+    Frequency = 10
+    Max = 127
+    Min = -128
+    OnChange = tbMinZChange
+    PageSize = 1
+    Position = -128
+    ScalePos = trTop
+    TabOrder = 0
+  end
+  object tbMaxZ: TTrackBar
+    Left = 8
+    Height = 16
+    Top = 80
+    Width = 172
+    Frequency = 10
+    Max = 127
+    Min = -128
+    OnChange = tbMaxZChange
+    PageSize = 1
+    Position = 127
+    ScalePos = trTop
+    TabOrder = 1
+  end
+  object seMinZ: TSpinEdit
+    Left = 128
+    Height = 23
+    Top = 4
+    Width = 50
+    MaxValue = 127
+    MinValue = -128
+    OnChange = seMinZChange
+    TabOrder = 2
+    Value = -128
+  end
+  object seMaxZ: TSpinEdit
+    Left = 128
+    Height = 23
+    Top = 52
+    Width = 50
+    MaxValue = 127
+    MinValue = -128
+    OnChange = seMaxZChange
+    TabOrder = 3
+    Value = 127
+  end
+end
