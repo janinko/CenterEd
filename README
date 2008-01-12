@@ -14,9 +14,6 @@ To build CentrED you need at least FreePascal 2.2.0 and a
 recent Lazarus (at least 0.9.24).
 You also have to have the following packages installed:
   - VirtualTrees from https://luipack.bountysource.com/wiki/virtualtreeview
-                 probably with applied VirtualTrees.patch to be compatible
-                 with current Lazarus revisions (included with the CentrED
-                 source)
   - LazOpenGLContext (included with Lazarus)
   - lNet by Almindor: http://wiki.lazarus.freepascal.org/lNet
 
