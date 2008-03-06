@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UAccount;
 
@@ -30,16 +30,20 @@ unit UAccount;
 interface
 
 uses
-  Classes, SysUtils, md5, contnrs, math, UEnums;
+  Classes, SysUtils, md5, contnrs, math, DOM, UXmlHelper, UInterfaces,
+  UEnums;
   
 type
 
   { TAccount }
 
-  TAccount = class(TObject)
-    constructor Create(AAccountString: string);
-    constructor Create(AName, APasswordHash: string; AAccessLevel: TAccessLevel);
+  TAccount = class(TObject, ISerializable, IInvalidate)
+    constructor Create(AOwner: IInvalidate; AName, APasswordHash: string;
+      AAccessLevel: TAccessLevel);
+    constructor Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
+    procedure Serialize(AElement: TDOMElement);
   protected
+    FOwner: IInvalidate;
     FName: string;
     FAccessLevel: TAccessLevel;
     FPasswordHash: string;
@@ -52,17 +56,22 @@ type
     property AccessLevel: TAccessLevel read FAccessLevel write SetAccessLevel;
     property PasswordHash: string read FPasswordHash write SetPasswordHash;
     property LastPos: TPoint read FLastPos write SetLastPos;
-    procedure Flush;
+    procedure Invalidate;
   end;
   
   { TAccountList }
 
-  TAccountList = class(TObjectList)
-    constructor Create; reintroduce;
+  TAccountList = class(TObjectList, ISerializable, IInvalidate)
+    constructor Create(AOwner: IInvalidate); reintroduce;
+    constructor Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
+    procedure Serialize(AElement: TDOMElement);
+  protected
+    FOwner: IInvalidate;
   public
     function IndexOf(AName: string): Integer;
     function Find(AName: string): TAccount;
     procedure Delete(AName: string);
+    procedure Invalidate;
   end;
 
 implementation
@@ -72,75 +81,80 @@ uses
 
 { TAccount }
 
-constructor TAccount.Create(AAccountString: string);
-var
-  i: Integer;
-  attribs: TStringList;
-begin
-  inherited Create;
-  i := Pos('=', AAccountString);
-  if i > 0 then
-    FName := Trim(Copy(AAccountString, 1, i-1));
-  AAccountString := Copy(AAccountString, i+1, Length(AAccountString));
-
-  attribs := TStringList.Create;
-  if ExtractStrings([':'], [' '], PChar(AAccountString), attribs) >= 2 then
-  begin
-    FAccessLevel := TAccessLevel(StrToInt(attribs.Strings[0]));
-    FPasswordHash := attribs.Strings[1];
-  end;
-  if attribs.Count >= 4 then
-  begin
-    FLastPos.x := EnsureRange(StrToInt(attribs.Strings[2]), 0, Config.ReadInteger('Parameters', 'Width', 0) * 8 - 1);
-    FLastPos.y := EnsureRange(StrToInt(attribs.Strings[3]), 0, Config.ReadInteger('Parameters', 'Height', 0) * 8 - 1);
-  end else
-  begin
-    FLastPos.x := 0;
-    FLastPos.y := 0;
-  end;
-  attribs.Free;
-end;
-
-constructor TAccount.Create(AName, APasswordHash: string;
+constructor TAccount.Create(AOwner: IInvalidate; AName, APasswordHash: string;
   AAccessLevel: TAccessLevel);
 begin
   inherited Create;
+  FOwner := AOwner;
   FName := AName;
   FPasswordHash := APasswordHash;
   FAccessLevel := AAccessLevel;
-  Flush;
+end;
+
+constructor TAccount.Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
+begin
+  inherited Create;
+  FOwner := AOwner;
+  FName := TXmlHelper.ReadString(AElement, 'Name', '');
+  FAccessLevel := TAccessLevel(TXmlHelper.ReadInteger(AElement, 'AccessLevel', 0));
+  FPasswordHash := TXmlHelper.ReadString(AElement, 'PasswordHash', '');
+  FLastPos := Point(0, 0);
+  TXmlHelper.ReadCoords(AElement, 'LastPos', FLastPos.X, FLastPos.Y);
 end;
 
 procedure TAccount.SetAccessLevel(const AValue: TAccessLevel);
 begin
   FAccessLevel := AValue;
-  Flush;
+  Invalidate;
 end;
 
 procedure TAccount.SetPasswordHash(const AValue: string);
 begin
   FPasswordHash := AValue;
-  Flush;
+  Invalidate;
 end;
 
 procedure TAccount.SetLastPos(const AValue: TPoint);
 begin
   FLastPos.x := EnsureRange(AValue.x, 0, CEDServerInstance.Landscape.CellWidth - 1);
   FLastPos.y := EnsureRange(AValue.y, 0, CEDServerInstance.Landscape.CellHeight - 1);
-  Flush;
+  Invalidate;
 end;
 
-procedure TAccount.Flush;
+procedure TAccount.Invalidate;
 begin
-  Config.WriteString('Accounts', FName, IntToStr(Byte(FAccessLevel)) + ':' +
-    FPasswordHash + ':' + IntToStr(FLastPos.x) + ':' + IntToStr(FLastPos.y));
+  FOwner.Invalidate;
+end;
+
+procedure TAccount.Serialize(AElement: TDOMElement);
+begin
+  TXmlHelper.WriteString(AElement, 'Name', FName);
+  TXmlHelper.WriteString(AElement, 'PasswordHash', FPasswordHash);
+  TXmlHelper.WriteInteger(AElement, 'AccessLevel', Integer(FAccessLevel));
+  TXmlHelper.WriteCoords(AElement, 'LastPos', FLastPos.X, FLastPos.Y);
 end;
 
 { TAccountList }
 
-constructor TAccountList.Create;
+constructor TAccountList.Create(AOwner: IInvalidate);
 begin
   inherited Create(True);
+  FOwner := AOwner;
+end;
+
+constructor TAccountList.Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
+var
+  nodelist: TDOMNodeList;
+  i: Integer;
+begin
+  Create(AOwner);
+  nodeList := AElement.GetChildNodes;
+  for i := 0 to nodeList.Count - 1 do
+  begin
+    if nodeList.Item[i].NodeName = 'Account' then
+      Add(TAccount.Deserialize(Self, TDOMElement(nodeList.Item[i])));
+  end;
+  nodeList.Free;
 end;
 
 function TAccountList.IndexOf(AName: string): Integer;
@@ -175,6 +189,24 @@ begin
   i := IndexOf(AName);
   if i > -1 then
     inherited Delete(i);
+end;
+
+procedure TAccountList.Invalidate;
+begin
+  FOwner.Invalidate;
+end;
+
+procedure TAccountList.Serialize(AElement: TDOMElement);
+var
+  i: Integer;
+  xmlAccount: TDOMElement;
+begin
+  for i := 0 to Count - 1 do
+  begin
+    xmlAccount := AElement.OwnerDocument.CreateElement('Account');
+    AElement.AppendChild(xmlAccount);
+    TAccount(Items[i]).Serialize(xmlAccount);
+  end;
 end;
 
 end.

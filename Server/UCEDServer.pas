@@ -109,14 +109,9 @@ end;
 constructor TCEDServer.Create;
 begin
   inherited Create;
-  FLandscape := TLandscape.Create(Config.ReadString('Paths', 'map', 'map0.mul'),
-    Config.ReadString('Paths', 'statics', 'statics0.mul'),
-    Config.ReadString('Paths', 'staidx', 'staidx0.mul'),
-    Config.ReadString('Paths', 'tiledata', 'tiledata.mul'),
-    Config.ReadString('Paths', 'radarcol', 'radarcol.mul'),
-    Config.ReadInteger('Parameters', 'Width', 0),
-    Config.ReadInteger('Parameters', 'Height', 0),
-    FValid);
+  FLandscape := TLandscape.Create(Config.Map.MapFile, Config.Map.StaticsFile,
+    Config.Map.StaIdxFile, Config.Tiledata, Config.Radarcol, Config.Map.Width,
+    Config.Map.Height, FValid);
   FTCPServer := TLTcp.Create(nil);
   FTCPServer.OnAccept := @OnAccept;
   FTCPServer.OnCanSend := @OnCanSend;
@@ -295,7 +290,7 @@ begin
     Exit;
   end;
 
-  if FTCPServer.Listen(Config.ReadInteger('Network', 'Port', 2597)) then
+  if FTCPServer.Listen(Config.Port) then
   begin
     repeat
       FTCPServer.CallAction;
@@ -303,6 +298,7 @@ begin
       if SecondsBetween(FLastFlush, Now) >= 60 then
       begin
         FLandscape.Flush;
+        Config.Flush;
         FLastFlush := Now;
       end;
       Sleep(1);
@@ -351,6 +347,7 @@ end;
 initialization
 {$IFDEF Linux}
   FpSignal(SIGINT, @OnSigInt);
+  FpSignal(SIGTERM, @OnSigInt); //SIGTERM should shutdown the server cleanly too
   //FpSignal(SIGSEGV, @OnSigSegv);
 {$ENDIF}
 {$IFDEF Windows}

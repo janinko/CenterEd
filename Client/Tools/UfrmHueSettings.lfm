@@ -5,7 +5,6 @@ object frmHueSettings: TfrmHueSettings
   Width = 217
   HorzScrollBar.Page = 216
   VertScrollBar.Page = 206
-  ActiveControl = lbHue
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Hue Settings'
@@ -15,13 +14,22 @@ object frmHueSettings: TfrmHueSettings
   OnClose = FormClose
   OnCreate = FormCreate
   OnDeactivate = FormDeactivate
+  LCLVersion = '0.9.25'
   object lblHue: TLabel
     Left = 8
-    Height = 16
+    Height = 12
     Top = 12
-    Width = 26
+    Width = 27
     Caption = 'Hue:'
     ParentColor = False
+  end
+  object edHue: TEdit
+    Left = 48
+    Height = 23
+    Top = 10
+    Width = 80
+    OnEditingDone = edHueEditingDone
+    TabOrder = 0
   end
   object lbHue: TListBox
     Left = 8
@@ -32,14 +40,7 @@ object frmHueSettings: TfrmHueSettings
     OnDrawItem = lbHueDrawItem
     OnSelectionChange = lbHueSelectionChange
     Style = lbOwnerDrawFixed
-    TabOrder = 0
-  end
-  object edHue: TEdit
-    Left = 48
-    Height = 23
-    Top = 10
-    Width = 80
-    OnEditingDone = edHueEditingDone
     TabOrder = 1
+    TopIndex = -1
   end
 end

@@ -14,7 +14,6 @@
     </VersionInfo>
     <PublishOptions>
       <Version Value="2"/>
-      <IgnoreBinaries Value="False"/>
       <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
       <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
     </PublishOptions>
@@ -29,7 +28,7 @@
         <PackageName Value="lnetbase"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="cedserver.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -70,6 +69,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ULargeScaleOperations"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="../UInterfaces.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UInterfaces"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -89,7 +93,7 @@
       <Optimizations>
         <OptimizationLevel Value="3"/>
       </Optimizations>
-      <TargetOS Value="Win32"/>
+      <TargetOS Value="Linux"/>
     </CodeGeneration>
     <Linking>
       <Debugging>

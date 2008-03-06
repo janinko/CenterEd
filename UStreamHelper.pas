@@ -43,7 +43,7 @@ unit UStreamHelper;
 interface
 
 uses
-  Classes, RtlConsts, SysUtils, UIStream;
+  Classes, RtlConsts, SysUtils;
 
 type
   {@name is the stub for the method which will handle the OnProgress callbacks.
@@ -94,7 +94,7 @@ type
   //generic TStreamWrapper<TStreamType> = class(TObject{, IStream})
   {@abstract(@name implements @link(IStream) and offers a bunch of functions to
   ease reading and writing special types (like @link(Integer)s or @link(String)s.))}
-  TStreamWrapper = class(TObject, IStream)
+  TStreamWrapper = class(TObject)
     constructor Create(AStream: TStreamType; AOwnsStream: Boolean = True);      //<Creates a new instance of @classname. @param(AStream The underlying stream to perform the actual operations on.) @param(AOwnsStream Defines wheather to free the stream on destruction of @classname or not. Defaults to @false.)
     destructor Destroy; override;                                               //<Is called when the current instance of @classname is destroyed. If it owns the underlying stream it is destroyed aswell.
   protected

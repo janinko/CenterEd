@@ -30,7 +30,7 @@ unit ULandscape;
 interface
 
 uses
-  SysUtils, Classes, contnrs, UGenericIndex, UMap, UStatics, UTileData,
+  SysUtils, Classes, contnrs, UGenericIndex, UMap, UStatics, UTiledata,
   UWorldItem, UMulBlock, math,
   UTileDataProvider, URadarMap,
   UListSort, UCacheManager, ULinkedList, UBufferedStreams,

@@ -116,7 +116,7 @@ procedure OnGotoClientPosPacket(ABuffer: TEnhancedMemoryStream;
 var
   account: TAccount;
 begin
-  account := Accounts.Find(ABuffer.ReadStringNull);
+  account := Config.Accounts.Find(ABuffer.ReadStringNull);
   if account <> nil then
     CEDServerInstance.SendPacket(ANetState, TSetClientPosPacket.Create(account.LastPos));
 end;

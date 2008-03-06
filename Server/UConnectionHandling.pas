@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UConnectionHandling;
 
@@ -85,7 +85,7 @@ var
 begin
   username := ABuffer.ReadStringNull;
   passwordHash := MD5Print(MD5String(ABuffer.ReadStringNull));
-  account := Accounts.Find(username);
+  account := Config.Accounts.Find(username);
   if account <> nil then
   begin
     if account.AccessLevel > alNone then
@@ -120,16 +120,19 @@ begin
         end;
       end else
       begin
+        Writeln(TimeStamp, 'Invalid password for ', username);
         CEDServerInstance.SendPacket(ANetState, TLoginResponsePacket.Create(lsInvalidPassword));
         CEDServerInstance.Disconnect(ANetState.Socket);
       end;
     end else
     begin
+      Writeln(TimeStamp, 'Access denied for ', username);
       CEDServerInstance.SendPacket(ANetState, TLoginResponsePacket.Create(lsNoAccess));
       CEDServerInstance.Disconnect(ANetState.Socket);
     end;
   end else
   begin
+    Writeln(TimeStamp, 'Invalid account specified: ', ANetState.Socket.PeerAddress);
     CEDServerInstance.SendPacket(ANetState, TLoginResponsePacket.Create(lsInvalidUser));
     CEDServerInstance.Disconnect(ANetState.Socket);
   end;
@@ -160,8 +163,8 @@ begin
   if AState = lsOK then
   begin
     FStream.WriteByte(Byte(AAccessLevel));
-    FStream.WriteWord(Config.ReadInteger('Parameters', 'Width', 768));
-    FStream.WriteWord(Config.ReadInteger('Parameters', 'Height', 512));
+    FStream.WriteWord(Config.Map.Width);
+    FStream.WriteWord(Config.Map.Height);
   end;
 end;
 

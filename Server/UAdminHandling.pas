@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UAdminHandling;
 
@@ -81,6 +81,7 @@ end;
 procedure OnFlushPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 begin
   CEDServerInstance.Landscape.Flush;
+  Config.Flush;
 end;
 
 procedure OnQuitPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
@@ -99,7 +100,7 @@ begin
   username := ABuffer.ReadStringNull;
   password := ABuffer.ReadStringNull;
   accessLevel := TAccessLevel(ABuffer.ReadByte);
-  account := Accounts.Find(username);
+  account := Config.Accounts.Find(username);
   if account <> nil then
   begin
     if password <> '' then
@@ -120,14 +121,16 @@ begin
     CEDServerInstance.SendPacket(ANetState, TModifyUserResponsePacket.Create(muModified, account));
   end else
   begin
-    account := TAccount.Create(username, MD5Print(MD5String(password)), accessLevel);
+    account := TAccount.Create(Config.Accounts, username,
+      MD5Print(MD5String(password)), accessLevel);
     if (username = '') or (Pos('=', username) > 0) then
     begin
       CEDServerInstance.SendPacket(ANetState, TModifyUserResponsePacket.Create(muInvalidUsername, account));
       account.Free;
       Exit;
     end;
-    Accounts.Add(account);
+    Config.Accounts.Add(account);
+    Config.Invalidate;
     CEDServerInstance.SendPacket(ANetState, TModifyUserResponsePacket.Create(muAdded, account));
   end;
 end;
@@ -140,10 +143,9 @@ var
   netState: TNetState;
 begin
   username := ABuffer.ReadStringNull;
-  account := Accounts.Find(username);
+  account := Config.Accounts.Find(username);
   if (account <> nil) and (account <> ANetState.Account) then
   begin
-    Config.DeleteKey('Accounts', username);
     CEDServerInstance.TCPServer.IterReset;
     while CEDServerInstance.TCPServer.IterNext do
     begin
@@ -154,7 +156,8 @@ begin
         netState.Account := nil;
       end;
     end;
-    Accounts.Remove(account);
+    Config.Accounts.Remove(account);
+    Config.Invalidate;
     CEDServerInstance.SendPacket(ANetState, TDeleteUserResponsePacket.Create(duDeleted, username));
   end else
     CEDServerInstance.SendPacket(ANetState, TDeleteUserResponsePacket.Create(duNotFound, username));
@@ -195,10 +198,10 @@ var
 begin
   inherited Create($03, 0);
   FStream.WriteByte($07);
-  FStream.WriteWord(Accounts.Count);
-  for i := 0 to Accounts.Count - 1 do
+  FStream.WriteWord(Config.Accounts.Count);
+  for i := 0 to Config.Accounts.Count - 1 do
   begin
-    account := TAccount(Accounts.Items[i]);
+    account := TAccount(Config.Accounts.Items[i]);
     FStream.WriteStringNull(account.Name);
     FStream.WriteByte(Byte(account.AccessLevel));
   end;

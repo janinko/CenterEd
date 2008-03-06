@@ -32,7 +32,7 @@ interface
 uses
   SysUtils, Classes, math, contnrs, LCLIntf, GL, GLU, ImagingOpenGL,
   Imaging, ImagingClasses, ImagingTypes, ImagingUtility,
-  UGenericIndex, UMap, UStatics, UArt, UTexture, UTileData, UHue, UWorldItem,
+  UGenericIndex, UMap, UStatics, UArt, UTexture, UTiledata, UHue, UWorldItem,
   UMulBlock,
   UListSort, UVector, UEnhancedMemoryStream,
   UCacheManager, ULinkedList;

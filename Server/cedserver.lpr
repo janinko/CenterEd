@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 program cedserver;
 
@@ -44,20 +44,16 @@ begin
   Writeln('');
 
   {$IFDEF Windows}
-  if not LoadConfig then
-  begin
-    InitConfig;
-    Writeln('');
-  end;
+  if FileExists(ConfigFile) then
+    Config := TConfig.Create(ConfigFile)
+  else
+    Config := TConfig.Init(ConfigFile);
   {$ELSE}
   if ParamStr(1) = '--init' then
-  begin
-    InitConfig;
-    Halt;
-  end;
-  
-  if not LoadConfig then
-  begin
+    Config := TConfig.Init(ConfigFile)
+  else if FileExists(ConfigFile) then
+    Config := TConfig.Create(ConfigFile)
+  else begin
     Writeln('No valid config file was found. Use --init to create one.');
     Halt;
   end;
@@ -69,7 +65,9 @@ begin
   Writeln('Done');
   CEDServerInstance.Run;
   Write(TimeStamp, 'Terminating ... ');
-  CEDServerInstance.Free;
+  FreeAndNil(CEDServerInstance);
+  Config.Flush;
+  FreeAndNil(Config);
   Writeln('Done');
 end.
 
