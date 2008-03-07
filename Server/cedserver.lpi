@@ -28,7 +28,7 @@
         <PackageName Value="lnetbase"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="14">
       <Unit0>
         <Filename Value="cedserver.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -74,6 +74,31 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UInterfaces"/>
       </Unit8>
+      <Unit9>
+        <Filename Value="UPacketHandlers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UPacketHandlers"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="ULandscape.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULandscape"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="UPackets.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UPackets"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="UAdminHandling.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UAdminHandling"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="UClientHandling.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UClientHandling"/>
+      </Unit13>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

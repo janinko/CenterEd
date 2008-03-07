@@ -33,11 +33,13 @@ uses
   {$ENDIF}{$ENDIF}
   SysUtils, Classes,
   lnetbase,
-  UConfig, UCEDServer, URadarMap, ULargeScaleOperations;
+  UConfig, UCEDServer, URadarMap, ULargeScaleOperations, UPackets,
+  UAdminHandling, UClientHandling, ULandscape, UPacketHandlers;
   
 {$I version.inc}
   
 begin
+  Writeln('');
   Writeln('UO CentrED Server Version ', ProductVersion);
   Writeln('Copyright ', Copyright);
   //Writeln('================================');
@@ -59,15 +61,15 @@ begin
   end;
   {$ENDIF}
   
-  Write(TimeStamp, 'Initializing ... ');
+  Writeln(TimeStamp, 'Initialization started');
   Randomize;
   CEDServerInstance := TCEDServer.Create;
-  Writeln('Done');
+  Writeln(TimeStamp, 'Initialization done');
   CEDServerInstance.Run;
-  Write(TimeStamp, 'Terminating ... ');
+  Write(TimeStamp, 'Shutting down ... ');
   FreeAndNil(CEDServerInstance);
   Config.Flush;
   FreeAndNil(Config);
-  Writeln('Done');
+  Writeln('done');
 end.
 

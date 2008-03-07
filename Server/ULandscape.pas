@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit ULandscape;
 
@@ -183,12 +183,18 @@ end;
 
 constructor TLandscape.Create(AMap, AStatics, AStaIdx, ATiledata,
   ARadarCol: string; AWidth, AHeight: Word; var AValid: Boolean);
+var
+  map, statics, staidx, tiledata: TStream;
 begin
-  Create(TFileStream.Create(AMap, fmOpenReadWrite),
-    TFileStream.Create(AStatics, fmOpenReadWrite),
-    TBufferedReader.Create(TFileStream.Create(AStaIdx, fmOpenReadWrite), True),
-    TFileStream.Create(ATiledata, fmOpenRead or fmShareDenyWrite),
-    ARadarCol, AWidth, AHeight, AValid);
+  Write(TimeStamp, 'Loading Map');
+  map := TFileStream.Create(AMap, fmOpenReadWrite);
+  Write(', Statics');
+  statics := TFileStream.Create(AStatics, fmOpenReadWrite);
+  Write(', StaIdx');
+  staidx := TBufferedReader.Create(TFileStream.Create(AStaIdx, fmOpenReadWrite), True);
+  Writeln(', Tiledata');
+  tiledata := TFileStream.Create(ATiledata, fmOpenRead or fmShareDenyWrite);
+  Create(map, statics, staidx, tiledata, ARadarCol, AWidth, AHeight, AValid);
   FOwnsStreams := True;
 end;
 
@@ -210,13 +216,17 @@ begin
   AValid := Validate;
   if AValid then
   begin
+    Write(TimeStamp, 'Creating Cache');
     FBlockCache := TCacheManager.Create(256);
     FBlockCache.OnRemoveObject := @OnRemoveCachedObject;
+    Write(', Tiledata');
     FTiledataProvider := TTiledataProvider.Create(ATiledata);
+    Write(', Subscriptions');
     SetLength(FBlockSubscriptions, AWidth * AHeight);
     for blockID := 0 to AWidth * AHeight - 1 do
       FBlockSubscriptions[blockID] := TLinkedList.Create;
 
+    Writeln(', RadarMap');
     FRadarMap := TRadarMap.Create(FMap, FStatics, FStaIdx, FWidth, FHeight,
       ARadarCol);
 
