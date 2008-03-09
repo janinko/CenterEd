@@ -536,11 +536,11 @@ begin
       FStatics.Position := FStatics.Size;
       index.Lookup := FStatics.Position;
     end;
+    index.Size := size;
     if size = 0 then
       index.Lookup := LongInt($FFFFFFFF)
     else
     begin
-      index.Size := size;
       FStatics.Position := index.Lookup;
       AWorldBlock.Write(FStatics);
     end;
