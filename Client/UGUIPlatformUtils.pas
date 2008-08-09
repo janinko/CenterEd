@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UGUIPlatformUtils;
 
@@ -32,7 +32,8 @@ interface
 uses
   Classes, SysUtils
   {$IFDEF LCLWin32}, windows{$ENDIF}
-  {$IFDEF LCLGtk}, gtk{$ENDIF};
+  {$IFDEF LCLGtk}, gtk{$ENDIF}
+  {$IFDEF LCLGtk2}, gtk2{$ENDIF};
   
 procedure SetWindowParent(AHandle, AParent: THANDLE);
 
@@ -46,7 +47,15 @@ begin
   {$IFDEF LCLGtk}
   gtk_window_set_transient_for(PGtkWindow(AHandle), PGtkWindow(AParent));
   {$ENDIF}
+  {$IFDEF LCLGtk2}
+  gtk_window_set_transient_for(PGtkWindow(AHandle), PGtkWindow(AParent));
+  {$ENDIF}
 end;
+
+initialization
+  {$IFDEF LCLGtk2}
+  gtk_rc_parse_string('style "user-font" { font_name = "Sans 8" } widget_class "*" style "user-font"');
+  {$ENDIF}
 
 end.
 

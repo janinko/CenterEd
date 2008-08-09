@@ -114,7 +114,7 @@ type
     { Returns file extensions of this graphic class.}
     class function GetFileExtensions: string; override;
     { Returns default MIME type of this graphic class.}
-    function GetDefaultMimeType: string; override;
+    function GetMimeType: string; override;
   {$ENDIF}
     { Default (the most common) file extension of this graphic class.}
     property DefaultFileExt: string read FDefaultFileExt;
@@ -637,6 +637,7 @@ var
 {$IFDEF COMPONENT_SET_LCL}
   RawImage: TRawImage;
   LineLazBytes: LongInt;
+  rect: TRect;
 {$ENDIF}
 begin
 {$IFDEF COMPONENT_SET_LCL}
@@ -725,7 +726,8 @@ begin
 {$IFDEF COMPONENT_SET_LCL}
   // Get raw image from bitmap (mask handle must be 0 or expect violations)
   { If you get complitation error here upgrade to Lazarus 0.9.24+ }
-  if RawImage_FromBitmap(RawImage, Bitmap.Handle, 0, Classes.Rect(0, 0, Data.Width, Data.Height)) then
+  rect := Classes.Rect(0, 0, Data.Width, Data.Height);
+  if RawImage_FromBitmap(RawImage, Bitmap.Handle, 0, @rect) then
   begin
     LineLazBytes := GetBytesPerLine(Data.Width, RawImage.Description.BitsPerPixel,
       RawImage.Description.LineEnd);
@@ -1012,7 +1014,7 @@ begin
   Result := StringReplace(GetFileFormat.Extensions.CommaText, ',', ';', [rfReplaceAll]);
 end;
 
-function TImagingGraphicForSave.GetDefaultMimeType: string;
+function TImagingGraphicForSave.GetMimeType: string;
 begin
   Result := 'image/' + FDefaultFileExt;
 end;

@@ -35,7 +35,7 @@ uses
 
 type
 
-  TInvalidConfigVersionExeption = class(Exception);
+  TInvalidConfigException = class(Exception);
 
   { TMapInfo }
 
@@ -202,13 +202,13 @@ begin
   if not ((xmlDoc.DocumentElement.NodeName = 'CEDConfig') and
     TryStrToInt(xmlDoc.DocumentElement.AttribStrings['Version'], version) and
     (version = CONFIGVERSION)) then
-    raise TInvalidConfigVersionExeption.Create(Format('%d <> %d', [version, CONFIGVERSION]));
+    raise TInvalidConfigException.Create(Format('Version mismatch: %d <> %d', [version, CONFIGVERSION]));
 
   FPort := TXmlHelper.ReadInteger(xmlDoc.DocumentElement, 'Port', 2597);
 
   xmlElement := TDOMElement(xmlDoc.DocumentElement.FindNode('Map'));
   if not assigned(xmlElement) then
-    raise TInvalidConfigVersionExeption.Create('Map information not found');
+    raise TInvalidConfigException.Create('Map information not found');
   FMap := TMapInfo.Deserialize(Self, xmlElement);
   
   FTiledata := TXmlHelper.ReadString(xmlDoc.DocumentElement, 'Tiledata', 'tiledata.mul');
@@ -216,7 +216,7 @@ begin
 
   xmlElement := TDOMElement(xmlDoc.DocumentElement.FindNode('Accounts'));
   if not assigned(xmlElement) then
-    raise TInvalidConfigVersionExeption.Create('Account information not found');
+    raise TInvalidConfigException.Create('Account information not found');
   FAccounts := TAccountList.Deserialize(Self, xmlElement);
   
   xmlDoc.Free;

@@ -40,13 +40,15 @@ type
   TfrmAbout = class(TForm)
     btnClose: TButton;
     Label1: TLabel;
-    lblCopyright: TLabel;
     Label3: TLabel;
-    lblVersion: TLabel;
     Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
+    lblCopyright: TLabel;
+    lblVersion: TLabel;
     Panel1: TPanel;
+    Panel2: TPanel;
+    Panel3: TPanel;
     procedure btnCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private

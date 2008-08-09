@@ -25,19 +25,19 @@
     </RunParams>
     <RequiredPackages Count="4">
       <Item1>
-        <PackageName Value="virtualtreeview_package"/>
-        <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
-      </Item1>
-      <Item2>
-        <PackageName Value="lnetvisual"/>
-        <MinVersion Minor="5" Release="3" Valid="True"/>
-      </Item2>
-      <Item3>
-        <PackageName Value="LCL"/>
-      </Item3>
-      <Item4>
         <PackageName Value="LazOpenGLContext"/>
         <MinVersion Valid="True"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="LCL"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="lnetvisual"/>
+        <MinVersion Minor="5" Release="3" Valid="True"/>
+      </Item3>
+      <Item4>
+        <PackageName Value="virtualtreeview_package"/>
+        <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item4>
     </RequiredPackages>
     <Units Count="24">
@@ -50,6 +50,7 @@
         <Filename Value="UfrmMain.pas"/>
         <ComponentName Value="frmMain"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmMain.lrs"/>
         <UnitName Value="UfrmMain"/>
       </Unit1>
@@ -57,6 +58,7 @@
         <Filename Value="UdmNetwork.pas"/>
         <ComponentName Value="dmNetwork"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="DataModule"/>
         <ResourceFilename Value="UdmNetwork.lrs"/>
         <UnitName Value="UdmNetwork"/>
       </Unit2>
@@ -64,6 +66,7 @@
         <Filename Value="UfrmLogin.pas"/>
         <ComponentName Value="frmLogin"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmLogin.lrs"/>
         <UnitName Value="UfrmLogin"/>
       </Unit3>
@@ -142,6 +145,7 @@
         <Filename Value="UfrmAbout.pas"/>
         <ComponentName Value="frmAbout"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmAbout.lrs"/>
         <UnitName Value="UfrmAbout"/>
       </Unit15>
@@ -149,6 +153,7 @@
         <Filename Value="Tools/UfrmHueSettings.pas"/>
         <ComponentName Value="frmHueSettings"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmHueSettings.lrs"/>
         <UnitName Value="UfrmHueSettings"/>
       </Unit16>
@@ -163,6 +168,7 @@
         <Filename Value="UfrmLargeScaleCommand.pas"/>
         <ComponentName Value="frmLargeScaleCommand"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmLargeScaleCommand.lrs"/>
         <UnitName Value="UfrmLargeScaleCommand"/>
       </Unit18>
@@ -177,6 +183,7 @@
         <Filename Value="Tools/UfrmFilter.pas"/>
         <ComponentName Value="frmFilter"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmFilter.lrs"/>
         <UnitName Value="UfrmFilter"/>
       </Unit20>
@@ -208,7 +215,6 @@
       <IncludeFiles Value="../Imaging/;../"/>
       <OtherUnitFiles Value="../;../UOLib/;../MulProvider/;../Imaging/;../Imaging/JpegLib/;../Imaging/ZLib/;Tools/"/>
       <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
-      <LCLWidgetType Value="gtk"/>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/;../;../UOLib/;../MulProvider/;../Imaging/;../Imaging/JpegLib/;../Imaging/ZLib/;Tools/"/>
     </SearchPaths>
     <Parsing>
@@ -219,11 +225,9 @@
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
       <Generate Value="Faster"/>
-      <TargetCPU Value="i386"/>
       <Optimizations>
         <OptimizationLevel Value="3"/>
       </Optimizations>
-      <TargetOS Value="Linux"/>
     </CodeGeneration>
     <Linking>
       <Debugging>

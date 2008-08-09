@@ -462,56 +462,8 @@ end;
 //Intelligent write: replace if possible, otherwise extend
 
 procedure TLandscape.Flush;
-{var
-  blockID, blockType: Integer;
-  worldBlock: TWorldBlock;
-  index: TGenericIndex;
-  i, j, size: Integer;}
 begin
-  {for blockID := 0 to FWidth * FHeight - 1 do
-  begin
-    for blockType := 0 to 1 do
-    begin
-      worldBlock := FPersistentBlocks[blockID][blockType];
-      if Assigned(worldBlock) and worldBlock.Changed then
-      begin
-        if worldBlock is TMapBlock then
-        begin
-          FMap.Position := ((worldBlock.X * FHeight) + worldBlock.Y) * 196;
-          worldBlock.Write(FMap);
-          for i := 0 to 63 do
-            TMapBlock(worldBlock).Cells[i].InitOriginalState;
-          worldBlock.CleanUp;
-        end else if worldBlock is TStaticBlock then
-        begin
-          FStaIdx.Position := ((worldBlock.X * FHeight) + worldBlock.Y) * 12;
-          index := TGenericIndex.Create(FStaIdx);
-          size := worldBlock.GetSize;
-          if (size > index.Size) or (index.Lookup = LongInt($FFFFFFFF)) then
-          begin
-            FStatics.Position := FStatics.Size;
-            index.Lookup := FStatics.Position;
-          end;
-          if size = 0 then
-            index.Lookup := LongInt($FFFFFFFF)
-          else
-          begin
-            index.Size := size;
-            FStatics.Position := index.Lookup;
-            worldBlock.Write(FStatics);
-          end;
-          FStaIdx.Seek(-12, soFromCurrent);
-          index.Write(FStaIdx);
-          index.Free;
-          for i := 0 to 63 do
-            for j := 0 to TSeperatedStaticBlock(worldBlock).Cells[i].Count - 1 do
-              TStaticItem(TSeperatedStaticBlock(worldBlock).Cells[i].Items[j]).InitOriginalState;
-          worldBlock.CleanUp;
-        end;
-      end;
-    end;
-  end;}
-  FBlockCache.Clear;
+  FBlockCache.Clear; //Clear writes modified blocks before removing them from the cache
 end;
 
 procedure TLandscape.SaveBlock(AWorldBlock: TWorldBlock);
