@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, md5, contnrs, math, DOM, UXmlHelper, UInterfaces,
-  UEnums;
+  UEnums, URegions;
   
 type
 
@@ -39,7 +39,7 @@ type
 
   TAccount = class(TObject, ISerializable, IInvalidate)
     constructor Create(AOwner: IInvalidate; AName, APasswordHash: string;
-      AAccessLevel: TAccessLevel);
+      AAccessLevel: TAccessLevel; ARegions: TStringList);
     constructor Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
     procedure Serialize(AElement: TDOMElement);
   protected
@@ -48,6 +48,7 @@ type
     FAccessLevel: TAccessLevel;
     FPasswordHash: string;
     FLastPos: TPoint;
+    FRegions: TStringList;
     procedure SetAccessLevel(const AValue: TAccessLevel);
     procedure SetPasswordHash(const AValue: string);
     procedure SetLastPos(const AValue: TPoint);
@@ -56,6 +57,7 @@ type
     property AccessLevel: TAccessLevel read FAccessLevel write SetAccessLevel;
     property PasswordHash: string read FPasswordHash write SetPasswordHash;
     property LastPos: TPoint read FLastPos write SetLastPos;
+    property Regions: TStringList read FRegions;
     procedure Invalidate;
   end;
   
@@ -82,16 +84,26 @@ uses
 { TAccount }
 
 constructor TAccount.Create(AOwner: IInvalidate; AName, APasswordHash: string;
-  AAccessLevel: TAccessLevel);
+  AAccessLevel: TAccessLevel; ARegions: TStringList);
+var
+  i : Integer;
 begin
   inherited Create;
   FOwner := AOwner;
   FName := AName;
   FPasswordHash := APasswordHash;
   FAccessLevel := AAccessLevel;
+  if ARegions <> nil then
+    FRegions := ARegions
+  else
+    FRegions := TStringList.Create;
 end;
 
 constructor TAccount.Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
+var
+  xmlElement, xmlRegion: TDOMElement;
+  nodelist: TDOMNodeList;
+  i: Integer;
 begin
   inherited Create;
   FOwner := AOwner;
@@ -100,6 +112,23 @@ begin
   FPasswordHash := TXmlHelper.ReadString(AElement, 'PasswordHash', '');
   FLastPos := Point(0, 0);
   TXmlHelper.ReadCoords(AElement, 'LastPos', FLastPos.X, FLastPos.Y);
+  FRegions := TStringList.Create;
+  
+  xmlElement := TDOMElement(AElement.FindNode('Regions'));
+  if xmlElement <> nil then
+  begin
+    nodeList := xmlElement.GetChildNodes;
+    for i := 0 to nodeList.Count - 1 do
+    begin
+      if nodeList.Item[i].NodeName = 'Region' then
+      begin
+        xmlRegion := TDOMElement(nodeList.Item[i]);
+        if assigned(xmlRegion.FirstChild) then
+          FRegions.Add(TDOMText(xmlRegion.FirstChild).Data);
+      end;
+    end;
+    nodeList.Free;
+  end;
 end;
 
 procedure TAccount.SetAccessLevel(const AValue: TAccessLevel);
@@ -127,11 +156,18 @@ begin
 end;
 
 procedure TAccount.Serialize(AElement: TDOMElement);
+var
+  i : Integer;
+  child : TDOMElement;
 begin
   TXmlHelper.WriteString(AElement, 'Name', FName);
   TXmlHelper.WriteString(AElement, 'PasswordHash', FPasswordHash);
   TXmlHelper.WriteInteger(AElement, 'AccessLevel', Integer(FAccessLevel));
   TXmlHelper.WriteCoords(AElement, 'LastPos', FLastPos.X, FLastPos.Y);
+  child := TXmlHelper.AssureElement(AElement, 'Regions');
+  for i := 0 to FRegions.Count -1 do
+    if Config.Regions.Find(FRegions[i]) <> nil then //Validate if the region (still) exists
+      TXmlHelper.WriteString(child, 'Region', FRegions[i]);
 end;
 
 { TAccountList }

@@ -51,6 +51,11 @@ type
 
   TDeleteUserStatus = (duNotFound = 0,
                        duDeleted  = 1);
+
+  TModifyRegionStatus = (mrAdded           = 0,
+                         mrModified        = 1);
+  TDeleteRegionStatus = (drNotFound = 0,
+                         drDeleted  = 1);
                        
 function GetAccessLevelString(AAccessLevel: TAccessLevel): string;
 

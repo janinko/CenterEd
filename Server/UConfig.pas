@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, DOM, XMLRead, XMLWrite, md5, Keyboard, UAccount,
-  UXmlHelper, UInterfaces, UEnums;
+  UXmlHelper, UInterfaces, UEnums, URegions;
 
 type
 
@@ -76,6 +76,7 @@ type
     FMap: TMapInfo;
     FTiledata: string;
     FRadarcol: string;
+    FRegions: TRegionList;
     FAccounts: TAccountList;
     FChanged: Boolean;
     procedure SetPort(const AValue: Integer);
@@ -86,6 +87,7 @@ type
     property Map: TMapInfo read FMap;
     property Tiledata: string read FTiledata write SetTiledata;
     property Radarcol: string read FRadarcol write SetRadarcol;
+    property Regions: TRegionList read FRegions;
     property Accounts: TAccountList read FAccounts;
     procedure Flush;
     procedure Invalidate;
@@ -214,11 +216,17 @@ begin
   FTiledata := TXmlHelper.ReadString(xmlDoc.DocumentElement, 'Tiledata', 'tiledata.mul');
   FRadarcol := TXmlHelper.ReadString(xmlDoc.DocumentElement, 'Radarcol', 'radarcol.mul');
 
+  xmlElement := TDOMElement(xmlDoc.DocumentElement.FindNode('Regions'));
+  if assigned(xmlElement) then
+    FRegions := TRegionList.Deserialize(Self, xmlElement)
+  else
+    Fregions := TRegionList.Create(Self);
+
   xmlElement := TDOMElement(xmlDoc.DocumentElement.FindNode('Accounts'));
   if not assigned(xmlElement) then
     raise TInvalidConfigException.Create('Account information not found');
   FAccounts := TAccountList.Deserialize(Self, xmlElement);
-  
+
   xmlDoc.Free;
   
   FChanged := False;
@@ -233,6 +241,7 @@ begin
   FFilename := AFilename;
   FMap := TMapInfo.Create(Self);
   FAccounts := TAccountList.Create(Self);
+  FRegions := TRegionList.Create(Self);
   
   Writeln('Configuring Network');
   Writeln('===================');
@@ -282,7 +291,7 @@ begin
   Write  ('Password [hidden]: ');
   password := QueryPassword;
   FAccounts.Add(TAccount.Create(FAccounts, stringValue,
-    MD5Print(MD5String(password)), alAdministrator));
+    MD5Print(MD5String(password)), alAdministrator, nil));
   
   FChanged := True;
 end;
@@ -291,6 +300,7 @@ destructor TConfig.Destroy;
 begin
   if Assigned(FMap) then FreeAndNil(FMap);
   if Assigned(FAccounts) then FreeAndNil(FAccounts);
+  if Assigned(FRegions) then FreeAndNil(FRegions);
   inherited Destroy;
 end;
 
@@ -301,6 +311,7 @@ begin
   TXmlHelper.WriteString(AElement, 'Tiledata', FTiledata);
   TXmlHelper.WriteString(AElement, 'Radarcol', FRadarcol);
   FAccounts.Serialize(TXmlHelper.AssureElement(AElement, 'Accounts'));
+  FRegions.Serialize(TXmlHelper.AssureElement(AElement, 'Regions'));
 end;
 
 procedure TConfig.SetPort(const AValue: Integer);

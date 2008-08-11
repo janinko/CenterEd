@@ -28,8 +28,8 @@ unit UPacketHandlers;
 interface
 
 uses
-  SysUtils, dzlib, UConfig, UNetState, UEnhancedMemoryStream, UEnums,
-  ULinkedList;
+  Classes, SysUtils, dzlib, math, UConfig, UNetState, UEnhancedMemoryStream, UEnums,
+  ULinkedList, URegions;
 
 type
   TPacketProcessor = procedure(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
@@ -52,7 +52,8 @@ type
 var
   PacketHandlers: array[0..$FF] of TPacketHandler;
   
-function ValidateAccess(ANetState: TNetState; ALevel: TAccessLevel): Boolean;
+function ValidateAccess(ANetState: TNetState; ALevel: TAccessLevel): Boolean; overload;
+function ValidateAccess(ANetState: TNetState; ALevel: TAccessLevel; AX, AY: Cardinal): Boolean; overload;
 procedure RegisterPacketHandler(AID: Byte; APacketHandler: TPacketHandler);
 
 implementation
@@ -63,6 +64,33 @@ uses
 function ValidateAccess(ANetState: TNetState; ALevel: TAccessLevel): Boolean;
 begin
   Result := (ANetState.Account <> nil) and (ANetState.Account.AccessLevel >= ALevel);
+end;
+
+function ValidateAccess(ANetState: TNetState; ALevel: TAccessLevel; AX, AY: Cardinal): Boolean;
+var
+  i,j: Word;
+  region: TRegion;
+  rect: TRect;
+begin
+  if not ValidateAccess(ANetState, ALevel) then Exit(False);
+  if (ANetState.Account.Regions.Count = 0) or
+    (ANetState.Account.AccessLevel >= alAdministrator) then Exit(True); //no restrictions
+
+  Result := False;
+  for i := 0 to ANetState.Account.Regions.Count - 1 do
+  begin
+    region := Config.Regions.Find(ANetState.Account.Regions[i]);
+    if region <> nil then
+    begin
+      for j := 0 to region.Areas.Count - 1 do
+      begin
+        rect := region.Areas.Rects[j];
+        if InRange(AX, rect.Left, rect.Right) and
+          InRange(AY, rect.Top, rect.Bottom) then
+          Exit(True);
+      end;
+    end;
+  end;
 end;
 
 procedure RegisterPacketHandler(AID: Byte; APacketHandler: TPacketHandler);

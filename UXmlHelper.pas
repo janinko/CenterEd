@@ -37,6 +37,7 @@ type
   { TXmlHelper }
 
   TXmlHelper = class(TObject)
+    class function FindChild(AParent: TDOMElement; AName: string): TDOMElement;
     class function AssureElement(AParent: TDOMElement; AName: string): TDOMElement;
     class procedure WriteString(AParent: TDOMElement; AName, AValue: string);
     class function ReadString(AParent: TDOMElement; AName, ADefault: string): string;
@@ -52,10 +53,30 @@ implementation
 
 { TXmlHelper }
 
-class function TXmlHelper.AssureElement(AParent: TDOMElement; AName: string): TDOMElement;
+class function TXmlHelper.FindChild(AParent: TDOMElement; AName: string): TDOMElement;
+var
+  i: Integer;
+  nodeList: TDOMNodeList;
 begin
-  Result := TDOMElement(AParent.FindNode(AName));
-  if not assigned(Result) then
+  Result := nil;
+  nodeList := AParent.GetChildNodes;
+  i := 0;
+  while (Result = nil) and (i < nodeList.Count) do
+  begin
+    if nodeList.Item[i].NodeName = AName then
+      Result := TDOMElement(nodeList[i]);
+    inc(i);
+  end;
+  nodeList.Free;
+end;
+
+class function TXmlHelper.AssureElement(AParent: TDOMElement; AName: string): TDOMElement;
+var
+  i: Integer;
+  nodeList: TDOMNodeList;
+begin
+  Result := FindChild(AParent, AName);
+  if Result = nil then
   begin
     Result := AParent.OwnerDocument.CreateElement(AName);
     AParent.AppendChild(Result);
@@ -77,7 +98,7 @@ class function TXmlHelper.ReadString(AParent: TDOMElement; AName, ADefault: stri
 var
   element: TDOMElement;
 begin
-  element := TDOMElement(AParent.FindNode(AName));
+  element := FindChild(AParent, AName);
   if assigned(element) and assigned(element.FirstChild) then
     Result := TDOMText(element.FirstChild).Data
   else
@@ -125,7 +146,7 @@ var
   element: TDOMElement;
   tempX, tempY: Integer;
 begin
-  element := TDOMElement(AParent.FindNode(AName));
+  element := FindChild(AParent, AName);
   Result := assigned(element) and TryStrToInt(element.AttribStrings['x'], tempX)
     and TryStrToInt(element.AttribStrings['y'], tempY);
 

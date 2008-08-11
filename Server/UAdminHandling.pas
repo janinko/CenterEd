@@ -30,8 +30,8 @@ unit UAdminHandling;
 interface
 
 uses
-  Classes, SysUtils, UPacket, UPacketHandlers, UConfig, UAccount, UNetState,
-  UEnhancedMemoryStream, UEnums, lNet;
+  Classes, SysUtils, math, UPacket, UPacketHandlers, UConfig, UAccount,
+  UNetState, UEnhancedMemoryStream, UEnums, URegions;
   
 type
 
@@ -52,6 +52,24 @@ type
   TUserListPacket = class(TPacket)
     constructor Create;
   end;
+
+  { TModifyRegionResponsePacket }
+
+  TModifyRegionResponsePacket = class(TPacket)
+    constructor Create(AStatus: TModifyRegionStatus; ARegion: TRegion);
+  end;
+
+  { TDeleteRegionResponsePacket }
+
+  TDeleteRegionResponsePacket = class(TPacket)
+    constructor Create(AStatus: TDeleteRegionStatus; ARegionName: string);
+  end;
+  
+  { TUserRegionsPacket }
+
+  TRegionListPacket = class(TPacket)
+    constructor Create;
+  end;
   
 procedure OnAdminHandlerPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 procedure OnFlushPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
@@ -59,6 +77,10 @@ procedure OnQuitPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 procedure OnModifyUserPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 procedure OnDeleteUserPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 procedure OnListUsersPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
+procedure OnModifyRegionPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
+procedure OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
+procedure OnListRegionsPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
+
 
 var
   AdminPacketHandlers: array[0..$FF] of TPacketHandler;
@@ -68,7 +90,8 @@ implementation
 uses
   md5, UCEDServer, UPackets, UClientHandling;
 
-procedure OnAdminHandlerPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
+procedure OnAdminHandlerPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
 var
   packetHandler: TPacketHandler;
 begin
@@ -96,15 +119,26 @@ var
   username, password: string;
   accessLevel: TAccessLevel;
   netState: TNetState;
+  regions: TStringList;
+  i, regionCount: Integer;
 begin
   username := ABuffer.ReadStringNull;
   password := ABuffer.ReadStringNull;
   accessLevel := TAccessLevel(ABuffer.ReadByte);
+
+  regionCount := ABuffer.ReadByte;
+
   account := Config.Accounts.Find(username);
   if account <> nil then
   begin
     if password <> '' then
       account.PasswordHash := MD5Print(MD5String(password));
+
+    account.Regions.Clear;
+    for i := 0 to regionCount - 1 do
+      account.Regions.Add(ABuffer.ReadStringNull);
+    account.Invalidate;
+
     if account.AccessLevel <> accessLevel then
     begin
       account.AccessLevel := accessLevel;
@@ -114,24 +148,34 @@ begin
         netState := TNetState(CEDServerInstance.TCPServer.Iterator.UserData);
         if (netState <> nil) and (netState.Account = account) then
         begin
-          CEDServerInstance.SendPacket(netState, TAccessLevelChangedPacket.Create(accessLevel));
+          CEDServerInstance.SendPacket(netState,
+            TAccessLevelChangedPacket.Create(accessLevel));
         end;
       end;
     end;
-    CEDServerInstance.SendPacket(ANetState, TModifyUserResponsePacket.Create(muModified, account));
+    CEDServerInstance.SendPacket(ANetState,
+      TModifyUserResponsePacket.Create(muModified, account));
   end else
   begin
-    account := TAccount.Create(Config.Accounts, username,
-      MD5Print(MD5String(password)), accessLevel);
-    if (username = '') or (Pos('=', username) > 0) then
+    if username = '' then
     begin
-      CEDServerInstance.SendPacket(ANetState, TModifyUserResponsePacket.Create(muInvalidUsername, account));
-      account.Free;
+      CEDServerInstance.SendPacket(ANetState,
+        TModifyUserResponsePacket.Create(muInvalidUsername, account));
       Exit;
+    end else
+    begin
+      regions := TStringList.Create;
+      for i := 0 to regionCount - 1 do
+        regions.Add(ABuffer.ReadStringNull);
+
+      account := TAccount.Create(Config.Accounts, username,
+        MD5Print(MD5String(password)), accessLevel, regions);
+
+      Config.Accounts.Add(account);
+      Config.Accounts.Invalidate;
+      CEDServerInstance.SendPacket(ANetState,
+        TModifyUserResponsePacket.Create(muAdded, account));
     end;
-    Config.Accounts.Add(account);
-    Config.Invalidate;
-    CEDServerInstance.SendPacket(ANetState, TModifyUserResponsePacket.Create(muAdded, account));
   end;
 end;
 
@@ -158,25 +202,112 @@ begin
     end;
     Config.Accounts.Remove(account);
     Config.Invalidate;
-    CEDServerInstance.SendPacket(ANetState, TDeleteUserResponsePacket.Create(duDeleted, username));
+    CEDServerInstance.SendPacket(ANetState,
+      TDeleteUserResponsePacket.Create(duDeleted, username));
   end else
-    CEDServerInstance.SendPacket(ANetState, TDeleteUserResponsePacket.Create(duNotFound, username));
+    CEDServerInstance.SendPacket(ANetState,
+      TDeleteUserResponsePacket.Create(duNotFound, username));
 end;
 
-procedure OnListUsersPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
+procedure OnListUsersPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
 begin
-  CEDServerInstance.SendPacket(ANetState, TCompressedPacket.Create(TUserListPacket.Create));
+  CEDServerInstance.SendPacket(ANetState,
+    TCompressedPacket.Create(TUserListPacket.Create));
+end;
+
+procedure OnModifyRegionPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+var
+  regionName: string;
+  region: TRegion;
+  status: TModifyRegionStatus;
+  i, areaCount: Integer;
+  x1, y1, x2, y2: Word;
+begin
+  regionName := ABuffer.ReadStringNull;
+
+  region := Config.Regions.Find(regionName);
+  if region = nil then
+  begin
+    region := TRegion.Create(Config.Regions, regionName);
+    Config.Regions.Add(region);
+    status := mrAdded;
+  end else
+  begin
+    region.Areas.Clear;
+    status := mrModified;
+  end;
+
+  areaCount := ABuffer.ReadByte;
+  for i := 0 to areaCount - 1 do
+  begin
+    x1 := ABuffer.ReadWord;
+    y1 := ABuffer.ReadWord;
+    x2 := ABuffer.ReadWord;
+    y2 := ABuffer.ReadWord;
+    region.Areas.Add(Min(x1, x2), Min(y1, y2),
+                     Max(x1, x2), Max(y1, y2));
+  end;
+
+  CEDServerInstance.SendPacket(ANetState,
+    TModifyRegionResponsePacket.Create(status, region));
+end;
+
+procedure OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+var
+  regionName: string;
+  regions: TRegionList;
+  i: Integer;
+  status: TDeleteRegionStatus;
+begin
+  regionName := ABuffer.ReadStringNull;
+  i := 0;
+  status := drNotFound;
+  regions := Config.Regions;
+  while (i < regions.Count) and (status = drNotFound) do
+  begin
+    if TRegion(regions[i]).Name = regionName then
+    begin
+      regions.Delete(i);
+      status := drDeleted;
+    end else
+      inc(i);
+  end;
+
+  CEDServerInstance.SendPacket(ANetState,
+    TDeleteRegionResponsePacket.Create(status, regionName));
+end;
+
+procedure OnListRegionsPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+begin
+  CEDServerInstance.SendPacket(ANetState,
+    TCompressedPacket.Create(TRegionListPacket.Create));
 end;
 
 { TModifyUserResponsePacket }
 
-constructor TModifyUserResponsePacket.Create(AStatus: TModifyUserStatus; AAccount: TAccount);
+constructor TModifyUserResponsePacket.Create(AStatus: TModifyUserStatus;
+  AAccount: TAccount);
+var
+  i: Integer;
 begin
   inherited Create($03, 0);
   FStream.WriteByte($05);
   FStream.WriteByte(Byte(AStatus));
   FStream.WriteStringNull(AAccount.Name);
-  FStream.WriteByte(Byte(AAccount.AccessLevel));
+  if (AStatus = muAdded) or (AStatus = muModified) then
+  begin
+    FStream.WriteByte(Byte(AAccount.AccessLevel));
+    FStream.WriteByte(AAccount.Regions.Count);
+    if AAccount.Regions.Count > 0 then begin
+      for i := 0 to AAccount.Regions.Count - 1 do
+        FStream.WriteStringNull(AAccount.Regions[i]);
+    end;
+  end;
+  {TODO : check for client side modifications!}
 end;
 
 { TDeleteUserResponsePacket }
@@ -193,7 +324,7 @@ end;
 
 constructor TUserListPacket.Create;
 var
-  i: Integer;
+  i, j: Integer;
   account: TAccount;
 begin
   inherited Create($03, 0);
@@ -204,6 +335,75 @@ begin
     account := TAccount(Config.Accounts.Items[i]);
     FStream.WriteStringNull(account.Name);
     FStream.WriteByte(Byte(account.AccessLevel));
+    FStream.WriteByte(account.Regions.Count);
+    for j := 0 to account.Regions.Count - 1 do
+      FStream.WriteStringNull(account.Regions[j]);
+  end;
+  FStream.WriteWord(Config.Regions.Count);
+  for i := 0 to Config.Regions.Count - 1 do
+    FStream.WriteStringNull(TRegion(Config.Regions.Items[i]).Name);
+end;
+
+{ TModifyRegionResponsePacket }
+
+constructor TModifyRegionResponsePacket.Create(AStatus: TModifyRegionStatus;
+  ARegion: TRegion);
+var
+  i, areaCount: Integer;
+begin
+  inherited Create($03, 0);
+  FStream.WriteByte($08);
+  FStream.WriteByte(Byte(AStatus));
+  FStream.WriteStringNull(ARegion.Name);
+  if (AStatus = mrAdded) or (AStatus = mrModified) then
+  begin
+    areaCount := ARegion.Areas.Count;
+    FStream.WriteByte(areaCount);
+    for i := 0 to areaCount - 1 do
+      with ARegion.Areas.Rects[i] do
+      begin
+        FStream.WriteWord(Left);
+        FStream.WriteWord(Top);
+        FStream.WriteWord(Right);
+        FStream.WriteWord(Bottom);
+      end;
+  end;
+end;
+
+{ TDeleteRegionResponsePacket }
+
+constructor TDeleteRegionResponsePacket.Create(AStatus: TDeleteRegionStatus;
+  ARegionName: string);
+begin
+  inherited Create($03, 0);
+  FStream.WriteByte($09);
+  FStream.WriteByte(Byte(AStatus));
+  FStream.WriteStringNull(ARegionName);
+end;
+
+{ TRegionListPacket }
+
+constructor TRegionListPacket.Create;
+var
+  i, j: Integer;
+  region: TRegion;
+begin
+  inherited Create($03, 0);
+  FStream.WriteByte($08);
+  FStream.WriteByte(Config.Regions.Count);
+  for i := 0 to Config.Regions.Count - 1 do
+  begin
+    region := TRegion(Config.Regions.Items[i]);
+    FStream.WriteStringNull(region.Name);
+    FStream.WriteByte(region.Areas.Count);
+    for j := 0 to region.Areas.Count - 1 do
+      with region.Areas.Rects[j] do
+      begin
+        FStream.WriteWord(Left);
+        FStream.WriteWord(Top);
+        FStream.WriteWord(Right);
+        FStream.WriteWord(Bottom);
+      end;
   end;
 end;
 
@@ -219,6 +419,9 @@ initialization
   AdminPacketHandlers[$05] := TPacketHandler.Create(0, @OnModifyUserPacket);
   AdminPacketHandlers[$06] := TPacketHandler.Create(0, @OnDeleteUserPacket);
   AdminPacketHandlers[$07] := TPacketHandler.Create(0, @OnListUsersPacket);
+  AdminPacketHandlers[$08] := TPacketHandler.Create(0, @OnModifyRegionPacket);
+  AdminPacketHandlers[$09] := TPacketHandler.Create(0, @OnDeleteRegionPacket);
+  AdminPacketHandlers[$0A] := TPacketHandler.Create(0, @OnListRegionsPacket);
 finalization
   for i := 0 to $FF do
     if AdminPacketHandlers[i] <> nil then

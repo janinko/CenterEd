@@ -34,7 +34,7 @@ uses
   SysUtils, Classes,
   lnetbase,
   UConfig, UCEDServer, URadarMap, ULargeScaleOperations, UPackets,
-  UAdminHandling, UClientHandling, ULandscape, UPacketHandlers;
+  UAdminHandling, UClientHandling, ULandscape, UPacketHandlers, URegions;
   
 {$I version.inc}
   

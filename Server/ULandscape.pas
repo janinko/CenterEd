@@ -539,9 +539,11 @@ var
   item: PLinkedItem;
   packet: TDrawMapPacket;
 begin
-  if not ValidateAccess(ANetState, alNormal) then Exit;
   x := ABuffer.ReadWord;
   y := ABuffer.ReadWord;
+
+  if not ValidateAccess(ANetState, alNormal, x, y) then Exit;
+
   cell := GetMapCell(x, y);
   if cell <> nil then
   begin
@@ -571,9 +573,11 @@ var
   item: PLinkedItem;
   packet: TInsertStaticPacket;
 begin
-  if not ValidateAccess(ANetState, alNormal) then Exit;
   x := ABuffer.ReadWord;
   y := ABuffer.ReadWord;
+
+  if not ValidateAccess(ANetState, alNormal, x, y) then Exit;
+
   block := GetStaticBlock(x div 8, y div 8);
   if block <> nil then
   begin
@@ -611,8 +615,10 @@ var
   item: PLinkedItem;
   packet: TDeleteStaticPacket;
 begin
-  if not ValidateAccess(ANetState, alNormal) then Exit;
   ABuffer.Read(staticInfo, SizeOf(TStaticInfo));
+
+  if not ValidateAccess(ANetState, alNormal, staticInfo.X, staticInfo.Y) then Exit;
+
   block := GetStaticBlock(staticInfo.X div 8, staticInfo.Y div 8);
   if block <> nil then
   begin
@@ -656,8 +662,10 @@ var
   item: PLinkedItem;
   packet: TElevateStaticPacket;
 begin
-  if not ValidateAccess(ANetState, alNormal) then Exit;
   ABuffer.Read(staticInfo, SizeOf(TStaticInfo));
+
+  if not ValidateAccess(ANetState, alNormal, staticInfo.X, staticInfo.Y) then Exit;
+
   block := GetStaticBlock(staticInfo.X div 8, staticInfo.Y div 8);
   if block <> nil then
   begin
@@ -705,11 +713,14 @@ var
   deletePacket: TDeleteStaticPacket;
   movePacket: TMoveStaticPacket;
 begin
-  if not ValidateAccess(ANetState, alNormal) then Exit;
   staticItem := nil;
   ABuffer.Read(staticInfo, SizeOf(TStaticInfo));
   newX := EnsureRange(ABuffer.ReadWord, 0, FCellWidth - 1);
   newY := EnsureRange(ABuffer.ReadWord, 0, FCellHeight - 1);
+
+  //Check, if both, source and target, are within a valid region
+  if not ValidateAccess(ANetState, alNormal, staticInfo.X, staticInfo.Y) then Exit;
+  if not ValidateAccess(ANetState, alNormal, newX, newY) then Exit;
   
   if (staticInfo.X = newX) and (staticInfo.Y = newY) then Exit;
   
@@ -798,8 +809,10 @@ var
   item: PLinkedItem;
   packet: THueStaticPacket;
 begin
-  if not ValidateAccess(ANetState, alNormal) then Exit;
   ABuffer.Read(staticInfo, SizeOf(TStaticInfo));
+
+  if not ValidateAccess(ANetState, alNormal, staticInfo.X, staticInfo.Y) then Exit;
+
   block := GetStaticBlock(staticInfo.X div 8, staticInfo.Y div 8);
   if block <> nil then
   begin
