@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UfrmAccountControl;
 
@@ -167,7 +167,8 @@ begin
       lblPasswordHint.Visible := True;
       SetAccessLevel(accountInfo^.AccessLevel);
       if ShowModal = mrOK then
-        dmNetwork.Send(TModifyUserPacket.Create(edUsername.Text, edPassword.Text, GetAccessLevel));
+        dmNetwork.Send(TModifyUserPacket.Create(edUsername.Text,
+          edPassword.Text, GetAccessLevel));
     end;
   end;
 end;
@@ -195,7 +196,8 @@ begin
     lblPasswordHint.Visible := False;
     cbAccessLevel.ItemIndex := 2;
     if ShowModal = mrOK then
-      dmNetwork.Send(TModifyUserPacket.Create(edUsername.Text, edPassword.Text, GetAccessLevel));
+      dmNetwork.Send(TModifyUserPacket.Create(edUsername.Text, edPassword.Text,
+        GetAccessLevel));
   end;
 end;
 
@@ -208,7 +210,8 @@ begin
   if selected <> nil then
   begin
     accountInfo := vstAccounts.GetNodeData(selected);
-    if MessageDlg('Confirmation', Format('Do you really want to delete "%s"?', [accountInfo^.Username]), mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+    if MessageDlg('Confirmation', Format('Do you really want to delete "%s"?',
+      [accountInfo^.Username]), mtConfirmation, [mbYes, mbNo], 0) = mrYes then
       dmNetwork.Send(TDeleteUserPacket.Create(accountInfo^.Username));
   end;
 end;
@@ -272,7 +275,8 @@ begin
         accountInfo := vstAccounts.GetNodeData(node);
         accountInfo^.Username := username;
         accountInfo^.AccessLevel := TAccessLevel(ABuffer.ReadByte);
-        Messagedlg('Success', Format('The user "%s" has been added.', [username]), mtInformation, [mbOK], 0);
+        Messagedlg('Success', Format('The user "%s" has been added.', [username]),
+          mtInformation, [mbOK], 0);
       end;
     muModified:
       begin
@@ -281,11 +285,13 @@ begin
         begin
           accountInfo := vstAccounts.GetNodeData(node);
           accountInfo^.AccessLevel := TAccessLevel(ABuffer.ReadByte);
-          Messagedlg('Success', Format('The user "%s" has been modified.', [username]), mtInformation, [mbOK], 0);
+          Messagedlg('Success', Format('The user "%s" has been modified.', [username]),
+            mtInformation, [mbOK], 0);
         end;
       end;
     muInvalidUsername:
-      MessageDlg('Error', Format('The username "%s" is not valid.', [username]), mtError, [mbOK], 0);
+      MessageDlg('Error', Format('The username "%s" is not valid.', [username]),
+        mtError, [mbOK], 0);
   end;
 end;
 
@@ -304,11 +310,14 @@ begin
         if node <> nil then
         begin
           vstAccounts.DeleteNode(node);
-          Messagedlg('Success', Format('The user "%s" has been deleted.', [username]), mtInformation, [mbOK], 0);
+          Messagedlg('Success', Format('The user "%s" has been deleted.', [username]),
+            mtInformation, [mbOK], 0);
         end;
       end;
     duNotFound:
-      MessageDlg('Error', Format('The user "%s" could not be deleted. Maybe your list is out of date or you tried to delete yourself.', [username]), mtError, [mbOK], 0);
+      MessageDlg('Error', Format('The user "%s" could not be deleted. Maybe ' +
+        'your list is out of date or you tried to delete yourself.', [username]),
+         mtError, [mbOK], 0);
   end;
 end;
 

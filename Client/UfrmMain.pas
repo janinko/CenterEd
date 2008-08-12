@@ -79,6 +79,7 @@ type
     lblY: TLabel;
     lbClients: TListBox;
     MainMenu1: TMainMenu;
+    mnuRegionControl: TMenuItem;
     mnuVirtualLayer: TMenuItem;
     mnuGrabTileID: TMenuItem;
     mnuGrabHue: TMenuItem;
@@ -201,6 +202,7 @@ type
     procedure mnuGrabHueClick(Sender: TObject);
     procedure mnuGrabTileIDClick(Sender: TObject);
     procedure mnuLargeScaleCommandsClick(Sender: TObject);
+    procedure mnuRegionControlClick(Sender: TObject);
     procedure mnuShutdownClick(Sender: TObject);
     procedure oglGameWindowDblClick(Sender: TObject);
     procedure oglGameWindowMouseDown(Sender: TObject; Button: TMouseButton;
@@ -314,7 +316,8 @@ uses
   UfrmAccountControl, UGraphicHelper, ImagingComponents, UfrmDrawSettings,
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
-  UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo;
+  UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
+  UfrmRegionControl;
 
 type
   TGLArrayf4 = array[0..3] of GLfloat;
@@ -390,6 +393,11 @@ end;
 procedure TfrmMain.mnuLargeScaleCommandsClick(Sender: TObject);
 begin
   frmLargeScaleCommand.Show;
+end;
+
+procedure TfrmMain.mnuRegionControlClick(Sender: TObject);
+begin
+  frmRegionControl.Show;
 end;
 
 procedure TfrmMain.mnuShutdownClick(Sender: TObject);
@@ -541,6 +549,8 @@ begin
                 map := FLandscape.MapCell[tileX, tileY];
                 if frmDrawSettings.cbForceAltitude.Checked then
                   map.Altitude := frmDrawSettings.seForceAltitude.Value;
+                if frmDrawSettings.cbRandomHeight.Checked then
+                  Inc(map.Altitude, Random(frmDrawSettings.seRandomHeight.Value));
                 dmNetwork.Send(TDrawMapPacket.Create(map.X, map.Y, map.Z, tileInfo^.ID));
               end else
               begin

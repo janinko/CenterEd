@@ -78,131 +78,138 @@
         <UnitName Value="UfrmInitialize"/>
       </Unit4>
       <Unit5>
-        <Filename Value="UOpenGLUI.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="UOpenGLUI"/>
-      </Unit5>
-      <Unit6>
         <Filename Value="UfrmAccountControl.pas"/>
         <ComponentName Value="frmAccountControl"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmAccountControl.lrs"/>
         <UnitName Value="UfrmAccountControl"/>
-      </Unit6>
-      <Unit7>
+      </Unit5>
+      <Unit6>
         <Filename Value="UfrmEditAccount.pas"/>
         <ComponentName Value="frmEditAccount"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmEditAccount.lrs"/>
         <UnitName Value="UfrmEditAccount"/>
-      </Unit7>
-      <Unit8>
+      </Unit6>
+      <Unit7>
         <Filename Value="Tools/UfrmDrawSettings.pas"/>
         <ComponentName Value="frmDrawSettings"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmDrawSettings.lrs"/>
         <UnitName Value="UfrmDrawSettings"/>
-      </Unit8>
-      <Unit9>
+      </Unit7>
+      <Unit8>
         <Filename Value="Tools/UfrmBoundaries.pas"/>
         <ComponentName Value="frmBoundaries"/>
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="Tools/UfrmBoundaries.lrs"/>
         <UnitName Value="UfrmBoundaries"/>
-      </Unit9>
-      <Unit10>
+      </Unit8>
+      <Unit9>
         <Filename Value="Tools/UfrmElevateSettings.pas"/>
         <ComponentName Value="frmElevateSettings"/>
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="Tools/UfrmElevateSettings.lrs"/>
         <UnitName Value="UfrmElevateSettings"/>
-      </Unit10>
-      <Unit11>
+      </Unit9>
+      <Unit10>
         <Filename Value="UOverlayUI.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UOverlayUI"/>
-      </Unit11>
-      <Unit12>
+      </Unit10>
+      <Unit11>
         <Filename Value="UResourceManager.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UResourceManager"/>
-      </Unit12>
-      <Unit13>
+      </Unit11>
+      <Unit12>
         <Filename Value="Tools/UfrmConfirmation.pas"/>
         <ComponentName Value="frmConfirmation"/>
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="Tools/UfrmConfirmation.lrs"/>
         <UnitName Value="UfrmConfirmation"/>
-      </Unit13>
-      <Unit14>
+      </Unit12>
+      <Unit13>
         <Filename Value="Tools/UfrmMoveSettings.pas"/>
         <ComponentName Value="frmMoveSettings"/>
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="Tools/UfrmMoveSettings.lrs"/>
         <UnitName Value="UfrmMoveSettings"/>
-      </Unit14>
-      <Unit15>
+      </Unit13>
+      <Unit14>
         <Filename Value="UfrmAbout.pas"/>
         <ComponentName Value="frmAbout"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmAbout.lrs"/>
         <UnitName Value="UfrmAbout"/>
-      </Unit15>
-      <Unit16>
+      </Unit14>
+      <Unit15>
         <Filename Value="Tools/UfrmHueSettings.pas"/>
         <ComponentName Value="frmHueSettings"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmHueSettings.lrs"/>
         <UnitName Value="UfrmHueSettings"/>
-      </Unit16>
-      <Unit17>
+      </Unit15>
+      <Unit16>
         <Filename Value="UfrmRadar.pas"/>
         <ComponentName Value="frmRadarMap"/>
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="UfrmRadar.lrs"/>
         <UnitName Value="UfrmRadar"/>
-      </Unit17>
-      <Unit18>
+      </Unit16>
+      <Unit17>
         <Filename Value="UfrmLargeScaleCommand.pas"/>
         <ComponentName Value="frmLargeScaleCommand"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmLargeScaleCommand.lrs"/>
         <UnitName Value="UfrmLargeScaleCommand"/>
-      </Unit18>
-      <Unit19>
+      </Unit17>
+      <Unit18>
         <Filename Value="Tools/UfrmVirtualLayer.pas"/>
         <ComponentName Value="frmVirtualLayer"/>
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="Tools/UfrmVirtualLayer.lrs"/>
         <UnitName Value="UfrmVirtualLayer"/>
-      </Unit19>
-      <Unit20>
+      </Unit18>
+      <Unit19>
         <Filename Value="Tools/UfrmFilter.pas"/>
         <ComponentName Value="frmFilter"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmFilter.lrs"/>
         <UnitName Value="UfrmFilter"/>
-      </Unit20>
-      <Unit21>
+      </Unit19>
+      <Unit20>
         <Filename Value="UfrmTileInfo.pas"/>
         <ComponentName Value="frmTileInfo"/>
         <IsPartOfProject Value="True"/>
         <ResourceFilename Value="UfrmTileInfo.lrs"/>
         <UnitName Value="UfrmTileInfo"/>
-      </Unit21>
-      <Unit22>
+      </Unit20>
+      <Unit21>
         <Filename Value="UGUIPlatformUtils.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UGUIPlatformUtils"/>
-      </Unit22>
-      <Unit23>
+      </Unit21>
+      <Unit22>
         <Filename Value="UPlatformTypes.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UPlatformTypes"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="UfrmRegionControl.pas"/>
+        <ComponentName Value="frmRegionControl"/>
+        <HasResources Value="True"/>
+        <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <ResourceFilename Value="UfrmRegionControl.lrs"/>
+        <UnitName Value="UfrmRegionControl"/>
       </Unit23>
     </Units>
   </ProjectOptions>

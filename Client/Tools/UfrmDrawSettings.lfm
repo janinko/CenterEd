@@ -1,25 +1,29 @@
 object frmDrawSettings: TfrmDrawSettings
-  Left = 290
-  Height = 138
-  Top = 171
-  Width = 186
-  HorzScrollBar.Page = 185
-  VertScrollBar.Page = 137
+  Left = 268
+  Height = 181
+  Top = 165
+  Width = 243
   ActiveControl = rbTileList
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Draw settings'
-  ClientHeight = 138
-  ClientWidth = 186
+  ClientHeight = 181
+  ClientWidth = 243
   FormStyle = fsStayOnTop
   OnClose = FormClose
   OnDeactivate = FormDeactivate
   OnShow = FormShow
+  LCLVersion = '0.9.25'
   object rbTileList: TRadioButton
     Left = 8
-    Height = 15
+    Height = 21
     Top = 8
-    Width = 113
+    Width = 227
+    Align = alTop
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 4
     Caption = 'Use tile from the list'
     Checked = True
     State = cbChecked
@@ -28,47 +32,93 @@ object frmDrawSettings: TfrmDrawSettings
   end
   object rbRandom: TRadioButton
     Left = 8
-    Height = 15
-    Top = 32
-    Width = 164
+    Height = 21
+    Top = 33
+    Width = 227
+    Align = alTop
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 4
+    BorderSpacing.Right = 8
     Caption = 'Use tiles from the random pool'
     TabOrder = 1
     UseOnChange = True
   end
-  object cbForceAltitude: TCheckBox
-    Left = 8
-    Height = 15
-    Top = 60
-    Width = 89
-    Caption = 'Force altitude:'
-    TabOrder = 2
-  end
-  object seForceAltitude: TSpinEdit
-    Left = 104
-    Height = 23
-    Top = 56
-    Width = 50
-    MaxValue = 127
-    MinValue = -128
-    OnChange = seForceAltitudeChange
-    TabOrder = 3
-  end
   object gbHue: TGroupBox
+    Left = 8
     Height = 49
-    Top = 88
-    Width = 185
+    Top = 124
+    Width = 227
+    Align = alTop
+    BorderSpacing.Around = 8
     Caption = 'Hue (Statics only)'
-    ClientHeight = 31
-    ClientWidth = 181
-    TabOrder = 4
+    ClientHeight = 30
+    ClientWidth = 221
+    TabOrder = 2
     object pbHue: TPaintBox
       Cursor = crHandPoint
-      Left = 6
-      Height = 16
-      Top = 1
-      Width = 169
+      Left = 4
+      Height = 26
+      Width = 213
+      Align = alClient
+      BorderSpacing.Left = 4
+      BorderSpacing.Right = 4
+      BorderSpacing.Bottom = 4
       OnClick = pbHueClick
       OnPaint = pbHuePaint
+    end
+  end
+  object Panel1: TPanel
+    Left = 8
+    Height = 23
+    Top = 62
+    Width = 227
+    Align = alTop
+    BorderSpacing.Around = 8
+    BevelOuter = bvNone
+    ClientHeight = 23
+    ClientWidth = 227
+    TabOrder = 3
+    object seForceAltitude: TSpinEdit
+      Left = 177
+      Height = 23
+      Width = 50
+      Align = alRight
+      MaxValue = 127
+      MinValue = -128
+      TabOrder = 0
+    end
+    object cbForceAltitude: TCheckBox
+      Height = 23
+      Width = 177
+      Align = alClient
+      Caption = 'Force altitude:'
+      TabOrder = 1
+    end
+  end
+  object Panel2: TPanel
+    Left = 8
+    Height = 23
+    Top = 93
+    Width = 227
+    Align = alTop
+    BorderSpacing.Around = 8
+    BevelOuter = bvNone
+    ClientHeight = 23
+    ClientWidth = 227
+    TabOrder = 4
+    object seRandomHeight: TSpinEdit
+      Left = 177
+      Height = 23
+      Width = 50
+      Align = alRight
+      TabOrder = 0
+    end
+    object cbRandomHeight: TCheckBox
+      Height = 23
+      Width = 177
+      Align = alClient
+      Caption = 'Add Random Altitude'
+      TabOrder = 1
     end
   end
 end

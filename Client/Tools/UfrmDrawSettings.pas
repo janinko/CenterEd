@@ -39,17 +39,22 @@ type
 
   TfrmDrawSettings = class(TForm)
     cbForceAltitude: TCheckBox;
+    cbRandomHeight: TCheckBox;
     gbHue: TGroupBox;
+    Panel1: TPanel;
+    Panel2: TPanel;
     pbHue: TPaintBox;
     rbRandom: TRadioButton;
     rbTileList: TRadioButton;
     seForceAltitude: TSpinEdit;
+    seRandomHeight: TSpinEdit;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormDeactivate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure pbHueClick(Sender: TObject);
     procedure pbHuePaint(Sender: TObject);
     procedure seForceAltitudeChange(Sender: TObject);
+    procedure seRandomHeightChange(Sender: TObject);
   protected
     procedure MouseLeave(var msg: TLMessage); message CM_MouseLeave;
   public
@@ -113,6 +118,11 @@ end;
 procedure TfrmDrawSettings.seForceAltitudeChange(Sender: TObject);
 begin
   cbForceAltitude.Checked := True;
+end;
+
+procedure TfrmDrawSettings.seRandomHeightChange(Sender: TObject);
+begin
+  cbRandomHeight.Checked := True;
 end;
 
 procedure TfrmDrawSettings.MouseLeave(var msg: TLMessage);
