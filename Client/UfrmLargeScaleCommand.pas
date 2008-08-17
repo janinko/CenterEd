@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UfrmLargeScaleCommand;
 
@@ -163,7 +163,7 @@ type
       AStream: TEnhancedMemoryStream);
   public
     { public declarations }
-  end; 
+  end;
 
 var
   frmLargeScaleCommand: TfrmLargeScaleCommand;
@@ -197,25 +197,25 @@ begin
   AddNode(3, 'Delete statics');
   AddNode(4, 'Insert statics');
   vstActions.Selected[vstActions.GetFirst] := True;
-  
+
   vstArea.NodeDataSize := SizeOf(TRect);
-  
+
   pbArea.Width := frmRadarMap.Radar.Width;
   pbArea.Height := frmRadarMap.Radar.Height;
   seX1.MaxValue := ResMan.Landscape.CellWidth;
   seX2.MaxValue := ResMan.Landscape.CellWidth;
   seY1.MaxValue := ResMan.Landscape.CellHeight;
   seY2.MaxValue := ResMan.Landscape.CellHeight;
-  
+
   vdtTerrainTiles.NodeDataSize := SizeOf(TTileInfo);
   vdtInsertStaticsTiles.NodeDataSize := SizeOf(TTileInfo);
   vdtDeleteStaticsTiles.NodeDataSize := SizeOf(TTileInfo);
-  
+
   seCMOffsetX.MinValue := -ResMan.Landscape.CellWidth;
   seCMOffsetX.MaxValue := ResMan.Landscape.CellWidth;
   seCMOffsetY.MinValue := -ResMan.Landscape.CellHeight;
   seCMOffsetY.MaxValue := ResMan.Landscape.CellHeight;
-  
+
   frmRadarMap.Dependencies.Add(pbArea);
 end;
 
@@ -385,7 +385,7 @@ begin
     stream.WriteBoolean(cbCMEraseTarget.Checked);
   end else
     stream.WriteBoolean(False);
-  
+
   //Modify altitude
   node := FindNode(1);
   if vstActions.CheckState[node] = csCheckedNormal then
@@ -403,7 +403,7 @@ begin
     end;
   end else
     stream.WriteBoolean(False);
-  
+
   //Draw terrain
   node := FindNode(2);
   if vstActions.CheckState[node] = csCheckedNormal then
@@ -412,7 +412,7 @@ begin
     SerializeTiles(vdtTerrainTiles, stream);
   end else
     stream.WriteBoolean(False);
-    
+
   //Delete statics
   node := FindNode(3);
   if vstActions.CheckState[node] = csCheckedNormal then
@@ -423,7 +423,7 @@ begin
     stream.WriteShortInt(Max(seDeleteStaticsZ1.Value, seDeleteStaticsZ2.Value));
   end else
     stream.WriteBoolean(False);
-    
+
   //Insert statics
   node := FindNode(4);
   if vstActions.CheckState[node] = csCheckedNormal then
@@ -441,7 +441,7 @@ begin
       stream.WriteByte(2);
   end else
     stream.WriteBoolean(False);
-  
+
   dmNetwork.Send(TCompressedPacket.Create(packet));
   Close;
 end;

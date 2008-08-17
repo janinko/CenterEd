@@ -32,7 +32,7 @@ interface
 uses
   Classes, SysUtils, md5, contnrs, math, DOM, UXmlHelper, UInterfaces,
   UEnums, URegions;
-  
+
 type
 
   { TAccount }
@@ -41,6 +41,7 @@ type
     constructor Create(AOwner: IInvalidate; AName, APasswordHash: string;
       AAccessLevel: TAccessLevel; ARegions: TStringList);
     constructor Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
+    destructor Destroy; override;
     procedure Serialize(AElement: TDOMElement);
   protected
     FOwner: IInvalidate;
@@ -60,7 +61,7 @@ type
     property Regions: TStringList read FRegions;
     procedure Invalidate;
   end;
-  
+
   { TAccountList }
 
   TAccountList = class(TObjectList, ISerializable, IInvalidate)
@@ -113,7 +114,7 @@ begin
   FLastPos := Point(0, 0);
   TXmlHelper.ReadCoords(AElement, 'LastPos', FLastPos.X, FLastPos.Y);
   FRegions := TStringList.Create;
-  
+
   xmlElement := TDOMElement(AElement.FindNode('Regions'));
   if xmlElement <> nil then
   begin
@@ -129,6 +130,12 @@ begin
     end;
     nodeList.Free;
   end;
+end;
+
+destructor TAccount.Destroy;
+begin
+  if FRegions <> nil then FreeAndNil(FRegions);
+  inherited Destroy;
 end;
 
 procedure TAccount.SetAccessLevel(const AValue: TAccessLevel);
@@ -157,8 +164,8 @@ end;
 
 procedure TAccount.Serialize(AElement: TDOMElement);
 var
-  i : Integer;
-  child : TDOMElement;
+  i: Integer;
+  child: TDOMElement;
 begin
   TXmlHelper.WriteString(AElement, 'Name', FName);
   TXmlHelper.WriteString(AElement, 'PasswordHash', FPasswordHash);

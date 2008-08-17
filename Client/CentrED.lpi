@@ -40,7 +40,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="24">
+    <Units Count="26">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -164,6 +164,7 @@
         <Filename Value="UfrmRadar.pas"/>
         <ComponentName Value="frmRadarMap"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmRadar.lrs"/>
         <UnitName Value="UfrmRadar"/>
       </Unit16>
@@ -218,6 +219,16 @@
         <ResourceFilename Value="UfrmRegionControl.lrs"/>
         <UnitName Value="UfrmRegionControl"/>
       </Unit23>
+      <Unit24>
+        <Filename Value="UPacketHandlers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UPacketHandlers"/>
+      </Unit24>
+      <Unit25>
+        <Filename Value="UPackets.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UPackets"/>
+      </Unit25>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

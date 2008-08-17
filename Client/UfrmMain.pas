@@ -252,6 +252,8 @@ type
       const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType);
     procedure vstLocationsDblClick(Sender: TObject);
+    procedure vstLocationsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode
+      );
     procedure vstLocationsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: WideString);
     procedure vstLocationsLoadNode(Sender: TBaseVirtualTree;
@@ -1404,6 +1406,15 @@ begin
     locationInfo := vstLocations.GetNodeData(node);
     SetPos(locationInfo^.X, locationInfo^.Y);
   end;
+end;
+
+procedure TfrmMain.vstLocationsFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  locationInfo: PLocationInfo;
+begin
+  locationInfo := Sender.GetNodeData(Node);
+  locationInfo^.Name := '';
 end;
 
 procedure TfrmMain.vstLocationsGetText(Sender: TBaseVirtualTree;

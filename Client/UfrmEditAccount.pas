@@ -31,22 +31,28 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  UEnums;
+  UEnums, ComCtrls, ExtCtrls, CheckLst;
 
 type
 
   { TfrmEditAccount }
 
   TfrmEditAccount = class(TForm)
-    btnOK: TButton;
     btnCancel: TButton;
+    btnOK: TButton;
     cbAccessLevel: TComboBox;
-    edUsername: TEdit;
+    CheckListBox1: TCheckListBox;
     edPassword: TEdit;
-    lblUsername: TLabel;
-    lblPassword: TLabel;
+    edUsername: TEdit;
+    Label1: TLabel;
     lblAccessLevel: TLabel;
+    lblPassword: TLabel;
     lblPasswordHint: TLabel;
+    lblUsername: TLabel;
+    PageControl1: TPageControl;
+    Panel1: TPanel;
+    tsGeneral: TTabSheet;
+    tsRegions: TTabSheet;
   public
     function GetAccessLevel: TAccessLevel;
     procedure SetAccessLevel(AAccessLevel: TAccessLevel);

@@ -38,7 +38,8 @@ uses
   UfrmElevateSettings, UOverlayUI, UResourceManager, UfrmConfirmation,
   UfrmMoveSettings, UfrmAbout, UfrmHueSettings, UfrmRadar,
   UfrmLargeScaleCommand, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
-  UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl;
+  UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
+  UPacketHandlers;
   
 {$IFDEF Windows}
   {$R *.res}

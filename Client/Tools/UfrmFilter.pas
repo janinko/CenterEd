@@ -61,6 +61,7 @@ type
     procedure btnClearClick(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure mnuUncheckHuesClick(Sender: TObject);
     procedure mnuCheckHuesClick(Sender: TObject);
@@ -306,6 +307,11 @@ begin
   vdtHues.EndUpdate;
   FCheckedHues := TBits.Create(ResMan.Hue.Count + 1);
   //FCheckedHues.Bits[0] := True;
+end;
+
+procedure TfrmFilter.FormDestroy(Sender: TObject);
+begin
+  if FCheckedHues <> nil then FreeAndNil(FCheckedHues);
 end;
 
 procedure TfrmFilter.btnDeleteClick(Sender: TObject);

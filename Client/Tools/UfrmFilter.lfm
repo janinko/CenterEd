@@ -11,6 +11,7 @@ object frmFilter: TfrmFilter
   ClientWidth = 236
   Font.Height = -11
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnShow = FormShow
   LCLVersion = '0.9.25'
   object rgFilterType: TRadioGroup
@@ -56,7 +57,7 @@ object frmFilter: TfrmFilter
     object Label1: TLabel
       Left = 4
       Height = 28
-      Top = 29
+      Top = 28
       Width = 216
       Align = alTop
       BorderSpacing.Around = 4
@@ -69,15 +70,14 @@ object frmFilter: TfrmFilter
       Tag = 1
       Cursor = 63
       Left = 4
-      Height = 151
-      Top = 61
+      Height = 152
+      Top = 60
       Width = 216
       Align = alClient
       BorderSpacing.Around = 4
       BorderStyle = bsSingle
       DefaultNodeHeight = 44
       DragType = dtVCL
-      Header.Font.Height = -11
       Header.Options = [hoColumnResize, hoDrag, hoVisible]
       Header.ParentFont = True
       Header.Style = hsFlatButtons
@@ -214,7 +214,7 @@ object frmFilter: TfrmFilter
     end
     object cbTileFilter: TCheckBox
       Left = 4
-      Height = 21
+      Height = 20
       Top = 4
       Width = 216
       Align = alTop
@@ -240,7 +240,7 @@ object frmFilter: TfrmFilter
     TabOrder = 2
     object cbHueFilter: TCheckBox
       Left = 4
-      Height = 21
+      Height = 20
       Top = 4
       Width = 216
       Align = alTop
@@ -252,14 +252,13 @@ object frmFilter: TfrmFilter
     object vdtHues: TVirtualDrawTree
       Cursor = 63
       Left = 4
-      Height = 118
-      Top = 29
+      Height = 119
+      Top = 28
       Width = 216
       Align = alClient
       BorderSpacing.Around = 4
       BorderStyle = bsSingle
       Header.AutoSizeIndex = 2
-      Header.Font.Height = -11
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
       Header.ParentFont = True
       Header.Style = hsFlatButtons

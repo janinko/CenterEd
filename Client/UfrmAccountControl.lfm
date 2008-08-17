@@ -77,7 +77,6 @@ object frmAccountControl: TfrmAccountControl
     Width = 369
     Align = alClient
     Header.AutoSizeIndex = 1
-    Header.Font.Height = -11
     Header.Options = [hoColumnResize, hoDrag, hoVisible]
     Header.ParentFont = True
     Header.Style = hsPlates
@@ -89,6 +88,7 @@ object frmAccountControl: TfrmAccountControl
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
     TreeOptions.SelectionOptions = [toFullRowSelect]
     OnDblClick = vstAccountsDblClick
+    OnFreeNode = vstAccountsFreeNode
     OnGetText = vstAccountsGetText
     OnGetImageIndex = vstAccountsGetImageIndex
     Columns = <    

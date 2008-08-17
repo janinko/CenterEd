@@ -16,8 +16,8 @@ object frmLogin: TfrmLogin
   ShowInTaskBar = stAlways
   LCLVersion = '0.9.25'
   object lblCopyright: TLabel
-    Height = 23
-    Top = 242
+    Height = 24
+    Top = 241
     Width = 489
     Align = alBottom
     Alignment = taCenter
@@ -427,7 +427,6 @@ object frmLogin: TfrmLogin
       NumGlyphs = 1
       ParentColor = False
       ParentFont = True
-      ReadOnly = True
       TabOrder = 0
     end
   end

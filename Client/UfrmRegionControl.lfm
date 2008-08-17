@@ -1,11 +1,11 @@
 object frmRegionControl: TfrmRegionControl
-  Left = 367
-  Height = 390
-  Top = 268
+  Left = 247
+  Height = 392
+  Top = 139
   Width = 620
-  ActiveControl = vstGroups
+  ActiveControl = vstRegions
   Caption = 'Region Control'
-  ClientHeight = 390
+  ClientHeight = 392
   ClientWidth = 620
   Font.Height = -11
   OnCreate = FormCreate
@@ -14,11 +14,11 @@ object frmRegionControl: TfrmRegionControl
   Position = poOwnerFormCenter
   LCLVersion = '0.9.25'
   object Panel1: TPanel
-    Height = 360
+    Height = 359
     Width = 160
-    Anchors = [akTop, akLeft, akBottom]
+    Align = alLeft
     Caption = 'Panel1'
-    ClientHeight = 360
+    ClientHeight = 359
     ClientWidth = 160
     ParentFont = True
     TabOrder = 0
@@ -37,7 +37,7 @@ object frmRegionControl: TfrmRegionControl
     object pnlAreaControls: TPanel
       Left = 5
       Height = 82
-      Top = 273
+      Top = 272
       Width = 150
       Align = alBottom
       BorderSpacing.Around = 4
@@ -72,6 +72,7 @@ object frmRegionControl: TfrmRegionControl
         Hint = 'Add area'
         Width = 23
         Color = clBtnFace
+        Enabled = False
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000000000000000
@@ -119,6 +120,7 @@ object frmRegionControl: TfrmRegionControl
         Hint = 'Delete area'
         Width = 23
         Color = clBtnFace
+        Enabled = False
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000000000000000
@@ -166,6 +168,7 @@ object frmRegionControl: TfrmRegionControl
         Hint = 'Delete all areas'
         Width = 23
         Color = clBtnFace
+        Enabled = False
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000000000000000
@@ -250,7 +253,7 @@ object frmRegionControl: TfrmRegionControl
     end
     object vstArea: TVirtualStringTree
       Left = 5
-      Height = 119
+      Height = 118
       Top = 150
       Width = 150
       Align = alClient
@@ -268,46 +271,46 @@ object frmRegionControl: TfrmRegionControl
       OnGetText = vstAreaGetText
       Columns = <>
     end
-    object vstGroups: TVirtualStringTree
+    object vstRegions: TVirtualStringTree
       Left = 1
       Height = 136
       Top = 1
       Width = 158
       Align = alTop
-      Header.Font.Height = -11
       Header.Options = [hoAutoResize, hoVisible]
       Header.ParentFont = True
       Header.Style = hsFlatButtons
       ParentFont = True
-      PopupMenu = pmGroup
+      PopupMenu = pmRegions
       TabOrder = 2
       TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
       TreeOptions.SelectionOptions = [toFullRowSelect]
-      OnChange = vstGroupsChange
-      OnEditing = vstGroupsOnEditing
-      OnGetText = vstGroupsGetText
-      OnNewText = vstGroupsNewText
+      OnChange = vstRegionsChange
+      OnEditing = vstRegionsOnEditing
+      OnFreeNode = vstRegionsFreeNode
+      OnGetText = vstRegionsGetText
+      OnNewText = vstRegionsNewText
       Columns = <      
         item
           Width = 158
-          WideText = 'Groups'
+          WideText = 'Regions'
         end>
     end
   end
   object Panel2: TPanel
     Left = 160
-    Height = 361
+    Height = 359
     Width = 460
-    Anchors = [akTop, akLeft, akRight, akBottom]
+    Align = alClient
     Caption = 'Panel2'
-    ClientHeight = 361
+    ClientHeight = 359
     ClientWidth = 460
     ParentFont = True
     TabOrder = 1
     object sbArea: TScrollBox
       Left = 1
-      Height = 359
+      Height = 357
       Top = 1
       Width = 458
       Align = alClient
@@ -323,20 +326,24 @@ object frmRegionControl: TfrmRegionControl
     end
   end
   object Panel3: TPanel
-    Height = 30
-    Top = 360
-    Width = 620
-    Anchors = [akLeft, akRight, akBottom]
-    ClientHeight = 30
-    ClientWidth = 620
+    Left = 4
+    Height = 25
+    Top = 363
+    Width = 612
+    Align = alBottom
+    BorderSpacing.Around = 4
+    BevelOuter = bvNone
+    ClientHeight = 25
+    ClientWidth = 612
     ParentFont = True
     TabOrder = 2
     object btnExit: TButton
-      Left = 551
-      Height = 22
-      Top = 4
+      Left = 548
+      Height = 25
       Width = 64
+      Align = alRight
       Anchors = [akTop, akRight]
+      BorderSpacing.Left = 4
       Caption = 'Exit'
       OnClick = btnCloseClick
       ParentFont = True
@@ -344,10 +351,11 @@ object frmRegionControl: TfrmRegionControl
     end
     object btnSave: TButton
       Left = 480
-      Height = 22
-      Top = 4
+      Height = 25
       Width = 64
+      Align = alRight
       Anchors = [akTop, akRight]
+      BorderSpacing.Right = 4
       Caption = 'Save'
       Enabled = False
       OnClick = btnSaveClick
@@ -355,14 +363,14 @@ object frmRegionControl: TfrmRegionControl
       TabOrder = 1
     end
   end
-  object pmGroup: TPopupMenu
+  object pmRegions: TPopupMenu
     left = 48
     top = 43
-    object mnuAddGroup: TMenuItem
+    object mnuAddRegion: TMenuItem
       Caption = 'Add'
       OnClick = acAddGroup
     end
-    object mnuRemoveGroup: TMenuItem
+    object mnuRemoveRegion: TMenuItem
       Caption = 'Remove'
       OnClick = accRemoveGroup
     end

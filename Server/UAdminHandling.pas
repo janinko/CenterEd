@@ -32,7 +32,7 @@ interface
 uses
   Classes, SysUtils, math, UPacket, UPacketHandlers, UConfig, UAccount,
   UNetState, UEnhancedMemoryStream, UEnums, URegions;
-  
+
 type
 
   { TModifyUserResponsePacket }
@@ -40,13 +40,13 @@ type
   TModifyUserResponsePacket = class(TPacket)
     constructor Create(AStatus: TModifyUserStatus; AAccount: TAccount);
   end;
-  
+
   { TDeleteUserResponsePacket }
 
   TDeleteUserResponsePacket = class(TPacket)
     constructor Create(AStatus: TDeleteUserStatus; AUsername: string);
   end;
-  
+
   { TUserListPacket }
 
   TUserListPacket = class(TPacket)
@@ -64,13 +64,13 @@ type
   TDeleteRegionResponsePacket = class(TPacket)
     constructor Create(AStatus: TDeleteRegionStatus; ARegionName: string);
   end;
-  
+
   { TUserRegionsPacket }
 
   TRegionListPacket = class(TPacket)
     constructor Create;
   end;
-  
+
 procedure OnAdminHandlerPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 procedure OnFlushPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 procedure OnQuitPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
@@ -302,10 +302,8 @@ begin
   begin
     FStream.WriteByte(Byte(AAccount.AccessLevel));
     FStream.WriteByte(AAccount.Regions.Count);
-    if AAccount.Regions.Count > 0 then begin
-      for i := 0 to AAccount.Regions.Count - 1 do
-        FStream.WriteStringNull(AAccount.Regions[i]);
-    end;
+    for i := 0 to AAccount.Regions.Count - 1 do
+      FStream.WriteStringNull(AAccount.Regions[i]);
   end;
   {TODO : check for client side modifications!}
 end;
@@ -339,9 +337,6 @@ begin
     for j := 0 to account.Regions.Count - 1 do
       FStream.WriteStringNull(account.Regions[j]);
   end;
-  FStream.WriteWord(Config.Regions.Count);
-  for i := 0 to Config.Regions.Count - 1 do
-    FStream.WriteStringNull(TRegion(Config.Regions.Items[i]).Name);
 end;
 
 { TModifyRegionResponsePacket }
@@ -389,7 +384,7 @@ var
   region: TRegion;
 begin
   inherited Create($03, 0);
-  FStream.WriteByte($08);
+  FStream.WriteByte($0A);
   FStream.WriteByte(Config.Regions.Count);
   for i := 0 to Config.Regions.Count - 1 do
   begin

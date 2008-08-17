@@ -56,6 +56,7 @@ type
     procedure tbDeleteUserClick(Sender: TObject);
     procedure tbRefreshClick(Sender: TObject);
     procedure vstAccountsDblClick(Sender: TObject);
+    procedure vstAccountsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstAccountsGetImageIndex(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
@@ -83,6 +84,7 @@ type
   TAccountInfo = record
     Username: string;
     AccessLevel: TAccessLevel;
+    Regions: TStringList;
   end;
   
   { TModifyUserPacket }
@@ -226,6 +228,16 @@ begin
   tbEditUserClick(Sender);
 end;
 
+procedure TfrmAccountControl.vstAccountsFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  accountInfo: PAccountInfo;
+begin
+  accountInfo := vstAccounts.GetNodeData(Node);
+  accountInfo^.Username := '';
+  if accountInfo^.Regions <> nil then FreeAndNil(accountInfo^.Regions);
+end;
+
 procedure TfrmAccountControl.vstAccountsGetImageIndex(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
   var Ghosted: Boolean; var ImageIndex: Integer);
@@ -265,6 +277,7 @@ var
   modifyStatus: TModifyUserStatus;
   username: string;
   accountInfo: PAccountInfo;
+  i, regions: Integer;
 begin
   modifyStatus := TModifyUserStatus(ABuffer.ReadByte);
   username := ABuffer.ReadStringNull;
@@ -275,6 +288,11 @@ begin
         accountInfo := vstAccounts.GetNodeData(node);
         accountInfo^.Username := username;
         accountInfo^.AccessLevel := TAccessLevel(ABuffer.ReadByte);
+        accountInfo^.Regions := TStringList.Create;
+        regions := ABuffer.ReadByte;
+        for i := 0 to regions - 1 do
+          accountInfo^.Regions.Add(ABuffer.ReadStringNull);
+
         Messagedlg('Success', Format('The user "%s" has been added.', [username]),
           mtInformation, [mbOK], 0);
       end;
@@ -285,6 +303,11 @@ begin
         begin
           accountInfo := vstAccounts.GetNodeData(node);
           accountInfo^.AccessLevel := TAccessLevel(ABuffer.ReadByte);
+          accountInfo^.Regions.Clear;
+          regions := ABuffer.ReadByte;
+          for i := 0 to regions - 1 do
+            accountInfo^.Regions.Add(ABuffer.ReadStringNull);
+
           Messagedlg('Success', Format('The user "%s" has been modified.', [username]),
             mtInformation, [mbOK], 0);
         end;
@@ -325,7 +348,7 @@ procedure TfrmAccountControl.OnListUsersPacket(ABuffer: TEnhancedMemoryStream);
 var
   node: PVirtualNode;
   accountInfo: PAccountInfo;
-  i, count: Word;
+  i, j, count, regions: Word;
 begin
   vstAccounts.BeginUpdate;
   vstAccounts.Clear;
@@ -336,6 +359,10 @@ begin
     accountInfo := vstAccounts.GetNodeData(node);
     accountInfo^.Username := ABuffer.ReadStringNull;
     accountInfo^.AccessLevel := TAccessLevel(ABuffer.ReadByte);
+    accountInfo^.Regions := TStringList.Create;
+    regions := ABuffer.ReadByte;
+    for j := 0 to regions - 1 do
+      accountInfo^.Regions.Add(ABuffer.ReadStringNull);
   end;
   vstAccounts.EndUpdate;
 end;
