@@ -3,25 +3,26 @@ object frmLogin: TfrmLogin
   Height = 265
   Top = 171
   Width = 489
-  HorzScrollBar.Page = 488
-  VertScrollBar.Page = 264
   ActiveControl = edHost
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'UO CentrED'
   ClientHeight = 265
   ClientWidth = 489
+  Font.Height = -11
   OnClose = FormClose
   OnCreate = FormCreate
   Position = poScreenCenter
   ShowInTaskBar = stAlways
+  LCLVersion = '0.9.25'
   object lblCopyright: TLabel
-    Height = 19
-    Top = 246
+    Height = 23
+    Top = 242
     Width = 489
     Align = alBottom
     Alignment = taCenter
     ParentColor = False
+    ParentFont = True
   end
   object gbConnection: TGroupBox
     Left = 8
@@ -29,32 +30,36 @@ object frmLogin: TfrmLogin
     Top = 8
     Width = 321
     Caption = 'Connection'
-    ClientHeight = 128
-    ClientWidth = 321
+    ClientHeight = 111
+    ClientWidth = 317
+    ParentFont = True
     TabOrder = 0
     object lblHost: TLabel
       Left = 30
-      Height = 14
+      Height = 13
       Top = 9
-      Width = 34
+      Width = 31
       Caption = 'Host:'
       ParentColor = False
+      ParentFont = True
     end
     object lblUsername: TLabel
       Left = 30
-      Height = 14
+      Height = 13
       Top = 43
-      Width = 69
+      Width = 64
       Caption = 'Username:'
       ParentColor = False
+      ParentFont = True
     end
     object lblPassword: TLabel
       Left = 30
-      Height = 14
+      Height = 13
       Top = 77
-      Width = 65
+      Width = 61
       Caption = 'Password:'
       ParentColor = False
+      ParentFont = True
     end
     object imgHost: TImage
       Left = 6
@@ -146,7 +151,6 @@ object frmLogin: TfrmLogin
         233023312332233323342335517451745174222C0A2251745174517451745174
         51745174517451745174517451745174517451745174227D3B0A
       }
-      Transparent = False
     end
     object imgUsername: TImage
       Left = 6
@@ -238,7 +242,6 @@ object frmLogin: TfrmLogin
         233123322333233423355174517451745174222C0A2251745174517451745174
         51745174517451745174517451745174517451745174227D3B0A
       }
-      Transparent = False
     end
     object imgPassword: TImage
       Left = 6
@@ -320,13 +323,13 @@ object frmLogin: TfrmLogin
         5174222C0A2251742349234A236E234B51745174517451745174517451745174
         517451745174227D3B0A
       }
-      Transparent = False
     end
     object edHost: TEdit
       Left = 101
       Height = 23
       Top = 5
       Width = 137
+      ParentFont = True
       TabOrder = 0
       Text = 'localhost'
     end
@@ -335,6 +338,7 @@ object frmLogin: TfrmLogin
       Height = 23
       Top = 39
       Width = 201
+      ParentFont = True
       TabOrder = 2
     end
     object edPassword: TEdit
@@ -343,6 +347,7 @@ object frmLogin: TfrmLogin
       Top = 73
       Width = 201
       EchoMode = emPassword
+      ParentFont = True
       PasswordChar = '*'
       TabOrder = 3
     end
@@ -353,6 +358,7 @@ object frmLogin: TfrmLogin
       Width = 56
       MaxValue = 65565
       MinValue = 1024
+      ParentFont = True
       TabOrder = 1
       Value = 2597
     end
@@ -362,8 +368,9 @@ object frmLogin: TfrmLogin
     Height = 96
     Top = 8
     Width = 145
-    ClientHeight = 96
-    ClientWidth = 145
+    ClientHeight = 92
+    ClientWidth = 141
+    ParentFont = True
     TabOrder = 2
     object btnOK: TButton
       Left = 6
@@ -374,6 +381,7 @@ object frmLogin: TfrmLogin
       Caption = '&OK'
       Default = True
       OnClick = btnOKClick
+      ParentFont = True
       TabOrder = 0
     end
     object btnCancel: TButton
@@ -385,6 +393,7 @@ object frmLogin: TfrmLogin
       Caption = '&Cancel'
       ModalResult = 2
       OnClick = btnCancelClick
+      ParentFont = True
       TabOrder = 1
     end
   end
@@ -394,8 +403,9 @@ object frmLogin: TfrmLogin
     Top = 144
     Width = 321
     Caption = 'Data files'
-    ClientHeight = 97
-    ClientWidth = 321
+    ClientHeight = 80
+    ClientWidth = 317
+    ParentFont = True
     TabOrder = 1
     object lblData: TLabel
       Left = 7
@@ -405,6 +415,7 @@ object frmLogin: TfrmLogin
       AutoSize = False
       Caption = 'Select the directory containing art.mul, artidx.mul, hues.mul, tiledata.mul, texmaps.mul and texidx.mul.'
       ParentColor = False
+      ParentFont = True
       WordWrap = True
     end
     object edData: TDirectoryEdit
@@ -415,6 +426,7 @@ object frmLogin: TfrmLogin
       ButtonWidth = 23
       NumGlyphs = 1
       ParentColor = False
+      ParentFont = True
       ReadOnly = True
       TabOrder = 0
     end
@@ -425,8 +437,9 @@ object frmLogin: TfrmLogin
     Top = 112
     Width = 145
     Caption = 'Profiles'
-    ClientHeight = 81
-    ClientWidth = 145
+    ClientHeight = 64
+    ClientWidth = 141
+    ParentFont = True
     TabOrder = 3
     object btnSaveProfile: TSpeedButton
       Left = 86

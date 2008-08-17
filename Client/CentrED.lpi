@@ -74,6 +74,7 @@
         <Filename Value="UfrmInitialize.pas"/>
         <ComponentName Value="frmInitialize"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmInitialize.lrs"/>
         <UnitName Value="UfrmInitialize"/>
       </Unit4>
@@ -105,6 +106,7 @@
         <Filename Value="Tools/UfrmBoundaries.pas"/>
         <ComponentName Value="frmBoundaries"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmBoundaries.lrs"/>
         <UnitName Value="UfrmBoundaries"/>
       </Unit8>
@@ -112,6 +114,7 @@
         <Filename Value="Tools/UfrmElevateSettings.pas"/>
         <ComponentName Value="frmElevateSettings"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmElevateSettings.lrs"/>
         <UnitName Value="UfrmElevateSettings"/>
       </Unit9>
@@ -129,6 +132,7 @@
         <Filename Value="Tools/UfrmConfirmation.pas"/>
         <ComponentName Value="frmConfirmation"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmConfirmation.lrs"/>
         <UnitName Value="UfrmConfirmation"/>
       </Unit12>
@@ -136,6 +140,7 @@
         <Filename Value="Tools/UfrmMoveSettings.pas"/>
         <ComponentName Value="frmMoveSettings"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmMoveSettings.lrs"/>
         <UnitName Value="UfrmMoveSettings"/>
       </Unit13>
@@ -174,6 +179,7 @@
         <Filename Value="Tools/UfrmVirtualLayer.pas"/>
         <ComponentName Value="frmVirtualLayer"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="Tools/UfrmVirtualLayer.lrs"/>
         <UnitName Value="UfrmVirtualLayer"/>
       </Unit18>
@@ -189,6 +195,7 @@
         <Filename Value="UfrmTileInfo.pas"/>
         <ComponentName Value="frmTileInfo"/>
         <IsPartOfProject Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <ResourceFilename Value="UfrmTileInfo.lrs"/>
         <UnitName Value="UfrmTileInfo"/>
       </Unit20>

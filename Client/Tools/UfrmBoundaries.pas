@@ -31,17 +31,19 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LMessages,
-  LCLIntf, StdCtrls, ComCtrls, Spin;
+  LCLIntf, StdCtrls, ComCtrls, Spin, ExtCtrls;
 
 type
 
   { TfrmBoundaries }
 
   TfrmBoundaries = class(TForm)
-    lblMinZ: TLabel;
     lblMaxZ: TLabel;
-    seMinZ: TSpinEdit;
+    lblMinZ: TLabel;
+    Panel1: TPanel;
+    Panel2: TPanel;
     seMaxZ: TSpinEdit;
+    seMinZ: TSpinEdit;
     tbMinZ: TTrackBar;
     tbMaxZ: TTrackBar;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);

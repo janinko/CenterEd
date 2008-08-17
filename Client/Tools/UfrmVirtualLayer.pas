@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LCLIntf,
-  LMessages, StdCtrls, Spin, ComCtrls;
+  LMessages, StdCtrls, Spin, ComCtrls, ExtCtrls;
 
 type
 
@@ -39,6 +39,7 @@ type
 
   TfrmVirtualLayer = class(TForm)
     cbShowLayer: TCheckBox;
+    Panel1: TPanel;
     seZ: TSpinEdit;
     tbZ: TTrackBar;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);

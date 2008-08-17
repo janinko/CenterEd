@@ -1,14 +1,15 @@
 object frmFilter: TfrmFilter
   Left = 290
-  Height = 491
+  Height = 492
   Top = 171
   Width = 236
   ActiveControl = rgFilterType.RadioButton0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
   Caption = 'Filter'
-  ClientHeight = 491
+  ClientHeight = 492
   ClientWidth = 236
+  Font.Height = -11
   OnCreate = FormCreate
   OnShow = FormShow
   LCLVersion = '0.9.25'
@@ -29,51 +30,58 @@ object frmFilter: TfrmFilter
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 2
-    ClientHeight = 21
-    ClientWidth = 222
+    ClientHeight = 23
+    ClientWidth = 224
     Columns = 2
     ItemIndex = 0
     Items.Strings = (
       'Exclusive'
       'Inclusive'
     )
+    ParentFont = True
     TabOrder = 0
   end
   object GroupBox1: TGroupBox
     Left = 4
-    Height = 258
+    Height = 259
     Top = 48
     Width = 228
     Align = alClient
     BorderSpacing.Around = 4
     Caption = 'Tile filter'
-    ClientHeight = 239
-    ClientWidth = 222
+    ClientHeight = 242
+    ClientWidth = 224
+    ParentFont = True
     TabOrder = 1
     object Label1: TLabel
       Left = 4
-      Height = 25
+      Height = 28
       Top = 29
-      Width = 214
+      Width = 216
       Align = alTop
       BorderSpacing.Around = 4
       Caption = 'Drag and Drop static tiles from the tile list on this list to add them to the filter.'
       ParentColor = False
+      ParentFont = True
       WordWrap = True
     end
     object vdtFilter: TVirtualDrawTree
       Tag = 1
+      Cursor = 63
       Left = 4
       Height = 151
-      Top = 58
-      Width = 214
+      Top = 61
+      Width = 216
       Align = alClient
       BorderSpacing.Around = 4
       BorderStyle = bsSingle
       DefaultNodeHeight = 44
       DragType = dtVCL
+      Header.Font.Height = -11
       Header.Options = [hoColumnResize, hoDrag, hoVisible]
+      Header.ParentFont = True
       Header.Style = hsFlatButtons
+      ParentFont = True
       TabOrder = 0
       TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
       TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
@@ -98,13 +106,14 @@ object frmFilter: TfrmFilter
     object pnlControls: TPanel
       Left = 4
       Height = 22
-      Top = 213
-      Width = 214
+      Top = 216
+      Width = 216
       Align = alBottom
       BorderSpacing.Around = 4
       BevelOuter = bvNone
       ClientHeight = 22
-      ClientWidth = 214
+      ClientWidth = 216
+      ParentFont = True
       TabOrder = 1
       object btnDelete: TSpeedButton
         Left = 84
@@ -151,6 +160,7 @@ object frmFilter: TfrmFilter
         NumGlyphs = 0
         OnClick = btnDeleteClick
         ShowHint = True
+        ParentFont = True
         ParentShowHint = False
       end
       object btnClear: TSpeedButton
@@ -198,6 +208,7 @@ object frmFilter: TfrmFilter
         NumGlyphs = 0
         OnClick = btnClearClick
         ShowHint = True
+        ParentFont = True
         ParentShowHint = False
       end
     end
@@ -205,11 +216,12 @@ object frmFilter: TfrmFilter
       Left = 4
       Height = 21
       Top = 4
-      Width = 214
+      Width = 216
       Align = alTop
       BorderSpacing.Around = 4
       Caption = 'Filter active'
       Checked = True
+      ParentFont = True
       State = cbChecked
       TabOrder = 2
     end
@@ -217,35 +229,41 @@ object frmFilter: TfrmFilter
   object GroupBox2: TGroupBox
     Left = 4
     Height = 168
-    Top = 319
+    Top = 320
     Width = 228
     Align = alBottom
     BorderSpacing.Around = 4
     Caption = 'Hue filter'
-    ClientHeight = 149
-    ClientWidth = 222
+    ClientHeight = 151
+    ClientWidth = 224
+    ParentFont = True
     TabOrder = 2
     object cbHueFilter: TCheckBox
       Left = 4
       Height = 21
       Top = 4
-      Width = 214
+      Width = 216
       Align = alTop
       BorderSpacing.Around = 4
       Caption = 'Filter active'
+      ParentFont = True
       TabOrder = 0
     end
     object vdtHues: TVirtualDrawTree
+      Cursor = 63
       Left = 4
-      Height = 116
+      Height = 118
       Top = 29
-      Width = 214
+      Width = 216
       Align = alClient
       BorderSpacing.Around = 4
       BorderStyle = bsSingle
       Header.AutoSizeIndex = 2
+      Header.Font.Height = -11
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
+      Header.ParentFont = True
       Header.Style = hsFlatButtons
+      ParentFont = True
       PopupMenu = pmHues
       TabOrder = 1
       TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
@@ -264,7 +282,7 @@ object frmFilter: TfrmFilter
         end      
         item
           Position = 2
-          Width = 156
+          Width = 158
           WideText = 'Name'
         end>
     end
@@ -272,7 +290,7 @@ object frmFilter: TfrmFilter
   object Splitter1: TSplitter
     Cursor = crVSplit
     Height = 5
-    Top = 310
+    Top = 311
     Width = 236
     Align = alBottom
     ResizeAnchor = akBottom

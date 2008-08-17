@@ -3,13 +3,13 @@ object frmConfirmation: TfrmConfirmation
   Height = 43
   Top = 171
   Width = 108
-  HorzScrollBar.Page = 107
-  VertScrollBar.Page = 42
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Apply?'
   ClientHeight = 43
   ClientWidth = 108
+  Font.Height = -11
+  LCLVersion = '0.9.25'
   object btnYes: TButton
     Left = 8
     Height = 25
@@ -19,6 +19,7 @@ object frmConfirmation: TfrmConfirmation
     Caption = 'Yes'
     Default = True
     ModalResult = 6
+    ParentFont = True
     TabOrder = 0
   end
   object btnNo: TButton
@@ -30,6 +31,7 @@ object frmConfirmation: TfrmConfirmation
     Cancel = True
     Caption = 'No'
     ModalResult = 7
+    ParentFont = True
     TabOrder = 1
   end
 end

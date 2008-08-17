@@ -9,6 +9,7 @@ object frmDrawSettings: TfrmDrawSettings
   Caption = 'Draw settings'
   ClientHeight = 181
   ClientWidth = 243
+  Font.Height = -11
   FormStyle = fsStayOnTop
   OnClose = FormClose
   OnDeactivate = FormDeactivate
@@ -26,6 +27,7 @@ object frmDrawSettings: TfrmDrawSettings
     BorderSpacing.Bottom = 4
     Caption = 'Use tile from the list'
     Checked = True
+    ParentFont = True
     State = cbChecked
     TabOrder = 0
     UseOnChange = True
@@ -40,6 +42,7 @@ object frmDrawSettings: TfrmDrawSettings
     BorderSpacing.Top = 4
     BorderSpacing.Right = 8
     Caption = 'Use tiles from the random pool'
+    ParentFont = True
     TabOrder = 1
     UseOnChange = True
   end
@@ -51,14 +54,15 @@ object frmDrawSettings: TfrmDrawSettings
     Align = alTop
     BorderSpacing.Around = 8
     Caption = 'Hue (Statics only)'
-    ClientHeight = 30
-    ClientWidth = 221
+    ClientHeight = 32
+    ClientWidth = 223
+    ParentFont = True
     TabOrder = 2
     object pbHue: TPaintBox
       Cursor = crHandPoint
       Left = 4
-      Height = 26
-      Width = 213
+      Height = 28
+      Width = 215
       Align = alClient
       BorderSpacing.Left = 4
       BorderSpacing.Right = 4
@@ -77,6 +81,7 @@ object frmDrawSettings: TfrmDrawSettings
     BevelOuter = bvNone
     ClientHeight = 23
     ClientWidth = 227
+    ParentFont = True
     TabOrder = 3
     object seForceAltitude: TSpinEdit
       Left = 177
@@ -85,6 +90,7 @@ object frmDrawSettings: TfrmDrawSettings
       Align = alRight
       MaxValue = 127
       MinValue = -128
+      ParentFont = True
       TabOrder = 0
     end
     object cbForceAltitude: TCheckBox
@@ -92,6 +98,7 @@ object frmDrawSettings: TfrmDrawSettings
       Width = 177
       Align = alClient
       Caption = 'Force altitude:'
+      ParentFont = True
       TabOrder = 1
     end
   end
@@ -105,12 +112,14 @@ object frmDrawSettings: TfrmDrawSettings
     BevelOuter = bvNone
     ClientHeight = 23
     ClientWidth = 227
+    ParentFont = True
     TabOrder = 4
     object seRandomHeight: TSpinEdit
       Left = 177
       Height = 23
       Width = 50
       Align = alRight
+      ParentFont = True
       TabOrder = 0
     end
     object cbRandomHeight: TCheckBox
@@ -118,6 +127,7 @@ object frmDrawSettings: TfrmDrawSettings
       Width = 177
       Align = alClient
       Caption = 'Add Random Altitude'
+      ParentFont = True
       TabOrder = 1
     end
   end

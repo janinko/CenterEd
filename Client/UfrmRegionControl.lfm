@@ -3,9 +3,11 @@ object frmRegionControl: TfrmRegionControl
   Height = 390
   Top = 268
   Width = 620
+  ActiveControl = vstGroups
   Caption = 'Region Control'
   ClientHeight = 390
   ClientWidth = 620
+  Font.Height = -11
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
@@ -18,10 +20,11 @@ object frmRegionControl: TfrmRegionControl
     Caption = 'Panel1'
     ClientHeight = 360
     ClientWidth = 160
+    ParentFont = True
     TabOrder = 0
     object Label1: TLabel
       Left = 5
-      Height = 14
+      Height = 13
       Top = 137
       Width = 150
       Align = alTop
@@ -29,6 +32,7 @@ object frmRegionControl: TfrmRegionControl
       BorderSpacing.Right = 4
       Caption = 'Area:'
       ParentColor = False
+      ParentFont = True
     end
     object pnlAreaControls: TPanel
       Left = 5
@@ -40,24 +44,27 @@ object frmRegionControl: TfrmRegionControl
       BevelOuter = bvNone
       ClientHeight = 82
       ClientWidth = 150
+      ParentFont = True
       TabOrder = 0
       object lblX: TLabel
         Left = 4
-        Height = 14
+        Height = 13
         Top = 32
-        Width = 7
+        Width = 8
         Caption = 'X'
         Enabled = False
         ParentColor = False
+        ParentFont = True
       end
       object lblY: TLabel
         Left = 4
-        Height = 14
+        Height = 13
         Top = 60
-        Width = 7
+        Width = 8
         Caption = 'Y'
         Enabled = False
         ParentColor = False
+        ParentFont = True
       end
       object btnAddArea: TSpeedButton
         Left = 30
@@ -207,6 +214,7 @@ object frmRegionControl: TfrmRegionControl
         Width = 50
         Enabled = False
         OnChange = seX1Change
+        ParentFont = True
         TabOrder = 0
       end
       object seX2: TSpinEdit
@@ -216,6 +224,7 @@ object frmRegionControl: TfrmRegionControl
         Width = 50
         Enabled = False
         OnChange = seX1Change
+        ParentFont = True
         TabOrder = 1
       end
       object seY1: TSpinEdit
@@ -225,6 +234,7 @@ object frmRegionControl: TfrmRegionControl
         Width = 50
         Enabled = False
         OnChange = seX1Change
+        ParentFont = True
         TabOrder = 2
       end
       object seY2: TSpinEdit
@@ -234,13 +244,14 @@ object frmRegionControl: TfrmRegionControl
         Width = 50
         Enabled = False
         OnChange = seX1Change
+        ParentFont = True
         TabOrder = 3
       end
     end
     object vstArea: TVirtualStringTree
       Left = 5
-      Height = 118
-      Top = 151
+      Height = 119
+      Top = 150
       Width = 150
       Align = alClient
       BorderSpacing.Left = 4
@@ -249,6 +260,7 @@ object frmRegionControl: TfrmRegionControl
       BorderStyle = bsSingle
       Header.MainColumn = -1
       Header.Options = [hoColumnResize, hoDrag]
+      ParentFont = True
       TabOrder = 1
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
       TreeOptions.SelectionOptions = [toFullRowSelect]
@@ -262,8 +274,11 @@ object frmRegionControl: TfrmRegionControl
       Top = 1
       Width = 158
       Align = alTop
+      Header.Font.Height = -11
       Header.Options = [hoAutoResize, hoVisible]
+      Header.ParentFont = True
       Header.Style = hsFlatButtons
+      ParentFont = True
       PopupMenu = pmGroup
       TabOrder = 2
       TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
@@ -288,6 +303,7 @@ object frmRegionControl: TfrmRegionControl
     Caption = 'Panel2'
     ClientHeight = 361
     ClientWidth = 460
+    ParentFont = True
     TabOrder = 1
     object sbArea: TScrollBox
       Left = 1
@@ -295,6 +311,7 @@ object frmRegionControl: TfrmRegionControl
       Top = 1
       Width = 458
       Align = alClient
+      ParentFont = True
       TabOrder = 0
       object pbArea: TPaintBox
         Height = 105
@@ -312,6 +329,7 @@ object frmRegionControl: TfrmRegionControl
     Anchors = [akLeft, akRight, akBottom]
     ClientHeight = 30
     ClientWidth = 620
+    ParentFont = True
     TabOrder = 2
     object btnExit: TButton
       Left = 551
@@ -321,6 +339,7 @@ object frmRegionControl: TfrmRegionControl
       Anchors = [akTop, akRight]
       Caption = 'Exit'
       OnClick = btnCloseClick
+      ParentFont = True
       TabOrder = 0
     end
     object btnSave: TButton
@@ -332,6 +351,7 @@ object frmRegionControl: TfrmRegionControl
       Caption = 'Save'
       Enabled = False
       OnClick = btnSaveClick
+      ParentFont = True
       TabOrder = 1
     end
   end

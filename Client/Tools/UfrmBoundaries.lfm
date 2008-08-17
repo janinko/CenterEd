@@ -1,39 +1,23 @@
 object frmBoundaries: TfrmBoundaries
   Left = 290
-  Height = 105
+  Height = 154
   Top = 171
-  Width = 187
-  HorzScrollBar.Page = 186
-  VertScrollBar.Page = 104
+  Width = 212
   ActiveControl = tbMinZ
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Boundaries'
-  ClientHeight = 105
-  ClientWidth = 187
+  ClientHeight = 154
+  ClientWidth = 212
+  Font.Height = -11
   OnClose = FormClose
   OnDeactivate = FormDeactivate
-  object lblMinZ: TLabel
-    Left = 8
-    Height = 16
-    Top = 8
-    Width = 67
-    Caption = 'Minimum Z:'
-    ParentColor = False
-  end
-  object lblMaxZ: TLabel
-    Left = 8
-    Height = 16
-    Top = 56
-    Width = 68
-    Caption = 'Maximum Z:'
-    ParentColor = False
-  end
+  LCLVersion = '0.9.25'
   object tbMinZ: TTrackBar
     Left = 8
-    Height = 17
-    Top = 32
-    Width = 172
+    Height = 34
+    Top = 39
+    Width = 196
     Frequency = 10
     Max = 127
     Min = -128
@@ -41,13 +25,15 @@ object frmBoundaries: TfrmBoundaries
     PageSize = 1
     Position = -128
     ScalePos = trTop
+    Align = alTop
+    BorderSpacing.Around = 8
     TabOrder = 0
   end
   object tbMaxZ: TTrackBar
     Left = 8
-    Height = 16
-    Top = 80
-    Width = 172
+    Height = 34
+    Top = 112
+    Width = 196
     Frequency = 10
     Max = 127
     Min = -128
@@ -55,28 +41,74 @@ object frmBoundaries: TfrmBoundaries
     PageSize = 1
     Position = 127
     ScalePos = trTop
+    Align = alTop
+    BorderSpacing.Around = 8
     TabOrder = 1
   end
-  object seMinZ: TSpinEdit
-    Left = 128
+  object Panel1: TPanel
+    Left = 8
     Height = 23
-    Top = 4
-    Width = 50
-    MaxValue = 127
-    MinValue = -128
-    OnChange = seMinZChange
+    Top = 8
+    Width = 196
+    Align = alTop
+    BorderSpacing.Around = 8
+    BevelOuter = bvNone
+    ClientHeight = 23
+    ClientWidth = 196
+    ParentFont = True
     TabOrder = 2
-    Value = -128
+    object lblMinZ: TLabel
+      Height = 23
+      Width = 148
+      Align = alClient
+      Caption = 'Minimum Z:'
+      Layout = tlCenter
+      ParentColor = False
+      ParentFont = True
+    end
+    object seMinZ: TSpinEdit
+      Left = 148
+      Height = 23
+      Width = 48
+      Align = alRight
+      MaxValue = 127
+      MinValue = -128
+      ParentFont = True
+      TabOrder = 0
+      Value = -128
+    end
   end
-  object seMaxZ: TSpinEdit
-    Left = 128
+  object Panel2: TPanel
+    Left = 8
     Height = 23
-    Top = 52
-    Width = 50
-    MaxValue = 127
-    MinValue = -128
-    OnChange = seMaxZChange
+    Top = 81
+    Width = 196
+    Align = alTop
+    BorderSpacing.Around = 8
+    BevelOuter = bvNone
+    ClientHeight = 23
+    ClientWidth = 196
+    ParentFont = True
     TabOrder = 3
-    Value = 127
+    object lblMaxZ: TLabel
+      Height = 23
+      Width = 148
+      Align = alClient
+      Caption = 'Maximum Z:'
+      Layout = tlCenter
+      ParentColor = False
+      ParentFont = True
+    end
+    object seMaxZ: TSpinEdit
+      Left = 148
+      Height = 23
+      Width = 48
+      Align = alRight
+      MaxValue = 127
+      MinValue = -128
+      ParentFont = True
+      TabOrder = 0
+      Value = 127
+    end
   end
 end

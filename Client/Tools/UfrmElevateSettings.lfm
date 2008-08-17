@@ -1,52 +1,61 @@
 object frmElevateSettings: TfrmElevateSettings
   Left = 290
-  Height = 59
+  Height = 65
   Top = 171
   Width = 131
   HorzScrollBar.Page = 130
-  VertScrollBar.Page = 58
+  HorzScrollBar.Range = 122
+  VertScrollBar.Page = 64
+  VertScrollBar.Range = 59
   ActiveControl = rbRaise
+  AutoScroll = False
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Elevate'
-  ClientHeight = 59
+  ClientHeight = 65
   ClientWidth = 131
+  Font.Height = -11
   OnClose = FormClose
   OnDeactivate = FormDeactivate
+  LCLVersion = '0.9.25'
   object rbRaise: TRadioButton
     Left = 8
-    Height = 15
+    Height = 21
     Top = 8
-    Width = 49
+    Width = 58
     Caption = 'Raise'
     Checked = True
+    ParentFont = True
     State = cbChecked
     TabOrder = 0
   end
   object rbLower: TRadioButton
     Left = 8
-    Height = 15
+    Height = 21
     Top = 24
-    Width = 51
+    Width = 59
     Caption = 'Lower'
+    ParentFont = True
     TabOrder = 1
   end
   object seZ: TSpinEdit
     Left = 72
     Height = 23
-    Top = 20
+    Top = 22
     Width = 50
     MaxValue = 127
     MinValue = -128
+    ParentFont = True
     TabOrder = 3
     Value = 1
   end
   object rbSet: TRadioButton
     Left = 8
-    Height = 15
+    Height = 21
     Top = 40
-    Width = 38
+    Width = 43
     Caption = 'Set'
+    ParentFont = True
     TabOrder = 2
   end
 end

@@ -9,6 +9,7 @@ object frmAccountControl: TfrmAccountControl
   Caption = 'Account Management'
   ClientHeight = 378
   ClientWidth = 369
+  Font.Height = -11
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -76,9 +77,12 @@ object frmAccountControl: TfrmAccountControl
     Width = 369
     Align = alClient
     Header.AutoSizeIndex = 1
+    Header.Font.Height = -11
     Header.Options = [hoColumnResize, hoDrag, hoVisible]
+    Header.ParentFont = True
     Header.Style = hsPlates
     Images = ilAccesslevel
+    ParentFont = True
     TabOrder = 1
     TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
     TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]

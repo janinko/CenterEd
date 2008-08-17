@@ -3,15 +3,15 @@ object frmEditAccount: TfrmEditAccount
   Height = 186
   Top = 171
   Width = 266
-  HorzScrollBar.Page = 265
-  VertScrollBar.Page = 185
-  ActiveControl = btnOK
+  ActiveControl = edUsername
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Edit Account'
   ClientHeight = 186
   ClientWidth = 266
+  Font.Height = -11
   Position = poOwnerFormCenter
+  LCLVersion = '0.9.25'
   object lblPasswordHint: TLabel
     Left = 96
     Height = 28
@@ -21,31 +21,35 @@ object frmEditAccount: TfrmEditAccount
     Caption = 'Leave empty to leave the password unchanged.'
     Enabled = False
     ParentColor = False
+    ParentFont = True
     WordWrap = True
   end
   object lblUsername: TLabel
     Left = 16
-    Height = 16
+    Height = 14
     Top = 20
-    Width = 57
+    Width = 58
     Caption = 'Username:'
     ParentColor = False
+    ParentFont = True
   end
   object lblPassword: TLabel
     Left = 16
-    Height = 16
+    Height = 14
     Top = 52
     Width = 54
     Caption = 'Password:'
     ParentColor = False
+    ParentFont = True
   end
   object lblAccessLevel: TLabel
     Left = 16
-    Height = 16
+    Height = 14
     Top = 116
-    Width = 64
+    Width = 63
     Caption = 'Accesslevel:'
     ParentColor = False
+    ParentFont = True
   end
   object btnOK: TButton
     Left = 93
@@ -56,6 +60,7 @@ object frmEditAccount: TfrmEditAccount
     Caption = 'OK'
     Default = True
     ModalResult = 1
+    ParentFont = True
     TabOrder = 0
   end
   object btnCancel: TButton
@@ -67,6 +72,7 @@ object frmEditAccount: TfrmEditAccount
     Cancel = True
     Caption = 'Cancel'
     ModalResult = 2
+    ParentFont = True
     TabOrder = 1
   end
   object edUsername: TEdit
@@ -75,6 +81,7 @@ object frmEditAccount: TfrmEditAccount
     Top = 16
     Width = 160
     Color = clBtnFace
+    ParentFont = True
     ReadOnly = True
     TabOrder = 2
   end
@@ -84,16 +91,16 @@ object frmEditAccount: TfrmEditAccount
     Top = 48
     Width = 160
     EchoMode = emPassword
+    ParentFont = True
     PasswordChar = '*'
     TabOrder = 3
   end
   object cbAccessLevel: TComboBox
     Left = 96
-    Height = 21
+    Height = 29
     Top = 112
     Width = 160
     AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
-    ItemHeight = 13
     Items.Strings = (
       'None'
       'Viewer'
@@ -101,6 +108,7 @@ object frmEditAccount: TfrmEditAccount
       'Administrator'
     )
     MaxLength = 0
+    ParentFont = True
     Style = csDropDownList
     TabOrder = 4
   end

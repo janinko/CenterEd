@@ -3,16 +3,16 @@ object frmInitialize: TfrmInitialize
   Height = 65
   Top = 171
   Width = 241
-  HorzScrollBar.Page = 240
-  VertScrollBar.Page = 64
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Please wait ...'
   ClientHeight = 65
   ClientWidth = 241
+  Font.Height = -11
   OnClose = FormClose
   OnCreate = FormCreate
   Position = poScreenCenter
+  LCLVersion = '0.9.25'
   object pnlMain: TPanel
     Left = 8
     Height = 50
@@ -22,6 +22,7 @@ object frmInitialize: TfrmInitialize
     BevelOuter = bvLowered
     ClientHeight = 50
     ClientWidth = 226
+    ParentFont = True
     TabOrder = 0
     object lblStatus: TLabel
       Left = 8
@@ -32,6 +33,7 @@ object frmInitialize: TfrmInitialize
       AutoSize = False
       Layout = tlCenter
       ParentColor = False
+      ParentFont = True
       WordWrap = True
     end
   end
