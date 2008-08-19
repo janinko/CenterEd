@@ -1,2 +1,2 @@
 syntax: regexp
-(?<!\.(pas|lfm|lpr|lpi))$
+#(?<!\.(pas|lfm|lpr|lpi))$
