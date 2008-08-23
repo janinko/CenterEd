@@ -30,8 +30,7 @@ unit UAccount;
 interface
 
 uses
-  Classes, SysUtils, md5, contnrs, math, DOM, UXmlHelper, UInterfaces,
-  UEnums, URegions;
+  Classes, SysUtils, contnrs, math, DOM, UXmlHelper, UInterfaces, UEnums;
 
 type
 
@@ -86,8 +85,6 @@ uses
 
 constructor TAccount.Create(AOwner: IInvalidate; AName, APasswordHash: string;
   AAccessLevel: TAccessLevel; ARegions: TStringList);
-var
-  i : Integer;
 begin
   inherited Create;
   FOwner := AOwner;

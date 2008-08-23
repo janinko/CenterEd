@@ -30,7 +30,7 @@ unit URegions;
 interface
 
 uses
-  Classes, SysUtils, contnrs, DOM, UXmlHelper, UInterfaces, UEnums, URectList;
+  Classes, SysUtils, contnrs, DOM, UXmlHelper, UInterfaces, URectList;
 
 type
 
@@ -101,6 +101,10 @@ begin
       if nodeList.Item[i].NodeName = 'Rect' then
       begin
         xmlArea := TDOMElement(nodeList.Item[i]);
+        x1 := 0;
+        y1 := 0;
+        x2 := 0;
+        y2 := 0;
         if TryStrToInt(xmlArea.AttribStrings['x1'], x1) and
           TryStrToInt(xmlArea.AttribStrings['y1'], y1) and
           TryStrToInt(xmlArea.AttribStrings['x2'], x2) and

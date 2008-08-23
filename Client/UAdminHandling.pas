@@ -34,6 +34,8 @@ uses
   
 type
 
+  TAdminHandlerAlreadyAssignedException = class(Exception);
+
   { TFlushServerPacket }
 
   TFlushServerPacket = class(TPacket)
@@ -46,12 +48,22 @@ type
     constructor Create(AReason: string);
   end;
   
+procedure AssignAdminPacketHandler(APacketID: Byte; AHandler: TPacketHandler);
 procedure OnAdminHandlerPacket(ABuffer: TEnhancedMemoryStream);
 
 var
   AdminPacketHandlers: array[0..$FF] of TPacketHandler;
 
 implementation
+
+procedure AssignAdminPacketHandler(APacketID: Byte; AHandler: TPacketHandler);
+begin
+  if AdminPacketHandlers[APacketID] <> nil then
+    raise TAdminHandlerAlreadyAssignedException.CreateFmt(
+      'The AdminPacketHandler $%.2x is already assigned!', [APacketID]);
+
+  AdminPacketHandlers[APacketID] := AHandler;
+end;
 
 procedure OnAdminHandlerPacket(ABuffer: TEnhancedMemoryStream);
 var

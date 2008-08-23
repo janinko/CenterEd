@@ -30,8 +30,8 @@ unit ULandscape;
 interface
 
 uses
-  SysUtils, Classes, contnrs, UGenericIndex, UMap, UStatics, UTiledata,
-  UWorldItem, UMulBlock, math,
+  SysUtils, Classes, math, UGenericIndex, UMap, UStatics, UTiledata,
+  UWorldItem, UMulBlock,
   UTileDataProvider, URadarMap,
   UListSort, UCacheManager, ULinkedList, UBufferedStreams,
   UEnhancedMemoryStream, UPacketHandlers, UPackets, UNetState, UEnums;
@@ -148,10 +148,6 @@ implementation
 uses
   UCEDServer, UConnectionHandling, UConfig, ULargeScaleOperations;
 
-const
-  mMap = 0;
-  mStatics = 1;
-
 function GetID(AX, AY: Word): Integer;
 begin
   Result := ((AX and $7FFF) shl 15) or (AY and $7FFF);
@@ -201,7 +197,7 @@ end;
 constructor TLandscape.Create(AMap, AStatics, AStaIdx, ATiledata: TStream;
   ARadarCol: string; AWidth, AHeight: Word; var AValid: Boolean);
 var
-  blockID, blockType: Integer;
+  blockID: Integer;
 begin
   inherited Create;
   FWidth := AWidth;
@@ -568,7 +564,6 @@ var
   block: TSeperatedStaticBlock;
   staticItem: TStaticItem;
   targetStaticList: TList;
-  i: Integer;
   subscriptions: TLinkedList;
   item: PLinkedItem;
   packet: TInsertStaticPacket;
@@ -653,7 +648,7 @@ procedure TLandscape.OnElevateStaticPacket(ABuffer: TEnhancedMemoryStream;
   ANetState: TNetState);
 var
   block: TSeperatedStaticBlock;
-  i, j: Integer;
+  i: Integer;
   statics: TList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
@@ -800,7 +795,7 @@ procedure TLandscape.OnHueStaticPacket(ABuffer: TEnhancedMemoryStream;
   ANetState: TNetState);
 var
   block: TSeperatedStaticBlock;
-  i, j: Integer;
+  i: Integer;
   statics: TList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;

@@ -55,7 +55,7 @@ implementation
 
 class function TXmlHelper.FindChild(AParent: TDOMElement; AName: string): TDOMElement;
 var
-  i: Integer;
+  i: LongWord;
   nodeList: TDOMNodeList;
 begin
   Result := nil;
@@ -71,9 +71,6 @@ begin
 end;
 
 class function TXmlHelper.AssureElement(AParent: TDOMElement; AName: string): TDOMElement;
-var
-  i: Integer;
-  nodeList: TDOMNodeList;
 begin
   Result := FindChild(AParent, AName);
   if Result = nil then

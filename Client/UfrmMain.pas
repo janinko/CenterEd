@@ -32,9 +32,9 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Menus,
   ComCtrls, OpenGLContext, GL, GLU, UGameResources, ULandscape, ExtCtrls,
-  StdCtrls, Spin, UEnums, VTHeaderPopup, VirtualTrees, Buttons, UMulBlock,
-  UWorldItem, math, LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream,
-  ActnList, ImagingClasses, contnrs, dateutils, UPlatformTypes;
+  StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
+  LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
+  ImagingClasses, dateutils, UPlatformTypes;
 
 type
 
@@ -1030,6 +1030,7 @@ begin
     end else
       Delete(enteredText, Length(enteredText), 1);
     
+    tileID := 0;
     if not TryStrToInt(enteredText, tileID) then
     begin
       //edSearchID.Font.Color := clRed;
@@ -1306,8 +1307,10 @@ end;
 
 procedure TfrmMain.vdtTilesHotChange(Sender: TBaseVirtualTree; OldNode,
   NewNode: PVirtualNode);
+{$IFDEF Windows}
 var
   tileInfo: PTileInfo;
+{$ENDIF Windows}
 begin
   {TODO : Fix mouse over on !Windows platforms}
   {$IFDEF Windows}
@@ -1440,6 +1443,7 @@ begin
   locationInfo := Sender.GetNodeData(Node);
   Stream.Read(locationInfo^.X, SizeOf(Word));
   Stream.Read(locationInfo^.Y, SizeOf(Word));
+  stringLength := 0;
   Stream.Read(stringLength, SizeOf(Integer));
   SetLength(s, stringLength);
   Stream.Read(s[1], stringLength);
@@ -1570,7 +1574,7 @@ var
   virtualTile: TVirtualTile;
   staticsFilter: TStaticFilter;
 
-  procedure GetMapDrawOffset(x, y: Integer; var drawX, drawY: Single);
+  procedure GetMapDrawOffset(x, y: Integer; out drawX, drawY: Single);
   begin
     drawX := (oglGameWindow.Width div 2) + (x - y) * 22;
     drawY := (oglGamewindow.Height div 2) + (x + y) * 22;
@@ -1578,10 +1582,12 @@ var
 begin
   drawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width + oglGamewindow.Height * oglGamewindow.Height) / 44);
 
+  {$HINTS off}{$WARNINGS off}
   if FX - drawDistance < 0 then lowOffX := -FX else lowOffX := -drawDistance;
   if FY - drawDistance < 0 then lowOffY := -FY else lowOffY := -drawDistance;
   if FX + drawDistance >= FLandscape.Width * 8 then highOffX := FLandscape.Width * 8 - FX - 1 else highOffX := drawDistance;
   if FY + drawDistance >= FLandscape.Height * 8 then highOffY := FLandscape.Height * 8 - FY - 1 else highOffY := drawDistance;
+  {$HINTS on}{$WARNINGS on}
 
   FLandscape.PrepareBlocks((FX + lowOffX) div 8, (FY + lowOffY) div 8, (FX + highOffX) div 8 + 1, (FY + highOffY) div 8 + 1);
 

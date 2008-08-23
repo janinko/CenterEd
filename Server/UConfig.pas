@@ -201,6 +201,7 @@ begin
   inherited Create;
   FFilename := AFilename;
   ReadXMLFile(xmlDoc, AFilename);
+  version := 0;
   if not ((xmlDoc.DocumentElement.NodeName = 'CEDConfig') and
     TryStrToInt(xmlDoc.DocumentElement.AttribStrings['Version'], version) and
     (version = CONFIGVERSION)) then
@@ -247,6 +248,7 @@ begin
   Writeln('===================');
   Write  ('Port [2597]: ');
   Readln (stringValue);
+  intValue := 0;
   if not TryStrToInt(stringValue, intValue) then intValue := 2597;
   FPort := intValue;
   Writeln('');

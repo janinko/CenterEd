@@ -90,6 +90,20 @@ implementation
 uses
   md5, UCEDServer, UPackets, UClientHandling;
 
+procedure AdminBroadcast(AAccessLevel: TAccessLevel; APacket: TPacket);
+var
+  netState: TNetState;
+begin
+  CEDServerInstance.TCPServer.IterReset;
+  while CEDServerInstance.TCPServer.IterNext do
+  begin
+    netState := TNetState(CEDServerInstance.TCPServer.Iterator.UserData);
+    if (netState <> nil) and (netState.Account.AccessLevel >= AAccessLevel) then
+      CEDServerInstance.SendPacket(netState, APacket, False);
+  end;
+  APacket.Free;
+end;
+
 procedure OnAdminHandlerPacket(ABuffer: TEnhancedMemoryStream;
   ANetState: TNetState);
 var
@@ -250,7 +264,9 @@ begin
                      Max(x1, x2), Max(y1, y2));
   end;
 
-  CEDServerInstance.SendPacket(ANetState,
+  Config.Regions.Invalidate;
+
+  AdminBroadcast(alAdministrator,
     TModifyRegionResponsePacket.Create(status, region));
 end;
 
@@ -271,12 +287,13 @@ begin
     if TRegion(regions[i]).Name = regionName then
     begin
       regions.Delete(i);
+      regions.Invalidate;
       status := drDeleted;
     end else
       inc(i);
   end;
 
-  CEDServerInstance.SendPacket(ANetState,
+  AdminBroadcast(alAdministrator,
     TDeleteRegionResponsePacket.Create(status, regionName));
 end;
 

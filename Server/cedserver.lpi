@@ -102,7 +102,7 @@
     </Units>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <Target>
       <Filename Value="../bin/cedserver"/>
     </Target>
@@ -114,7 +114,6 @@
     </SearchPaths>
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
-      <Generate Value="Faster"/>
       <Optimizations>
         <OptimizationLevel Value="3"/>
       </Optimizations>

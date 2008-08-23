@@ -287,10 +287,8 @@ object frmRegionControl: TfrmRegionControl
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
       TreeOptions.SelectionOptions = [toFullRowSelect]
       OnChange = vstRegionsChange
-      OnEditing = vstRegionsOnEditing
       OnFreeNode = vstRegionsFreeNode
       OnGetText = vstRegionsGetText
-      OnNewText = vstRegionsNewText
       Columns = <      
         item
           Width = 158
@@ -337,14 +335,14 @@ object frmRegionControl: TfrmRegionControl
     ClientWidth = 612
     ParentFont = True
     TabOrder = 2
-    object btnExit: TButton
+    object btnClose: TButton
       Left = 548
       Height = 25
       Width = 64
       Align = alRight
       Anchors = [akTop, akRight]
       BorderSpacing.Left = 4
-      Caption = 'Exit'
+      Caption = 'Close'
       OnClick = btnCloseClick
       ParentFont = True
       TabOrder = 0
@@ -368,11 +366,12 @@ object frmRegionControl: TfrmRegionControl
     top = 43
     object mnuAddRegion: TMenuItem
       Caption = 'Add'
-      OnClick = acAddGroup
+      OnClick = mnuAddRegionClick
     end
     object mnuRemoveRegion: TMenuItem
       Caption = 'Remove'
-      OnClick = accRemoveGroup
+      Enabled = False
+      OnClick = mnuRemoveRegionClick
     end
   end
 end

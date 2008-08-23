@@ -140,9 +140,9 @@ procedure TfrmAccountControl.FormCreate(Sender: TObject);
 begin
   vstAccounts.NodeDataSize := SizeOf(TAccountInfo);
   
-  AdminPacketHandlers[$05] := TPacketHandler.Create(0, @OnModifyUserResponse);
-  AdminPacketHandlers[$06] := TPacketHandler.Create(0, @OnDeleteUserResponse);
-  AdminPacketHandlers[$07] := TPacketHandler.Create(0, @OnListUsersPacket);
+  AssignAdminPacketHandler($05, TPacketHandler.Create(0, @OnModifyUserResponse));
+  AssignAdminPacketHandler($06, TPacketHandler.Create(0, @OnDeleteUserResponse));
+  AssignAdminPacketHandler($07, TPacketHandler.Create(0, @OnListUsersPacket));
 end;
 
 procedure TfrmAccountControl.FormClose(Sender: TObject;

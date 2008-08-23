@@ -79,7 +79,6 @@ procedure OnLoginRequestPacket(ABuffer: TEnhancedMemoryStream;
 var
   username, passwordHash: string;
   account: TAccount;
-  pwHash: string;
   netState: TNetState;
   invalid: Boolean;
 begin

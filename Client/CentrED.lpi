@@ -40,7 +40,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="26">
+    <Units Count="29">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -229,10 +229,25 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UPackets"/>
       </Unit25>
+      <Unit26>
+        <Filename Value="ULandscape.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULandscape"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="UGameResources.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UGameResources"/>
+      </Unit27>
+      <Unit28>
+        <Filename Value="UAdminHandling.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UAdminHandling"/>
+      </Unit28>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="5"/>
+    <Version Value="8"/>
     <Target>
       <Filename Value="../bin/CentrED"/>
     </Target>
@@ -249,7 +264,6 @@
     </Parsing>
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
-      <Generate Value="Faster"/>
       <Optimizations>
         <OptimizationLevel Value="3"/>
       </Optimizations>

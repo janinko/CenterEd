@@ -39,7 +39,7 @@ uses
   UfrmMoveSettings, UfrmAbout, UfrmHueSettings, UfrmRadar,
   UfrmLargeScaleCommand, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
   UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
-  UPacketHandlers;
+  UPacketHandlers, UAdminHandling, UGameResources, ULandscape;
   
 {$IFDEF Windows}
   {$R *.res}

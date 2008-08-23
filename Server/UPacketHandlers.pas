@@ -162,7 +162,6 @@ end;
 procedure OnRequestBlocksPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 var
   coords: TBlockCoordsArray;
-  i: Integer;
 begin
   if not ValidateAccess(ANetState, alView) then Exit;
   SetLength(coords, (ABuffer.Size - ABuffer.Position) div SizeOf(TBlockCoords));

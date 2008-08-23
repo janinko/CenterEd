@@ -122,7 +122,7 @@ type
 implementation
 
 uses
-  UCEDServer, UTiledata;
+  UCEDServer;
   
 { TLargeScaleOperation }
 

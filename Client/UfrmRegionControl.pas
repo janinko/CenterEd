@@ -30,9 +30,9 @@ unit UfrmRegionControl;
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, CheckLst,
+  Classes, SysUtils, math, LResources, Forms, Controls, Graphics, Dialogs,
   VirtualTrees, ExtCtrls, ImagingComponents, StdCtrls, Buttons, Spin, LCLIntf,
-  math, UPlatformTypes, UEnhancedMemoryStream, Menus, contnrs, URectList;
+  UEnhancedMemoryStream, Menus, URectList;
 
 type
   TAreaMoveType = (amLeft, amTop, amRight, amBottom);
@@ -44,7 +44,7 @@ type
     btnAddArea: TSpeedButton;
     btnClearArea: TSpeedButton;
     btnDeleteArea: TSpeedButton;
-    btnExit: TButton;
+    btnClose: TButton;
     btnSave: TButton;
     Label1: TLabel;
     lblX: TLabel;
@@ -64,8 +64,8 @@ type
     seY2: TSpinEdit;
     vstRegions: TVirtualStringTree;
     vstArea: TVirtualStringTree;
-    procedure acAddGroup(Sender: TObject);
-    procedure accRemoveGroup(Sender: TObject);
+    procedure mnuAddRegionClick(Sender: TObject);
+    procedure mnuRemoveRegionClick(Sender: TObject);
     procedure btnAddAreaClick(Sender: TObject);
     procedure btnClearAreaClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
@@ -87,14 +87,13 @@ type
     procedure vstRegionsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstRegionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: WideString);
-    procedure vstRegionsNewText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; const NewText: WideString);
-    procedure vstRegionsOnEditing(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; var Allowed: Boolean);
   protected
     FLastX: Integer;
     FLastY: Integer;
     FAreaMove: TAreaMove;
+    function FindRegion(AName: string): PVirtualNode;
+    procedure OnModifyRegionPacket(ABuffer: TEnhancedMemoryStream);
+    procedure OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnListRegionsPacket(ABuffer: TEnhancedMemoryStream);
   private
     { private declarations }
@@ -108,62 +107,76 @@ var
 implementation
 
 uses
-  UGameResources, UfrmRadar, UfrmMain, UdmNetwork, UPacket, UPackets,
-  UGUIPlatformUtils, UAdminHandling, UPacketHandlers;
+  UGameResources, UfrmRadar, UfrmMain, UdmNetwork, UPacket, UGUIPlatformUtils,
+  UAdminHandling, UPacketHandlers;
 
 type
 
-  { TRequestRegionListPacket }
-
-  TRequestRegionListPacket = class(TPacket)
-    constructor Create;
-  end;
-  
   PRegionInfo = ^TRegionInfo;
   TRegionInfo = record
     Name: string;
     Areas: TRectList;
   end;
 
+  { TModifyRegionPacket }
+
+  TModifyRegionPacket = class(TPacket)
+    constructor Create(ARegionInfo: TRegionInfo);
+  end;
+
+  { TDeleteRegionPacket }
+
+  TDeleteRegionPacket = class(TPacket)
+    constructor Create(AName: string);
+  end;
+
+  { TRequestRegionListPacket }
+
+  TRequestRegionListPacket = class(TPacket)
+    constructor Create;
+  end;
+
+{ TModifyRegionPacket }
+
+constructor TModifyRegionPacket.Create(ARegionInfo: TRegionInfo);
+var
+  i: Integer;
+  count: Byte;
+  area: TRect;
+begin
+  inherited Create($03, 0); //Admin Packet
+  FStream.WriteByte($08); //Admin PacketID
+  FStream.WriteStringNull(ARegionInfo.Name);
+  count := Min(ARegionInfo.Areas.Count, 256);
+  FStream.WriteByte(count);
+  for i := 0 to count - 1 do
+  begin
+    area := ARegionInfo.Areas.Rects[i];
+    FStream.WriteWord(area.Left);
+    FStream.WriteWord(area.Top);
+    FStream.WriteWord(area.Right);
+    FStream.WriteWord(area.Bottom);
+  end;
+end;
+
+{ TDeleteRegionPacket }
+
+constructor TDeleteRegionPacket.Create(AName: string);
+begin
+  inherited Create($03, 0); //Admin Packet
+  FStream.WriteByte($09); //Admin PacketID
+  FStream.WriteStringNull(AName);
+end;
+
 { TRequestRegionListPacket }
 
 constructor TRequestRegionListPacket.Create;
 begin
-  inherited Create($03, 0);
-  FStream.WriteByte($0A);
+  inherited Create($03, 0); //Admin Packet
+  FStream.WriteByte($0A); //Admin PacketID
 end;
 
 { TfrmRegionControl }
-
-procedure TfrmRegionControl.OnListRegionsPacket(ABuffer: TEnhancedMemoryStream);
-var
-  regionCount, areaCount: Byte;
-  i, j, x1, x2, y1, y2: Integer;
-  node: PVirtualNode;
-  regionInfo: PRegionInfo;
-begin
-  vstRegions.BeginUpdate;
-  vstRegions.Clear;
-  regionCount := ABuffer.ReadByte;
-  for i := 0 to regionCount - 1 do
-  begin
-   node := vstRegions.AddChild(nil);
-   regionInfo := vstRegions.GetNodeData(node);
-   regionInfo^.Name := ABuffer.ReadStringNull;
-   regionInfo^.Areas := TRectList.Create;
-   areaCount := ABuffer.ReadByte;
-   for j := 0 to areaCount - 1 do
-   begin
-     x1 := ABuffer.ReadWord;
-     y1 := ABuffer.ReadWord;
-     x2 := ABuffer.ReadWord;
-     y2 := ABuffer.ReadWord;
-     regionInfo^.Areas.Add(x1, y1, x2, y2);
-   end;
-  end;
-  vstRegions.EndUpdate;
-end;
-
 
 procedure TfrmRegionControl.FormCreate(Sender: TObject);
 begin
@@ -179,143 +192,149 @@ begin
   
   frmRadarMap.Dependencies.Add(pbArea);
 
-  AdminPacketHandlers[$0A] := TPacketHandler.Create(0, @OnListRegionsPacket);
-end;
-
-procedure TfrmRegionControl.btnDeleteAreaClick(Sender: TObject);
-var
-  infoGroup: PRegionInfo;
-  i: Integer;
-begin
-  if vstRegions.GetFirstSelected <> nil then
-  begin
-   infoGroup := vstRegions.GetNodeData(vstRegions.GetFirstSelected);
-   infoGroup^.Areas.Delete(vstArea.AbsoluteIndex(vstArea.GetFirstSelected));
-   vstRegionsChange(vstRegions, vstRegions.GetFirstSelected);
-  end;
-end;
-
-procedure TfrmRegionControl.btnSaveClick(Sender: TObject);
-var
-  packet: TPacket;
-  stream: TEnhancedMemoryStream;
-  groupCount,areaCount: Byte;
-  i, j: Integer;
-  node: PVirtualNode;
-  groupInfo: PRegionInfo;
-begin
-  packet := TPacket.Create($03, 0);
-  stream := packet.Stream;
-  stream.Position := stream.Size;
-  stream.WriteByte($09);
-
-  groupCount := Min(vstRegions.RootNodeCount, 255);
-  stream.WriteByte(groupCount);
-  if groupCount = 0 then Exit;
-
-  i := 0;
-  node := vstRegions.GetFirst;
-  while (node <> nil) and (i < groupCount) do
-  begin
-    groupInfo := vstRegions.GetNodeData(node);
-    stream.WriteStringNull(groupInfo^.Name);
-    areaCount:=Min(groupInfo^.Areas.Count,255);
-    stream.WriteByte(areaCount);
-    for j := 0 to areaCount-1 do
-      with groupInfo^.Areas.Rects[j] do
-      begin
-        stream.WriteWord(Min(Left, Right));
-        stream.WriteWord(Min(Top,  Bottom));
-        stream.WriteWord(Max(Left, Right));
-        stream.WriteWord(Max(Top,  Bottom));
-      end;
-    node := vstRegions.GetNext(node);
-    Inc(i);
-  end;
-  dmNetwork.Send(TCompressedPacket.Create(packet));
-  Close;
-end;
-
-procedure TfrmRegionControl.acAddGroup(Sender: TObject);
-var
-  node : PVirtualNode;
-  infoGroup : PRegionInfo;
-begin
-  node := vstRegions.AddChild(nil);
-  infoGroup := vstRegions.GetNodeData(node);
-  infoGroup^.Name := 'Unnamed';
-  infoGroup^.Areas := TRectList.Create;
-end;
-
-procedure TfrmRegionControl.accRemoveGroup(Sender: TObject);
-begin
-  vstRegions.DeleteSelectedNodes;
-  vstRegionsChange(vstRegions, nil);
-end;
-
-procedure TfrmRegionControl.btnAddAreaClick(Sender: TObject);
-var
-  node, selected: PVirtualNode;
-  areaInfo: ^TRect;
-  regionInfo: PRegionInfo;
-begin
-  selected := vstRegions.GetFirstSelected;
-  if selected <> nil then
-  begin
-    regionInfo := vstRegions.GetNodeData(selected);
-    node := vstArea.AddChild(nil);
-    areaInfo := vstArea.GetNodeData(node);
-    areaInfo^.Left := 0;
-    areaInfo^.Top := 0;
-    areaInfo^.Right := 0;
-    areaInfo^.Bottom := 0;
-    regionInfo^.Areas.Add(0, 0, 0, 0);
-    vstArea.ClearSelection;
-    vstArea.Selected[node] := True;
-    vstArea.FocusedNode := node;
-  end;
-end;
-
-procedure TfrmRegionControl.btnClearAreaClick(Sender: TObject);
-var
-  regionNode: PVirtualNode;
-  regionInfo: PRegionInfo;
-  i: Integer;
-begin
-  regionNode := vstRegions.GetFirstSelected;
-  if regionNode <> nil then
-  begin
-    regionInfo := vstRegions.GetNodeData(regionNode);
-    regionInfo^.Areas.Clear;
-    vstRegionsChange(vstRegions, vstRegions.GetFirstSelected);
-  end;
-end;
-
-procedure TfrmRegionControl.btnCloseClick(Sender: TObject);
-begin
-  Close;
+  AssignAdminPacketHandler($08, TPacketHandler.Create(0, @OnModifyRegionPacket));
+  AssignAdminPacketHandler($09, TPacketHandler.Create(0, @OnDeleteRegionPacket));
+  AssignAdminPacketHandler($0A, TPacketHandler.Create(0, @OnListRegionsPacket));
 end;
 
 procedure TfrmRegionControl.FormDestroy(Sender: TObject);
 begin
   frmRadarMap.Dependencies.Remove(pbArea);
+  if AdminPacketHandlers[$08] <> nil then FreeAndNil(AdminPacketHandlers[$08]);
+  if AdminPacketHandlers[$09] <> nil then FreeAndNil(AdminPacketHandlers[$09]);
   if AdminPacketHandlers[$0A] <> nil then FreeAndNil(AdminPacketHandlers[$0A]);
 end;
 
 procedure TfrmRegionControl.FormShow(Sender: TObject);
 begin
   SetWindowParent(Handle, frmMain.Handle);
+  btnSave.Enabled := False; //no changes yet
   dmNetwork.Send(TRequestRegionListPacket.Create);
+end;
+
+procedure TfrmRegionControl.btnSaveClick(Sender: TObject);
+var
+  regionNode: PVirtualNode;
+  regionInfo: PRegionInfo;
+  areaNode: PVirtualNode;
+  areaInfo: PRect;
+begin
+  btnSave.Enabled := False;
+
+  //Refresh the current region
+  regionNode := vstRegions.GetFirstSelected;
+  if regionNode <> nil then
+  begin
+    regionInfo := vstRegions.GetNodeData(regionNode);
+    regionInfo^.Areas.Clear;
+    areaNode := vstArea.GetFirst;
+    while areaNode <> nil do
+    begin
+      areaInfo := vstArea.GetNodeData(areaNode);
+      regionInfo^.Areas.Add(areaInfo^.Left, areaInfo^.Top, areaInfo^.Right,
+        areaInfo^.Bottom);
+      areaNode := vstArea.GetNext(areaNode);
+    end;
+
+    //Send the modified values
+    dmNetwork.Send(TModifyRegionPacket.Create(regionInfo^));
+  end;
+
+  //Clear the selection
+  vstRegions.ClearSelection;
+end;
+
+procedure TfrmRegionControl.mnuAddRegionClick(Sender: TObject);
+var
+  regionName: string;
+  node: PVirtualNode;
+  regionInfo: PRegionInfo;
+begin
+  regionName := '';
+  if InputQuery('New Region', 'Enter the name for the new region:', regionName) then
+  begin
+    if FindRegion(regionName) = nil then
+    begin
+      node := vstRegions.AddChild(nil);
+      regionInfo := vstRegions.GetNodeData(node);
+      regionInfo^.Name := regionName;
+      regionInfo^.Areas := TRectList.Create;
+      vstRegions.ClearSelection;
+      vstRegions.Selected[node] := True;
+      btnSave.Enabled := True;
+    end else
+    begin
+      MessageDlg('New Region', 'The region could not be added. A region with ' +
+        'that name already exists.', mtError, [mbOK], 0);
+    end;
+  end;
+end;
+
+procedure TfrmRegionControl.mnuRemoveRegionClick(Sender: TObject);
+var
+  regionNode: PVirtualNode;
+  regionInfo: PRegionInfo;
+begin
+  regionNode := vstRegions.GetFirstSelected;
+  if (regionNode <> nil) and (MessageDlg('Delete Region', 'Are you sure, you ' +
+    'want to delete the selected region?', mtConfirmation, [mbYes, mbNo], 0) = mrYes) then
+  begin
+    regionInfo := vstRegions.GetNodeData(regionNode);
+    dmNetwork.Send(TDeleteRegionPacket.Create(regionInfo^.Name));
+    vstRegions.Selected[regionNode] := False;
+  end;
+end;
+
+procedure TfrmRegionControl.btnAddAreaClick(Sender: TObject);
+var
+  node: PVirtualNode;
+  areaInfo: PRect;
+begin
+  node := vstArea.AddChild(nil);
+  areaInfo := vstArea.GetNodeData(node);
+  areaInfo^.Left := 0;
+  areaInfo^.Top := 0;
+  areaInfo^.Right := 0;
+  areaInfo^.Bottom := 0;
+  vstArea.ClearSelection;
+  vstArea.Selected[node] := True;
+  vstArea.FocusedNode := node;
+
+  btnSave.Enabled := True; //possible change to be saved
+end;
+
+procedure TfrmRegionControl.btnClearAreaClick(Sender: TObject);
+begin
+  vstArea.Clear;
+  vstAreaChange(vstArea, nil);
+end;
+
+procedure TfrmRegionControl.btnCloseClick(Sender: TObject);
+begin
+  if btnSave.Enabled and (MessageDlg('Unsaved changes', 'There are unsaved ' +
+    'changes.' + #13#10+#13#10+ 'Do you want to save them now?',
+    mtConfirmation, [mbYes, mbNo], 0) = mrYes) then
+  begin
+    btnSaveClick(Sender);
+  end;
+
+  Close;
+end;
+
+procedure TfrmRegionControl.btnDeleteAreaClick(Sender: TObject);
+begin
+  vstArea.DeleteSelectedNodes;
+  vstAreaChange(vstArea, nil);
+
+  btnSave.Enabled := True; //possible change to be saved
 end;
 
 procedure TfrmRegionControl.pbAreaMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  areaNode, regionNode, match: PVirtualNode;
-  areaInfo: ^TRect;
+  areaNode, match: PVirtualNode;
+  areaInfo: PRect;
   p: TPoint;
-  i: Integer;
-  regionInfo: PRegionInfo;
 begin
   FAreaMove := [];
   p := Point(X * 8, Y * 8);
@@ -339,22 +358,14 @@ begin
       FAreaMove := [amLeft, amTop, amRight, amBottom];
   end else
   begin
-    regionNode := vstRegions.GetFirstSelected;
-    if regionNode <> nil then
-    begin
-      regionInfo := vstRegions.GetNodeData(regionNode);
-      match := vstArea.AddChild(nil);
-      areaInfo := vstArea.GetNodeData(match);
-      areaInfo^.Left := p.x;
-      areaInfo^.Top := p.y;
-      areaInfo^.Right := p.x;
-      areaInfo^.Bottom := p.y;
-      regionInfo^.Areas.Add(p.x, p.y, p.x, p.y);
-
-      pbArea.Repaint;
-
-      FAreaMove := [amRight, amBottom];
-    end;
+    match := vstArea.AddChild(nil);
+    areaInfo := vstArea.GetNodeData(match);
+    areaInfo^.Left := p.x;
+    areaInfo^.Top := p.y;
+    areaInfo^.Right := p.x;
+    areaInfo^.Bottom := p.y;
+    pbArea.Repaint;
+    FAreaMove := [amRight, amBottom];
   end;
   vstArea.ClearSelection;
   vstArea.Selected[match] := True;
@@ -383,9 +394,8 @@ end;
 
 procedure TfrmRegionControl.pbAreaPaint(Sender: TObject);
 var
-  i: Integer;
   node: PVirtualNode;
-  areaInfo: ^TRect;
+  areaInfo: PRect;
 begin
   DisplayImage(pbArea.Canvas, 0, 0, frmRadarMap.Radar);
   pbArea.Canvas.Pen.Color := clRed;
@@ -413,8 +423,7 @@ end;
 procedure TfrmRegionControl.seX1Change(Sender: TObject);
 var
   node: PVirtualNode;
-  areaInfo: ^TRect;
-  regionInfo: PRegionInfo;
+  areaInfo: PRect;
 begin
   node := vstArea.GetFirstSelected;
   if node <> nil then
@@ -424,17 +433,17 @@ begin
     areaInfo^.Right := seX2.Value;
     areaInfo^.Top := seY1.Value;
     areaInfo^.Bottom := seY2.Value;
-    regionInfo:= vstRegions.GetNodeData(vstRegions.GetFirstSelected);
-    regionInfo^.Areas.Rects[vstArea.AbsoluteIndex(node)] := areaInfo^;
     vstArea.InvalidateNode(node);
     pbArea.Repaint;
+
+    btnSave.Enabled := True; //possible change to be saved
   end;
 end;
 
 procedure TfrmRegionControl.vstAreaChange(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 var
-  areaInfo: ^TRect;
+  areaInfo: PRect;
   selected: Boolean;
 begin
   selected := (Node <> nil) and Sender.Selected[Node];
@@ -460,7 +469,7 @@ procedure TfrmRegionControl.vstAreaGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
   var CellText: WideString);
 var
-  areaInfo: ^TRect;
+  areaInfo: PRect;
 begin
   areaInfo := Sender.GetNodeData(Node);
   CellText := Format('(%d, %d), (%d, %d)', [areaInfo^.Left, areaInfo^.Top,
@@ -471,15 +480,27 @@ procedure TfrmRegionControl.vstRegionsChange(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 var
   i: Integer;
-  areaNode: PVirtualNode;
+  selected, areaNode: PVirtualNode;
   regionInfo: PRegionInfo;
-  areaInfo: ^TRect;
+  areaInfo: PRect;
 begin
+  if btnSave.Enabled and (MessageDlg('Unsaved changes', 'There are unsaved ' +
+    'changes.' + #13#10+#13#10+ 'Do you want to save them now?',
+    mtConfirmation, [mbYes, mbNo], 0) = mrYes) then
+  begin
+    btnSaveClick(Sender);
+  end;
+
   vstArea.BeginUpdate;
   vstArea.Clear;
-  if Node <> nil then
+  selected := Sender.GetFirstSelected;
+  if selected <> nil then
   begin
-    regionInfo := Sender.GetNodeData(Node);
+    btnAddArea.Enabled := True;
+    btnClearArea.Enabled := True;
+    mnuRemoveRegion.Enabled := True;
+
+    regionInfo := Sender.GetNodeData(selected);
     for i := 0 to regionInfo^.Areas.Count - 1 do
     begin
       areaNode := vstArea.AddChild(nil);
@@ -492,9 +513,17 @@ begin
         areaInfo^.Bottom := Bottom;
       end;
     end;
+  end else
+  begin
+    btnAddArea.Enabled := False;
+    btnDeleteArea.Enabled := False;
+    btnClearArea.Enabled := False;
+    mnuRemoveRegion.Enabled := False;
   end;
   vstArea.EndUpdate;
   pbArea.Repaint;
+
+  btnSave.Enabled := False; //no changes to be saved
 end;
 
 procedure TfrmRegionControl.vstRegionsFreeNode(Sender: TBaseVirtualTree;
@@ -516,21 +545,109 @@ begin
   CellText := regionInfo^.Name;
 end;
 
-procedure TfrmRegionControl.vstRegionsNewText(Sender: TBaseVirtualTree;
-  Node: PVirtualNode; Column: TColumnIndex; const NewText: WideString);
+function TfrmRegionControl.FindRegion(AName: string): PVirtualNode;
 var
   regionInfo: PRegionInfo;
+  found: Boolean;
 begin
-  if (Node <> nil) then begin
-    regionInfo := Sender.GetNodeData(Node);
-    regionInfo^.Name := NewText;
+  found := False;
+  Result := vstRegions.GetFirst;
+  while (Result <> nil) and (not found) do
+  begin
+    regionInfo := vstRegions.GetNodeData(Result);
+    if regionInfo^.Name = AName then
+      found := True
+    else
+      Result := vstRegions.GetNext(Result);
   end;
 end;
 
-procedure TfrmRegionControl.vstRegionsOnEditing(Sender: TBaseVirtualTree;
-  Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
+procedure TfrmRegionControl.OnModifyRegionPacket(ABuffer: TEnhancedMemoryStream);
+var
+  regionName: string;
+  regionNode: PVirtualNode;
+  regionInfo: PRegionInfo;
+  areaCount: Byte;
+  i: Integer;
+  x1, y1, x2, y2: Word;
 begin
-  Allowed := True;
+  ABuffer.ReadByte; //status, not used yet
+
+  //TODO : Ask user how to proceed, if the added/modified packet conflicts with the currently edited region
+
+  regionName := ABuffer.ReadStringNull;
+  regionNode := FindRegion(regionName);
+  if regionNode = nil then
+  begin
+    regionNode := vstRegions.AddChild(nil);
+    regionInfo := vstRegions.GetNodeData(regionNode);
+    regionInfo^.Name := regionName;
+    regionInfo^.Areas := TRectList.Create;
+  end else
+  begin
+    regionInfo := vstRegions.GetNodeData(regionNode);
+    regionInfo^.Areas.Clear;
+  end;
+
+  areaCount := ABuffer.ReadByte;
+  for i := 0 to areaCount - 1 do
+  begin
+    x1 := ABuffer.ReadWord;
+    y1 := ABuffer.ReadWord;
+    x2 := ABuffer.ReadWord;
+    y2 := ABuffer.ReadWord;
+    regionInfo^.Areas.Add(x1, y1, x2, y2);
+  end;
+
+  if vstRegions.Selected[regionNode] then
+  begin
+    btnSave.Enabled := False;
+    vstRegionsChange(vstRegions, regionNode);
+  end;
+end;
+
+procedure TfrmRegionControl.OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream);
+var
+  regionName: string;
+  regionNode: PVirtualNode;
+begin
+  ABuffer.ReadByte; //status, not used yet
+  regionName := ABuffer.ReadStringNull;
+  regionNode := FindRegion(regionName);
+
+  //TODO : Ask user how to proceed, if the deleted packet conflicts with the currently edited region
+
+  if regionNode <> nil then
+    vstRegions.DeleteNode(regionNode);
+end;
+
+procedure TfrmRegionControl.OnListRegionsPacket(ABuffer: TEnhancedMemoryStream);
+var
+  regionCount, areaCount: Byte;
+  i, j, x1, x2, y1, y2: Integer;
+  node: PVirtualNode;
+  regionInfo: PRegionInfo;
+begin
+  vstRegions.BeginUpdate;
+  vstRegions.Clear;
+  regionCount := ABuffer.ReadByte;
+  for i := 0 to regionCount - 1 do
+  begin
+   node := vstRegions.AddChild(nil);
+   regionInfo := vstRegions.GetNodeData(node);
+   regionInfo^.Name := ABuffer.ReadStringNull;
+   regionInfo^.Areas := TRectList.Create;
+   areaCount := ABuffer.ReadByte;
+   for j := 0 to areaCount - 1 do
+   begin
+     x1 := ABuffer.ReadWord;
+     y1 := ABuffer.ReadWord;
+     x2 := ABuffer.ReadWord;
+     y2 := ABuffer.ReadWord;
+     regionInfo^.Areas.Add(x1, y1, x2, y2);
+   end;
+  end;
+  vstRegions.EndUpdate;
 end;
 
 initialization
