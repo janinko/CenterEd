@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 program CentrED;
 
@@ -40,7 +40,7 @@ uses
   UfrmLargeScaleCommand, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
   UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
   UPacketHandlers, UAdminHandling, UGameResources, ULandscape;
-  
+
 {$IFDEF Windows}
   {$R *.res}
 {$ENDIF}

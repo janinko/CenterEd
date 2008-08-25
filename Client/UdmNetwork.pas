@@ -195,6 +195,9 @@ begin
           height := ABuffer.ReadWord;
           ResMan.InitLandscape(width, height);
           frmMain := TfrmMain.Create(dmNetwork);
+          frmRadarMap := TfrmRadarMap.Create(frmMain);
+          frmLargeScaleCommand := TfrmLargeScaleCommand.Create(frmMain);
+          frmRegionControl := TfrmRegionControl.Create(frmMain);
           frmAccountControl := TfrmAccountControl.Create(frmMain);
           frmEditAccount := TfrmEditAccount.Create(frmAccountControl);
           frmConfirmation := TfrmConfirmation.Create(frmMain);
@@ -206,10 +209,7 @@ begin
           frmFilter := TfrmFilter.Create(frmMain);
           frmVirtualLayer := TfrmVirtualLayer.Create(frmMain);
           frmAbout := TfrmAbout.Create(frmMain);
-          frmRadarMap := TfrmRadarMap.Create(frmMain);
-          frmLargeScaleCommand := TfrmLargeScaleCommand.Create(frmMain);
           frmTileInfo := TfrmTileInfo.Create(frmMain);
-          frmRegionControl := TfrmRegionControl.Create(frmMain);
           frmMain.Show;
           frmInitialize.Hide;
           tmNoOp.Enabled := True;
@@ -290,7 +290,6 @@ begin
   frmLogin := TfrmLogin.Create(dmNetwork);
   if frmInitialize = nil then frmInitialize := TfrmInitialize.Create(dmNetwork);
   if frmTileInfo <> nil then FreeAndNil(frmTileInfo);
-  if frmLargeScaleCommand <> nil then FreeAndNil(frmLargeScaleCommand);
   if frmEditAccount <> nil then FreeAndNil(frmEditAccount);
   if frmAccountControl <> nil then FreeAndNil(frmAccountControl);
   if frmConfirmation <> nil then FreeAndNil(frmConfirmation);
@@ -303,6 +302,7 @@ begin
   if frmVirtualLayer <> nil then FreeAndNil(frmVirtualLayer);
   if frmAbout <> nil then FreeAndNil(frmAbout);
   if frmRegionControl <> nil then FreeAndNil(frmRegionControl);
+  if frmLargeScaleCommand <> nil then FreeAndNil(frmLargeScaleCommand);
   if frmRadarMap <> nil then FreeAndNil(frmRadarMap);
   if frmMain <> nil then
   begin

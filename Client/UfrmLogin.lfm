@@ -16,8 +16,8 @@ object frmLogin: TfrmLogin
   ShowInTaskBar = stAlways
   LCLVersion = '0.9.25'
   object lblCopyright: TLabel
-    Height = 24
-    Top = 241
+    Height = 25
+    Top = 240
     Width = 489
     Align = alBottom
     Alignment = taCenter
@@ -30,33 +30,33 @@ object frmLogin: TfrmLogin
     Top = 8
     Width = 321
     Caption = 'Connection'
-    ClientHeight = 111
+    ClientHeight = 113
     ClientWidth = 317
     ParentFont = True
     TabOrder = 0
     object lblHost: TLabel
       Left = 30
-      Height = 13
+      Height = 14
       Top = 9
-      Width = 31
+      Width = 28
       Caption = 'Host:'
       ParentColor = False
       ParentFont = True
     end
     object lblUsername: TLabel
       Left = 30
-      Height = 13
+      Height = 14
       Top = 43
-      Width = 64
+      Width = 58
       Caption = 'Username:'
       ParentColor = False
       ParentFont = True
     end
     object lblPassword: TLabel
       Left = 30
-      Height = 13
+      Height = 14
       Top = 77
-      Width = 61
+      Width = 54
       Caption = 'Password:'
       ParentColor = False
       ParentFont = True
@@ -368,7 +368,7 @@ object frmLogin: TfrmLogin
     Height = 96
     Top = 8
     Width = 145
-    ClientHeight = 92
+    ClientHeight = 79
     ClientWidth = 141
     ParentFont = True
     TabOrder = 2
@@ -432,11 +432,11 @@ object frmLogin: TfrmLogin
   end
   object GroupBox1: TGroupBox
     Left = 336
-    Height = 81
+    Height = 84
     Top = 112
     Width = 145
     Caption = 'Profiles'
-    ClientHeight = 64
+    ClientHeight = 69
     ClientWidth = 141
     ParentFont = True
     TabOrder = 3
@@ -444,7 +444,7 @@ object frmLogin: TfrmLogin
       Left = 86
       Height = 22
       Hint = 'Save profile'
-      Top = 32
+      Top = 40
       Width = 23
       Color = clBtnFace
       Glyph.Data = {
@@ -493,7 +493,7 @@ object frmLogin: TfrmLogin
       Left = 111
       Height = 22
       Hint = 'Delete profile'
-      Top = 32
+      Top = 40
       Width = 23
       Color = clBtnFace
       Glyph.Data = {
@@ -540,7 +540,7 @@ object frmLogin: TfrmLogin
     end
     object cbProfile: TComboBox
       Left = 6
-      Height = 21
+      Height = 29
       Top = 8
       Width = 128
       AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]

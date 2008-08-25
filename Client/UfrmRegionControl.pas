@@ -32,11 +32,21 @@ interface
 uses
   Classes, SysUtils, math, LResources, Forms, Controls, Graphics, Dialogs,
   VirtualTrees, ExtCtrls, ImagingComponents, StdCtrls, Buttons, Spin, LCLIntf,
-  UEnhancedMemoryStream, Menus, URectList;
+  UEnhancedMemoryStream, Menus, URectList, UEnums;
 
 type
   TAreaMoveType = (amLeft, amTop, amRight, amBottom);
   TAreaMove = set of TAreaMoveType;
+
+  PRegionInfo = ^TRegionInfo;
+  TRegionInfo = record
+    Name: string;
+    Areas: TRectList;
+  end;
+
+  TRegionModifiedEvent = procedure(ARegionInfo: TRegionInfo) of object;
+  TRegionDeletedEvent = procedure(ARegionName: string) of object;
+  TRegionListEvent = procedure of object;
 
   { TfrmRegionControl }
 
@@ -91,16 +101,20 @@ type
     FLastX: Integer;
     FLastY: Integer;
     FAreaMove: TAreaMove;
+    FOnRegionModified: TRegionModifiedEvent;
+    FOnRegionDeleted: TRegionDeletedEvent;
+    FOnRegionList: TRegionListEvent;
     function FindRegion(AName: string): PVirtualNode;
     procedure OnModifyRegionPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnListRegionsPacket(ABuffer: TEnhancedMemoryStream);
-  private
-    { private declarations }
+    procedure OnAccessChanged(AAccessLevel: TAccessLevel);
   public
-    { public declarations }
-  end; 
-  
+    property OnRegionModified: TRegionModifiedEvent read FOnRegionModified write FOnRegionModified;
+    property OnRegionDeleted: TRegionDeletedEvent read FOnRegionDeleted write FOnRegionDeleted;
+    property OnRegionList: TRegionListEvent read FOnRegionList write FOnRegionList;
+  end;
+
 var
   frmRegionControl: TfrmRegionControl;
 
@@ -108,16 +122,9 @@ implementation
 
 uses
   UGameResources, UfrmRadar, UfrmMain, UdmNetwork, UPacket, UGUIPlatformUtils,
-  UAdminHandling, UPacketHandlers;
+  UAdminHandling, UPacketHandlers, UConsts;
 
 type
-
-  PRegionInfo = ^TRegionInfo;
-  TRegionInfo = record
-    Name: string;
-    Areas: TRectList;
-  end;
-
   { TModifyRegionPacket }
 
   TModifyRegionPacket = class(TPacket)
@@ -191,10 +198,13 @@ begin
   vstRegions.NodeDataSize := SizeOf(TRegionInfo);
   
   frmRadarMap.Dependencies.Add(pbArea);
+  frmMain.RegisterAccessChangedListener(@OnAccessChanged);
 
   AssignAdminPacketHandler($08, TPacketHandler.Create(0, @OnModifyRegionPacket));
   AssignAdminPacketHandler($09, TPacketHandler.Create(0, @OnDeleteRegionPacket));
   AssignAdminPacketHandler($0A, TPacketHandler.Create(0, @OnListRegionsPacket));
+
+  dmNetwork.Send(TRequestRegionListPacket.Create);
 end;
 
 procedure TfrmRegionControl.FormDestroy(Sender: TObject);
@@ -209,7 +219,6 @@ procedure TfrmRegionControl.FormShow(Sender: TObject);
 begin
   SetWindowParent(Handle, frmMain.Handle);
   btnSave.Enabled := False; //no changes yet
-  dmNetwork.Send(TRequestRegionListPacket.Create);
 end;
 
 procedure TfrmRegionControl.btnSaveClick(Sender: TObject);
@@ -532,6 +541,7 @@ var
   regionInfo: PRegionInfo;
 begin
   regionInfo := Sender.GetNodeData(Node);
+  regionInfo^.Name := '';
   if regionInfo^.Areas <> nil then FreeAndNil(regionInfo^.Areas);
 end;
 
@@ -604,6 +614,9 @@ begin
     btnSave.Enabled := False;
     vstRegionsChange(vstRegions, regionNode);
   end;
+
+  if Assigned(FOnRegionModified) then
+    FOnRegionModified(regionInfo^);
 end;
 
 procedure TfrmRegionControl.OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream);
@@ -619,6 +632,9 @@ begin
 
   if regionNode <> nil then
     vstRegions.DeleteNode(regionNode);
+
+  if Assigned(FOnRegionDeleted) then
+    FOnRegionDeleted(regionName);
 end;
 
 procedure TfrmRegionControl.OnListRegionsPacket(ABuffer: TEnhancedMemoryStream);
@@ -648,6 +664,15 @@ begin
    end;
   end;
   vstRegions.EndUpdate;
+
+  if Assigned(FOnRegionList) then
+    FOnRegionList;
+end;
+
+procedure TfrmRegionControl.OnAccessChanged(AAccessLevel: TAccessLevel);
+begin
+  if AAccessLevel >= alAdministrator then
+    dmNetwork.Send(TRequestRegionListPacket.Create);
 end;
 
 initialization

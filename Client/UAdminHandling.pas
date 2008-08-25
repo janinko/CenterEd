@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UAdminHandling;
 
@@ -30,7 +30,7 @@ unit UAdminHandling;
 interface
 
 uses
-  Classes, SysUtils, UPacket, UPacketHandlers, UEnhancedMemoryStream, UEnums;
+  Classes, SysUtils, UPacket, UPacketHandlers, UEnhancedMemoryStream;
   
 type
 

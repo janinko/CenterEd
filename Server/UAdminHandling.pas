@@ -352,7 +352,7 @@ begin
     FStream.WriteByte(Byte(account.AccessLevel));
     FStream.WriteByte(account.Regions.Count);
     for j := 0 to account.Regions.Count - 1 do
-      FStream.WriteStringNull(account.Regions[j]);
+      FStream.WriteStringNull(account.Regions.Strings[j]);
   end;
 end;
 

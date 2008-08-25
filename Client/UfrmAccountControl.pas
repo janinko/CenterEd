@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  VirtualTrees, VTHeaderPopup, UEnhancedMemoryStream, UEnums;
+  VirtualTrees, Math, UEnhancedMemoryStream, UEnums;
 
 type
 
@@ -67,8 +67,6 @@ type
     procedure OnDeleteUserResponse(ABuffer: TEnhancedMemoryStream);
     procedure OnListUsersPacket(ABuffer: TEnhancedMemoryStream);
     function FindNode(AUsername: string): PVirtualNode;
-  public
-    { public declarations }
   end;
 
 var
@@ -90,7 +88,8 @@ type
   { TModifyUserPacket }
 
   TModifyUserPacket = class(TPacket)
-    constructor Create(AUsername, APassword: string; AAccessLevel: TAccessLevel);
+    constructor Create(AUsername, APassword: string; AAccessLevel: TAccessLevel;
+      ARegions: TStrings);
   end;
   
   { TDeleteUserPacket }
@@ -108,13 +107,22 @@ type
 { TModifyUserPacket }
 
 constructor TModifyUserPacket.Create(AUsername, APassword: string;
-  AAccessLevel: TAccessLevel);
+  AAccessLevel: TAccessLevel; ARegions: TStrings);
+var
+  regionCount: Byte;
+  i: Integer;
 begin
   inherited Create($03, 0);
   FStream.WriteByte($05);
   FStream.WriteStringNull(AUsername);
   FStream.WriteStringNull(APassword);
   FStream.WriteByte(Byte(AAccessLevel));
+
+  regionCount := Min(ARegions.Count, 256);
+  FStream.WriteByte(regionCount);
+
+  for i := 0 to regionCount - 1 do
+    FStream.WriteStringNull(ARegions.Strings[i]);
 end;
 
 { TDeleteUserPacket }
@@ -155,6 +163,7 @@ procedure TfrmAccountControl.tbEditUserClick(Sender: TObject);
 var
   selected: PVirtualNode;
   accountInfo: PAccountInfo;
+  regions: TStrings;
 begin
   selected := vstAccounts.GetFirstSelected;
   if selected <> nil then
@@ -168,9 +177,14 @@ begin
       edPassword.Text := '';
       lblPasswordHint.Visible := True;
       SetAccessLevel(accountInfo^.AccessLevel);
+      SetRegions(accountInfo^.Regions);
       if ShowModal = mrOK then
+      begin
+        regions := GetRegions;
         dmNetwork.Send(TModifyUserPacket.Create(edUsername.Text,
-          edPassword.Text, GetAccessLevel));
+          edPassword.Text, GetAccessLevel, regions));
+        regions.Free;
+      end;
     end;
   end;
 end;
@@ -188,6 +202,8 @@ begin
 end;
 
 procedure TfrmAccountControl.tbAddUserClick(Sender: TObject);
+var
+  regions: TStrings;
 begin
   with frmEditAccount do
   begin
@@ -197,9 +213,14 @@ begin
     edPassword.Text := '';
     lblPasswordHint.Visible := False;
     cbAccessLevel.ItemIndex := 2;
+    SetRegions(nil);
     if ShowModal = mrOK then
+    begin
+      regions := GetRegions;
       dmNetwork.Send(TModifyUserPacket.Create(edUsername.Text, edPassword.Text,
-        GetAccessLevel));
+        GetAccessLevel, regions));
+      regions.Free;
+    end;
   end;
 end;
 
@@ -348,7 +369,7 @@ procedure TfrmAccountControl.OnListUsersPacket(ABuffer: TEnhancedMemoryStream);
 var
   node: PVirtualNode;
   accountInfo: PAccountInfo;
-  i, j, count, regions: Word;
+  i, j, count, regions: Integer;
 begin
   vstAccounts.BeginUpdate;
   vstAccounts.Clear;

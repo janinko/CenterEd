@@ -10,6 +10,9 @@ object frmEditAccount: TfrmEditAccount
   ClientHeight = 214
   ClientWidth = 261
   Font.Height = -11
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
   Position = poOwnerFormCenter
   LCLVersion = '0.9.25'
   object PageControl1: TPageControl
@@ -22,7 +25,7 @@ object frmEditAccount: TfrmEditAccount
     TabOrder = 0
     object tsGeneral: TTabSheet
       Caption = 'General'
-      ClientHeight = 142
+      ClientHeight = 144
       ClientWidth = 257
       ParentFont = True
       object lblPasswordHint: TLabel
@@ -39,27 +42,27 @@ object frmEditAccount: TfrmEditAccount
       end
       object lblUsername: TLabel
         Left = 6
-        Height = 13
+        Height = 14
         Top = 12
-        Width = 64
+        Width = 58
         Caption = 'Username:'
         ParentColor = False
         ParentFont = True
       end
       object lblPassword: TLabel
         Left = 6
-        Height = 13
+        Height = 14
         Top = 44
-        Width = 61
+        Width = 54
         Caption = 'Password:'
         ParentColor = False
         ParentFont = True
       end
       object lblAccessLevel: TLabel
         Left = 6
-        Height = 13
+        Height = 14
         Top = 108
-        Width = 71
+        Width = 63
         Caption = 'Accesslevel:'
         ParentColor = False
         ParentFont = True
@@ -86,7 +89,7 @@ object frmEditAccount: TfrmEditAccount
       end
       object cbAccessLevel: TComboBox
         Left = 86
-        Height = 23
+        Height = 29
         Top = 104
         Width = 160
         AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
@@ -104,12 +107,12 @@ object frmEditAccount: TfrmEditAccount
     end
     object tsRegions: TTabSheet
       Caption = 'Regions'
-      ClientHeight = 142
+      ClientHeight = 144
       ClientWidth = 257
       ParentFont = True
       object Label1: TLabel
         Left = 8
-        Height = 13
+        Height = 14
         Top = 8
         Width = 241
         Align = alTop
@@ -121,17 +124,17 @@ object frmEditAccount: TfrmEditAccount
         ParentColor = False
         ParentFont = True
       end
-      object CheckListBox1: TCheckListBox
+      object cbRegions: TCheckListBox
         Left = 8
-        Height = 109
-        Top = 25
+        Height = 110
+        Top = 26
         Width = 241
         Align = alClient
         BorderSpacing.Left = 8
         BorderSpacing.Top = 4
         BorderSpacing.Right = 8
         BorderSpacing.Bottom = 8
-        ItemHeight = 10
+        ItemHeight = 13
         ParentFont = True
         TabOrder = 0
         TopIndex = -1

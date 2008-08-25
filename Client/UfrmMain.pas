@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UfrmMain;
 
@@ -38,9 +38,10 @@ uses
 
 type
 
-  TVirtualTile = class(TStaticItem)
-  end;
+  TVirtualTile = class(TStaticItem);
   TVirtualTileArray = array of TVirtualTile;
+
+  TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
 
   { TfrmMain }
 
@@ -277,6 +278,7 @@ type
     FLocationsFile: string;
     FRandomPresetLocation: string;
     FLastDraw: TDateTime;
+    FAccessChangedListeners: array of TAccessChangedListener;
     procedure SetX(const AValue: Integer);
     procedure SetY(const AValue: Integer);
     procedure SetCurrentTile(const AValue: TWorldItem);
@@ -306,6 +308,8 @@ type
     property SelectedTile: TWorldItem read FSelectedTile write SetSelectedTile;
     
     procedure SetPos(AX, AY: Word);
+    procedure RegisterAccessChangedListener(AListener: TAccessChangedListener);
+    procedure UnregisterAccessChangedListener(AListener: TAccessChangedListener);
   end; 
 
 var
@@ -1500,6 +1504,41 @@ begin
   end;
 end;
 
+procedure TfrmMain.RegisterAccessChangedListener(
+  AListener: TAccessChangedListener);
+var
+  i: Integer;
+begin
+  for i := Low(FAccessChangedListeners) to High(FAccessChangedListeners) do
+    if FAccessChangedListeners[i] = AListener then
+      Exit; //Prevent duplicates
+  SetLength(FAccessChangedListeners, Length(FAccessChangedListeners) + 1);
+  FAccessChangedListeners[High(FAccessChangedListeners)] := AListener;
+end;
+
+procedure TfrmMain.UnregisterAccessChangedListener(
+  AListener: TAccessChangedListener);
+var
+  i: Integer;
+  found: Boolean;
+begin
+  i := Low(FAccessChangedListeners);
+  found := False;
+  while (i <= High(FAccessChangedListeners)) and (not found) do
+  begin
+    if FAccessChangedListeners[i] = AListener then
+    begin
+      if i < High(FAccessChangedListeners) then
+        Move(FAccessChangedListeners[i+1], FAccessChangedListeners[i],
+          (High(FAccessChangedListeners) - Low(FAccessChangedListeners) - i) *
+          SizeOf(TAccessChangedListener)); //move subsequent entries
+      SetLength(FAccessChangedListeners, Length(FAccessChangedListeners) - 1);
+      found := True;
+    end else
+      Inc(i);
+  end;
+end;
+
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
 begin
   if FCurrentTile <> nil then
@@ -2050,6 +2089,7 @@ end;
 procedure TfrmMain.OnClientHandlingPacket(ABuffer: TEnhancedMemoryStream);
 var
   sender, msg: string;
+  i: Integer;
 begin
   case ABuffer.ReadByte of
     $01: //client connected
@@ -2096,6 +2136,9 @@ begin
           ProcessAccessLevel;
           MessageDlg('AccessLevel change', Format('Your accesslevel has been changed to %s.', [GetAccessLevelString(dmNetwork.AccessLevel)]), mtWarning, [mbOK], 0);
         end;
+
+        for i := Low(FAccessChangedListeners) to High(FAccessChangedListeners) do
+          FAccessChangedListeners[i](dmNetwork.AccessLevel);
       end;
   end;
 end;

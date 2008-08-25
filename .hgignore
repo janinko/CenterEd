@@ -1,2 +1,19 @@
-syntax: regexp
+#syntax: regexp
 #(?<!\.(pas|lfm|lpr|lpi))$
+syntax: glob
+obj/*
+bin/*
+doc/*
+pasdoc/*
+Setup/*
+*.lps
+*.lrs
+*.txt
+*.log
+*.png
+*.ico
+*.tga
+*.gif
+*.bmp
+*.xpm
+*.htm*
