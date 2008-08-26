@@ -162,7 +162,7 @@ end;
 procedure TAccount.Serialize(AElement: TDOMElement);
 var
   i: Integer;
-  child: TDOMElement;
+  child, regionNode: TDOMElement;
 begin
   TXmlHelper.WriteString(AElement, 'Name', FName);
   TXmlHelper.WriteString(AElement, 'PasswordHash', FPasswordHash);
@@ -171,7 +171,11 @@ begin
   child := TXmlHelper.AssureElement(AElement, 'Regions');
   for i := 0 to FRegions.Count -1 do
     if Config.Regions.Find(FRegions[i]) <> nil then //Validate if the region (still) exists
-      TXmlHelper.WriteString(child, 'Region', FRegions[i]);
+    begin
+      regionNode := child.OwnerDocument.CreateElement('Region');
+      child.AppendChild(regionNode);
+      regionNode.AppendChild(regionNode.OwnerDocument.CreateTextNode(FRegions[i]));
+    end;
 end;
 
 { TAccountList }

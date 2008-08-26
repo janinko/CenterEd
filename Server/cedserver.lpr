@@ -40,7 +40,7 @@ uses
   
 begin
   Writeln('');
-  Writeln('UO CentrED Server Version ', ProductVersion);
+  Writeln('CentrED Server Version ', ProductVersion);
   Writeln('Copyright ', Copyright);
   //Writeln('================================');
   Writeln('');

@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UClientHandling;
 
@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, UPacket, UPacketHandlers, UConfig, UAccount, UNetState,
-  UEnhancedMemoryStream, UEnums, math;
+  UEnhancedMemoryStream, UEnums, Math;
   
 type
 
@@ -65,16 +65,23 @@ type
     constructor Create(ASender, AMessage: string);
   end;
   
-  { TAccessLevelChangedPacket }
+  { TAccessChangedPacket }
 
-  TAccessLevelChangedPacket = class(TPacket)
-    constructor Create(AAccessLevel: TAccessLevel);
+  TAccessChangedPacket = class(TPacket)
+    constructor Create(AAccount: TAccount);
   end;
 
-procedure OnClientHandlerPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
-procedure OnUpdateClientPosPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
-procedure OnChatMessagePacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
-procedure OnGotoClientPosPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
+procedure OnClientHandlerPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+procedure OnUpdateClientPosPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+procedure OnChatMessagePacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+procedure OnGotoClientPosPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+
+procedure WriteAccountRestrictions(AStream: TEnhancedMemoryStream;
+  AAccount: TAccount);
 
 var
   ClientPacketHandlers: array[0..$FF] of TPacketHandler;
@@ -82,9 +89,10 @@ var
 implementation
 
 uses
-  UCEDServer, UPackets;
+  UCEDServer, UPackets, URegions;
 
-procedure OnClientHandlerPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
+procedure OnClientHandlerPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
 var
   packetHandler: TPacketHandler;
 begin
@@ -118,7 +126,46 @@ var
 begin
   account := Config.Accounts.Find(ABuffer.ReadStringNull);
   if account <> nil then
-    CEDServerInstance.SendPacket(ANetState, TSetClientPosPacket.Create(account.LastPos));
+    CEDServerInstance.SendPacket(ANetState,
+      TSetClientPosPacket.Create(account.LastPos));
+end;
+
+procedure WriteAccountRestrictions(AStream: TEnhancedMemoryStream;
+  AAccount: TAccount);
+var
+  areaCount: Word;
+  i, j, offset, newOffset: Integer;
+  region: TRegion;
+  area: TRect;
+begin
+  offset := AStream.Position;
+  areaCount := 0;
+  AStream.WriteWord(areaCount);
+
+  if AAccount.AccessLevel >= alAdministrator then
+    Exit; //Admins shouldn't have restrictions anyway
+
+  for i := 0 to AAccount.Regions.Count - 1 do
+  begin
+    region := Config.Regions.Find(AAccount.Regions.Strings[i]);
+    if region <> nil then
+      for j := 0 to region.Areas.Count - 1 do
+      begin
+        area := region.Areas.Rects[j];
+        AStream.WriteWord(area.Left);
+        AStream.WriteWord(area.Top);
+        AStream.WriteWord(area.Right);
+        AStream.WriteWord(area.Bottom);
+        Inc(areaCount);
+      end;
+  end;
+  if areaCount > 0 then
+  begin
+    newOffset := AStream.Position;
+    AStream.Position := offset;
+    AStream.WriteWord(areaCount);
+    AStream.Position := newOffset;
+  end;
 end;
 
 { TClientConnectedPacket }
@@ -152,7 +199,8 @@ begin
   begin
     repeat
       netState := TNetState(CEDServerInstance.TCPServer.Iterator.UserData);
-      if (netState <> nil) and (netState <> AAvoid) and (netState.Account <> nil) then
+      if (netState <> nil) and (netState <> AAvoid) and
+        (netState.Account <> nil) then
         FStream.WriteStringNull(netState.Account.Name);
     until not CEDServerInstance.TCPServer.IterNext;
   end;
@@ -178,13 +226,14 @@ begin
   FStream.WriteStringNull(AMessage);
 end;
 
-{ TAccessLevelChangedPacket }
+{ TAccessChangedPacket }
 
-constructor TAccessLevelChangedPacket.Create(AAccessLevel: TAccessLevel);
+constructor TAccessChangedPacket.Create(AAccount: TAccount);
 begin
   inherited Create($0C, 0);
   FStream.WriteByte($07);
-  FStream.WriteByte(Byte(AAccessLevel));
+  FStream.WriteByte(Byte(AAccount.AccessLevel));
+  WriteAccountRestrictions(FStream, AAccount);
 end;
 
 {$WARNINGS OFF}

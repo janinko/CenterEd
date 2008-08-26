@@ -44,7 +44,7 @@ type
   { TLoginResponsePacket }
 
   TLoginResponsePacket = class(TPacket)
-    constructor Create(AState: TLoginState; AAccessLevel: TAccessLevel = alNone);
+    constructor Create(AState: TLoginState; AAccount: TAccount = nil);
   end;
   
   { TServerStatePacket }
@@ -111,7 +111,7 @@ begin
         begin
           Writeln(TimeStamp, 'Login (', username, '): ', ANetState.Socket.PeerAddress);
           ANetState.Account := account;
-          CEDServerInstance.SendPacket(ANetState, TLoginResponsePacket.Create(lsOK, account.AccessLevel));
+          CEDServerInstance.SendPacket(ANetState, TLoginResponsePacket.Create(lsOK, account));
           CEDServerInstance.SendPacket(ANetState, TCompressedPacket.Create(
             TClientListPacket.Create(ANetState)));
           CEDServerInstance.SendPacket(nil, TClientConnectedPacket.Create(username));
@@ -154,16 +154,17 @@ end;
 { TLoginResponsePacket }
 
 constructor TLoginResponsePacket.Create(AState: TLoginState;
-  AAccessLevel: TAccessLevel = alNone);
+  AAccount: TAccount = nil);
 begin
   inherited Create($02, 0);
   FStream.WriteByte($03);
   FStream.WriteByte(Byte(AState));
   if AState = lsOK then
   begin
-    FStream.WriteByte(Byte(AAccessLevel));
+    FStream.WriteByte(Byte(AAccount.AccessLevel));
     FStream.WriteWord(Config.Map.Width);
     FStream.WriteWord(Config.Map.Height);
+    WriteAccountRestrictions(FStream, AAccount);
   end;
 end;
 

@@ -247,6 +247,7 @@ type
       Y: Integer);
     procedure vdtTilesScroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer);
     procedure vstChatClick(Sender: TObject);
+    procedure vstChatFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstChatGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: WideString);
     procedure vstChatPaintText(Sender: TBaseVirtualTree;
@@ -283,6 +284,8 @@ type
     procedure SetY(const AValue: Integer);
     procedure SetCurrentTile(const AValue: TWorldItem);
     procedure SetSelectedTile(const AValue: TWorldItem);
+    procedure SetNormalLights; inline;
+    procedure SetDarkLights; inline;
     procedure InitRender;
     procedure InitSize;
     procedure Render;
@@ -1373,6 +1376,15 @@ begin
   edChat.SetFocus;
 end;
 
+procedure TfrmMain.vstChatFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  chatInfo: PChatInfo;
+begin
+  chatInfo := Sender.GetNodeData(Node);
+  chatInfo^.Sender := '';
+  chatInfo^.Msg := '';
+end;
+
 procedure TfrmMain.vstChatGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
   Column: TColumnIndex; TextType: TVSTTextType; var CellText: WideString);
 var
@@ -1557,11 +1569,27 @@ begin
     FSelectedTile.OnDestroy.RegisterEvent(@TileRemoved);
 end;
 
+procedure TfrmMain.SetNormalLights;
+const
+  specular: TGLArrayf4 = (2, 2, 2, 1);
+  ambient: TGLArrayf4 = (1, 1, 1, 1);
+begin
+  glLightfv(GL_LIGHT0, GL_AMBIENT, @specular);
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, @ambient);
+end;
+
+procedure TfrmMain.SetDarkLights;
+const
+  specularDark: TGLArrayf4 = (0.5, 0.5, 0.5, 1);
+  ambientDark: TGLArrayf4 = (0.25, 0.25, 0.25, 1);
+begin
+  glLightfv(GL_LIGHT0, GL_AMBIENT, @specularDark);
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, @ambientDark);
+end;
+
 procedure TfrmMain.InitRender;
 const
   lightPosition: TGLArrayf4 = (-1, -1, 0.5, 0);
-  specular: TGLArrayf4 = (2, 2, 2, 1);
-  ambient: TGLArrayf4 = (1, 1, 1, 1);
 begin
   glEnable(GL_ALPHA_TEST);
   glAlphaFunc(GL_GREATER, 0.1);
@@ -1574,8 +1602,6 @@ begin
 
   glEnable(GL_LIGHT0);
   glLightfv(GL_LIGHT0, GL_POSITION, @lightPosition);
-  glLightfv(GL_LIGHT0, GL_AMBIENT, @specular);
-  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, @ambient);
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 end;
 
@@ -1612,6 +1638,8 @@ var
   tileRect: TRect;
   virtualTile: TVirtualTile;
   staticsFilter: TStaticFilter;
+  editing: Boolean;
+  intensity: GLfloat;
 
   procedure GetMapDrawOffset(x, y: Integer; out drawX, drawY: Single);
   begin
@@ -1667,7 +1695,19 @@ begin
                      (CurrentTile <> SelectedTile) and
                      PtInRect(tileRect, Point(FX + offsetX, FY + offsetY));
 
-      if acDraw.Checked and (singleTarget or multiTarget) then
+      if acSelect.Checked or dmNetwork.CanWrite(FX + offsetX, FY + offsetY)  then
+      begin
+        editing := True;
+        intensity := 1.0;
+        SetNormalLights;
+      end else
+      begin
+        editing := False;
+        intensity := 0.5;
+        SetDarkLights;
+      end;
+
+      if editing and acDraw.Checked and (singleTarget or multiTarget) then
       begin
         ghostTile := FGhostTile;
         if (ghostTile is TMapCell) and (not frmDrawSettings.cbForceAltitude.Checked) then
@@ -1691,7 +1731,9 @@ begin
         
       for i := 0 to draw.Count - 1 do
       begin
-        if TObject(draw[i]) = virtualTile then
+        if not editing then
+          highlight := False
+        else if TObject(draw[i]) = virtualTile then
           highlight := False
         else if acDelete.Checked and multiTarget and (TObject(draw[i]) is TStaticItem) then
           highlight := True
@@ -1715,8 +1757,8 @@ begin
           z := 0
         else
           z := TWorldItem(draw[i]).Z;
-          
-        glColor4f(1.0, 1.0, 1.0, 1.0);
+
+        glColor4f(intensity, intensity, intensity, 1.0);
         
         if TObject(draw[i]) = virtualTile then
         begin
@@ -1734,7 +1776,7 @@ begin
           cell := TMapCell(draw[i]);
           
           {if ResMan.Tiledata.LandTiles[cell.TileID].HasFlag(tdfTranslucent) then
-            glColor4f(1.0, 1.0, 1.0, 0.5);} //Possible, but probably not like the OSI client
+            glColor4f(intensity, intensity, intensity, 0.5);} //Possible, but probably not like the OSI client
 
           mat := nil;
 
@@ -1773,6 +1815,7 @@ begin
                (TObject(draw[i]) = ghostTile) then //when we have a ghosttile, only draw that, but still store the real one
             begin
               glBindTexture(GL_TEXTURE_2D, mat.Texture);
+              //if (not cell.Selected) and (intensity = 1.0) then
               if not cell.Selected then
                 glEnable(GL_LIGHTING);
               normals := FLandscape.Normals[offsetX, offsetY];
@@ -1790,6 +1833,7 @@ begin
                 glNormal3f(normals[3].X, normals[3].Y, normals[3].Z);
                 glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + 22 - west * 4);
               glEnd;
+              //if (not cell.Selected) and (intensity = 1.0) then
               if not cell.Selected then
                 glDisable(GL_LIGHTING);
             end;
@@ -1814,7 +1858,7 @@ begin
             hue := nil;
             
           if staticTileData.HasFlag(tdfTranslucent) then
-            glColor4f(1.0, 1.0, 1.0, 0.5);
+            glColor4f(intensity, intensity, intensity, 0.5);
             
           mat := FTextureManager.GetArtMaterial($4000 + staticItem.TileID, hue, (staticTileData.Flags and tdfPartialHue) = tdfPartialHue);
           south := mat.RealHeight;
@@ -2090,6 +2134,7 @@ procedure TfrmMain.OnClientHandlingPacket(ABuffer: TEnhancedMemoryStream);
 var
   sender, msg: string;
   i: Integer;
+  accessLevel: TAccessLevel;
 begin
   case ABuffer.ReadByte of
     $01: //client connected
@@ -2124,21 +2169,27 @@ begin
         msg := ABuffer.ReadStringNull;
         WriteChatMessage(sender, msg);
       end;
-    $07: //access level changed
+    $07: //access changed
       begin
-        dmNetwork.AccessLevel := TAccessLevel(ABuffer.ReadByte);
-        if dmNetwork.AccessLevel = alNone then
+        accessLevel := TAccessLevel(ABuffer.ReadByte);
+        dmNetwork.UpdateWriteMap(ABuffer);
+
+        if accessLevel <> dmNetwork.AccessLevel then
         begin
-          MessageDlg('AccessLevel change', 'Your account has been locked.', mtWarning, [mbOK], 0);
-          mnuDisconnectClick(nil);
-        end else
-        begin
-          ProcessAccessLevel;
-          MessageDlg('AccessLevel change', Format('Your accesslevel has been changed to %s.', [GetAccessLevelString(dmNetwork.AccessLevel)]), mtWarning, [mbOK], 0);
+          dmNetwork.AccessLevel := accessLevel;
+          if accessLevel = alNone then
+          begin
+            MessageDlg('AccessLevel change', 'Your account has been locked.', mtWarning, [mbOK], 0);
+            mnuDisconnectClick(nil);
+          end else
+          begin
+            ProcessAccessLevel;
+            MessageDlg('AccessLevel change', Format('Your accesslevel has been changed to %s.', [GetAccessLevelString(accessLevel)]), mtWarning, [mbOK], 0);
+          end;
         end;
 
         for i := Low(FAccessChangedListeners) to High(FAccessChangedListeners) do
-          FAccessChangedListeners[i](dmNetwork.AccessLevel);
+          FAccessChangedListeners[i](accessLevel);
       end;
   end;
 end;
@@ -2189,7 +2240,8 @@ end;
 
 function TfrmMain.CanBeModified(ATile: TWorldItem): Boolean;
 begin
-  Result := not (ATile is TVirtualTile);
+  Result := (not (ATile is TVirtualTile)) and
+    dmNetwork.CanWrite(ATile.X, ATile.Y);
 end;
 
 initialization

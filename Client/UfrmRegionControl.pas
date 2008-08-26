@@ -122,7 +122,7 @@ implementation
 
 uses
   UGameResources, UfrmRadar, UfrmMain, UdmNetwork, UPacket, UGUIPlatformUtils,
-  UAdminHandling, UPacketHandlers, UConsts;
+  UAdminHandling, UPacketHandlers;
 
 type
   { TModifyRegionPacket }

@@ -85,8 +85,10 @@ begin
       for j := 0 to region.Areas.Count - 1 do
       begin
         rect := region.Areas.Rects[j];
-        if InRange(AX, rect.Left, rect.Right) and
-          InRange(AY, rect.Top, rect.Bottom) then
+        if (AX >= rect.Left) and
+           (AX < rect.Right) and
+           (AY >= rect.Top) and
+           (AY < rect.Bottom) then
           Exit(True);
       end;
     end;

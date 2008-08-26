@@ -148,25 +148,24 @@ begin
     if password <> '' then
       account.PasswordHash := MD5Print(MD5String(password));
 
+    account.AccessLevel := accessLevel;
+
     account.Regions.Clear;
     for i := 0 to regionCount - 1 do
       account.Regions.Add(ABuffer.ReadStringNull);
     account.Invalidate;
 
-    if account.AccessLevel <> accessLevel then
+    CEDServerInstance.TCPServer.IterReset;
+    while CEDServerInstance.TCPServer.IterNext do
     begin
-      account.AccessLevel := accessLevel;
-      CEDServerInstance.TCPServer.IterReset;
-      while CEDServerInstance.TCPServer.IterNext do
+      netState := TNetState(CEDServerInstance.TCPServer.Iterator.UserData);
+      if (netState <> nil) and (netState.Account = account) then
       begin
-        netState := TNetState(CEDServerInstance.TCPServer.Iterator.UserData);
-        if (netState <> nil) and (netState.Account = account) then
-        begin
-          CEDServerInstance.SendPacket(netState,
-            TAccessLevelChangedPacket.Create(accessLevel));
-        end;
+        CEDServerInstance.SendPacket(netState,
+          TAccessChangedPacket.Create(account));
       end;
     end;
+
     CEDServerInstance.SendPacket(ANetState,
       TModifyUserResponsePacket.Create(muModified, account));
   end else
@@ -238,6 +237,10 @@ var
   status: TModifyRegionStatus;
   i, areaCount: Integer;
   x1, y1, x2, y2: Word;
+
+  account: TAccount;
+  needsUpdate: Boolean;
+  netState: TNetState;
 begin
   regionName := ABuffer.ReadStringNull;
 
@@ -268,6 +271,31 @@ begin
 
   AdminBroadcast(alAdministrator,
     TModifyRegionResponsePacket.Create(status, region));
+
+  if status = mrModified then
+  begin
+    CEDServerInstance.TCPServer.IterReset;
+    while CEDServerInstance.TCPServer.IterNext do
+    begin
+      netState := TNetState(CEDServerInstance.TCPServer.Iterator.UserData);
+      if netState <> nil then
+      begin
+        account := netState.Account;
+        i := 0;
+        needsUpdate := False;
+        while (i < account.Regions.Count) and (not needsUpdate) do
+        begin
+          if account.Regions.Strings[i] = regionName then
+            needsUpdate := True;
+          Inc(i);
+        end;
+
+        if needsUpdate then
+          CEDServerInstance.SendPacket(netState,
+            TAccessChangedPacket.Create(account))
+      end;
+    end;
+  end;
 end;
 
 procedure OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream;
