@@ -73,6 +73,7 @@ object frmBoundaries: TfrmBoundaries
       Align = alRight
       MaxValue = 127
       MinValue = -128
+      OnChange = seMinZChange
       ParentFont = True
       TabOrder = 0
       Value = -128
@@ -106,6 +107,7 @@ object frmBoundaries: TfrmBoundaries
       Align = alRight
       MaxValue = 127
       MinValue = -128
+      OnChange = seMaxZChange
       ParentFont = True
       TabOrder = 0
       Value = 127

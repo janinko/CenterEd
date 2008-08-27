@@ -29,7 +29,7 @@ begin
 
   //Accesslevel
   splitPos := Pos(':', AAccountString);
-  WriteXMLString(AElement, 'Accesslevel', Copy(AAccountString, 1, splitPos - 1));
+  WriteXMLString(AElement, 'AccessLevel', Copy(AAccountString, 1, splitPos - 1));
   Delete(AAccountString, 1, splitPos);
 
   lastPos := AElement.OwnerDocument.CreateElement('LastPos');
