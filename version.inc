@@ -1,5 +1,5 @@
 const
-  ProductVersion = '0.3.7';
+  ProductVersion = '0.4.0';
   ProtocolVersion = 6;
-  Revision = '41';
+  Revision = '64';
   Copyright = '2008 Andreas Schneider';

@@ -1,5 +1,14 @@
 Changelog:
-[C] = Client, [S] = Server
+[C] = Client, [S] = Server, [-] = Both/Unrelated
+
+Version 0.4.0
+=============
+[C] Added regional restrictions to accounts
+[C] Visualize these restrictions for users
+[C] Added better GTK2 compatibility to the Linux version
+[S] Changed config file to use XML
+[S] Bumped config file version to 3
+[-] Removed some memory leaks
 
 Version 0.3.6
 =============

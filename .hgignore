@@ -17,3 +17,9 @@ Setup/*
 *.bmp
 *.xpm
 *.htm*
+*.o
+*.ppu
+*.a
+*.compiled
+*.sh
+*.exe

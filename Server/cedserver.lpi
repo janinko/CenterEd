@@ -112,12 +112,16 @@
       <UnitOutputDirectory Value="../obj"/>
       <SrcPath Value="../;../UOLib/;../MulProvider/;../Imaging/ZLib/"/>
     </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <CStyleOperator Value="False"/>
+      </SyntaxOptions>
+    </Parsing>
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
       <Optimizations>
         <OptimizationLevel Value="3"/>
       </Optimizations>
-      <TargetOS Value="Linux"/>
     </CodeGeneration>
     <Linking>
       <Debugging>
