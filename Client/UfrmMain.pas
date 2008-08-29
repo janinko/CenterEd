@@ -1659,13 +1659,13 @@ begin
   {$HINTS on}{$WARNINGS on}
 
   FLandscape.PrepareBlocks((FX + lowOffX) div 8, (FY + lowOffY) div 8, (FX + highOffX) div 8 + 1, (FY + highOffY) div 8 + 1);
+  PrepareVirtualLayer(drawDistance * 2 + 1, drawDistance * 2 + 1);
 
   tileRect := GetSelectedRect;
   FScreenBuffer.Clear;
 
   rangeX := highOffX - lowOffX;
   rangeY := highOffY - lowOffY;
-  PrepareVirtualLayer(rangeX + 1, rangeY + 1);
   
   if acFilter.Checked then
     staticsFilter := @frmFilter.Filter
