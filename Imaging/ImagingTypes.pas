@@ -1,5 +1,5 @@
 {
-  $Id: ImagingTypes.pas 112 2007-12-11 19:43:15Z galfar $
+  $Id: ImagingTypes.pas 132 2008-08-27 20:37:38Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -37,9 +37,9 @@ const
   { Current Major version of Imaging.}
   ImagingVersionMajor = 0;
   { Current Minor version of Imaging.}
-  ImagingVersionMinor = 24;
+  ImagingVersionMinor = 26;
   { Current patch of Imaging.}
-  ImagingVersionPatch = 2;
+  ImagingVersionPatch = 0;
 
   { Imaging Option Ids whose values can be set/get by SetOption/
     GetOption functions.}
@@ -137,6 +137,11 @@ const
     Allowed values are 0 (store as text - very! large files) and 1 (save binary).
     Default value is 1.}
   ImagingPPMSaveBinary         = 51;
+  { Boolean option that specifies whether GIF images with more frames
+    are animated by Imaging (according to frame disposal methods) or just
+    raw frames are loaded and sent to user (if you want to animate GIF yourself).
+    Default value is 1.}
+  ImagingGIFLoadAnimated       = 56;
 
 
   { This option is used when reducing number of colors used in
@@ -225,7 +230,9 @@ type
     ifDXT1           = 220,
     ifDXT3           = 221,
     ifDXT5           = 222,
-    ifBTC            = 223);
+    ifBTC            = 223,
+    ifATI1N          = 224,
+    ifATI2N          = 225);
 
   { Color value for 32 bit images.}
   TColor32 = LongWord;
@@ -439,11 +446,9 @@ implementation
 
   -- TODOS ----------------------------------------------------
     - add lookup tables to pixel formats for fast conversions
-    - change TImageFormatInfo - add new fields that shoudl replace old chaos
-      like not knowing whether it is RGB without checking all other fields for False
-      (add something like FormatType = (ftIndexed, ftRGB, ftIntensity, ftCompressed,
-      ftFloatingPoint, ftRGBBitFields) and additional infos like HasAlphaChannel,
-      ChannelSize, ChannelCount, ...)
+
+  -- 0.24.3 Changes/Bug Fixes ---------------------------------
+    - Added ifATI1N and ifATI2N image data formats.
 
   -- 0.23 Changes/Bug Fixes -----------------------------------
     - Added ifBTC image format and SpecialNearestFormat field

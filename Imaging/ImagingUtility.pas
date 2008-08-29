@@ -1,5 +1,5 @@
 {
-  $Id: ImagingUtility.pas 86 2007-06-12 22:39:08Z galfar $
+  $Id: ImagingUtility.pas 128 2008-07-23 11:57:36Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -55,6 +55,9 @@ type
   PSingleArray = ^TSingleArray;
   TBooleanArray = array[0..MaxInt - 1] of Boolean;
   PBooleanArray = ^TBooleanArray;
+
+  TDynIntegerArray = array of Integer;
+  TDynBooleanArray = array of Boolean;
 
   TWordRec = packed record
     case Integer of
@@ -119,8 +122,10 @@ procedure FreeMemNil(var P); {$IFDEF USE_INLINE}inline;{$ENDIF}
 procedure FreeMem(P: Pointer); {$IFDEF USE_INLINE}inline;{$ENDIF}
 { Returns current exception object. Do not call outside exception handler.}
 function GetExceptObject: Exception; {$IFDEF USE_INLINE}inline;{$ENDIF}
-{ Returns time value with microsecond resolution. Use for some time counters.}
+{ Returns time value with microsecond resolution.}
 function GetTimeMicroseconds: Int64;
+{ Returns time value with milisecond resolution.}
+function GetTimeMilliseconds: Int64;
 
 { Returns file extension (without "." dot)}
 function GetFileExt(const FileName: string): string;
@@ -128,7 +133,7 @@ function GetFileExt(const FileName: string): string;
 function GetAppExe: string;
 { Returns directory where application's exceutable is located without
   path delimiter at the end.}
-function GetAppDir:string;
+function GetAppDir: string;
 { Returns True if FileName matches given Mask with optional case sensitivity.
   Mask can contain ? and * special characters: ? matches
   one character, * matches zero or more characters.}
@@ -151,6 +156,10 @@ function PosNoCase(const SubStr, S: string; Offset: LongInt = 1): LongInt; {$IFD
 function StrToken(var S: string; Sep: Char): string;
 { Same as StrToken but searches from the end of S string.}
 function StrTokenEnd(var S: string; Sep: Char): string;
+{ Returns string representation of integer number (with digit grouping).}
+function IntToStrFmt(const I: Int64): string;
+{ Returns string representation of float number (with digit grouping).}
+function FloatToStrFmt(const F: Double; Precision: Integer = 2): string;
 
 { Clamps integer value to range <Min, Max>}
 function ClampInt(Number: LongInt; Min, Max: LongInt): LongInt; {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -235,6 +244,7 @@ procedure SwapEndianWord(P: PWordArray; Count: LongInt); overload;
 function SwapEndianLongWord(Value: LongWord): LongWord; overload; {$IFDEF USE_INLINE}inline;{$ENDIF}
 { Swaps byte order of multiple LongWord values.}
 procedure SwapEndianLongWord(P: PLongWord; Count: LongInt); overload;
+
 { Calculates CRC32 for the given data.}
 procedure CalcCrc32(var Crc: LongWord; Data: Pointer; Size: LongInt);
 { Fills given memory with given Byte value. Size is size of buffer in bytes.}
@@ -385,6 +395,11 @@ asm
 end;
 {$ENDIF}
 
+function GetTimeMilliseconds: Int64;
+begin
+  Result := GetTimeMicroseconds div 1000;
+end;
+
 function GetFileExt(const FileName: string): string;
 begin
   Result := ExtractFileExt(FileName);
@@ -418,7 +433,7 @@ begin
 {$ENDIF}
 end;
 
-function GetAppDir:string;
+function GetAppDir: string;
 begin
   Result := ExtractFileDir(GetAppExe);
 end;
@@ -758,6 +773,16 @@ begin
     Result := S;
     S := '';
   end;
+end;
+
+function IntToStrFmt(const I: Int64): string;
+begin
+  Result := Format('%.0n', [I * 1.0]);
+end;
+
+function FloatToStrFmt(const F: Double; Precision: Integer): string;
+begin
+  Result := Format('%.' + IntToStr(Precision) + 'n', [F]);
 end;
 
 function ClampInt(Number: LongInt; Min, Max: LongInt): LongInt;
@@ -1371,8 +1396,7 @@ procedure ClipCopyBounds(var SrcX, SrcY, Width, Height, DstX, DstY: LongInt; Src
     begin
       Diff := DstClipMin - DstPos;
       Size := Size - Diff;
-      if DstPos < SrcPos then
-        SrcPos := SrcPos + Diff;
+      SrcPos := SrcPos + Diff;
       DstPos := DstClipMin;
     end;
     if SrcPos < 0 then
@@ -1528,6 +1552,13 @@ initialization
   -- TODOS ----------------------------------------------------
     - nothing now
 
+  -- 0.25.0 Changes/Bug Fixes -----------------------------------
+    - Fixed error in ClipCopyBounds which was causing ... bad clipping!
+
+  -- 0.24.3 Changes/Bug Fixes -----------------------------------
+    - Added GetTimeMilliseconds function.
+    - Added IntToStrFmt and FloatToStrFmt helper functions.
+    
   -- 0.23 Changes/Bug Fixes -----------------------------------
     - Added RectInRect and RectIntersects functions
     - Added some string utils: StrToken, StrTokenEnd, PosEx, PosNoCase. 

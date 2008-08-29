@@ -961,14 +961,14 @@ begin
   FRealWidth := AWidth;
   FRealHeight := AHeight;
   GetGLTextureCaps(caps);
-  if caps.PowerOfTwo then
-  begin
-    if IsPow2(AWidth) then FWidth := AWidth else FWidth := NextPow2(AWidth);
-    if IsPow2(AHeight) then FHeight := AHeight else FHeight := NextPow2(AHeight);
-  end else
+  if caps.NonPowerOfTwo then
   begin
     FWidth := AWidth;
     FHeight := AHeight;
+  end else
+  begin
+    if IsPow2(AWidth) then FWidth := AWidth else FWidth := NextPow2(AWidth);
+    if IsPow2(AHeight) then FHeight := AHeight else FHeight := NextPow2(AHeight);
   end;
   FGraphic := TSingleImage.CreateFromParams(FWidth, FHeight, ifA8R8G8B8);
   AGraphic.CopyTo(0, 0, AWidth, AHeight, FGraphic, 0, 0);

@@ -1,5 +1,5 @@
 {
-  $Id: ImagingGif.pas 111 2007-12-02 23:25:44Z galfar $
+  $Id: ImagingGif.pas 132 2008-08-27 20:37:38Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -34,7 +34,7 @@ unit ImagingGif;
 interface
 
 uses
-  SysUtils, Classes, Imaging, ImagingTypes, ImagingUtility;
+  SysUtils, Classes, Imaging, ImagingTypes, ImagingIO, ImagingUtility;
 
 type
   { GIF (Graphics Interchange Format) loader/saver class. GIF was
@@ -48,7 +48,7 @@ type
   TGIFFileFormat = class(TImageFileFormat)
   private
     function InterlaceStep(Y, Height: Integer; var Pass: Integer): Integer;
-    procedure LZWDecompress(const IO: TIOFunctions; Handle: TImagingHandle;
+    procedure LZWDecompress(Stream: TStream; Handle: TImagingHandle;
       Width, Height: Integer; Interlaced: Boolean; Data: Pointer);
     procedure LZWCompress(const IO: TIOFunctions; Handle: TImagingHandle;
       Width, Height, BitCount: Integer; Interlaced: Boolean; Data: Pointer);
@@ -246,7 +246,7 @@ begin
 end;
 
 { GIF LZW decompresion code is from JVCL JvGIF.pas unit.}
-procedure TGIFFileFormat.LZWDecompress(const IO: TIOFunctions; Handle: TImagingHandle; Width, Height: Integer;
+procedure TGIFFileFormat.LZWDecompress(Stream: TStream; Handle: TImagingHandle; Width, Height: Integer;
   Interlaced: Boolean; Data: Pointer);
 var
   MinCodeSize: Byte;
@@ -266,7 +266,8 @@ var
     Bytes: Byte;
     BytesToLose: Integer;
   begin
-    while Context.Inx + Context.CodeSize > Context.Size do
+    while (Context.Inx + Context.CodeSize > Context.Size) and
+      (Stream.Position < Stream.Size) do
     begin
       // Not enough bits in buffer - refill it - Not very efficient, but infrequently called
       BytesToLose := Context.Inx shr 3;
@@ -274,16 +275,16 @@ var
       Move(Context.Buf[Word(BytesToLose)], Context.Buf[0], 3);
       Context.Inx := Context.Inx and 7;
       Context.Size := Context.Size - (BytesToLose shl 3);
-      IO.Read(Handle, @Bytes, 1);
+      Stream.Read(Bytes, 1);
       if Bytes > 0 then
-        IO.Read(Handle, @Context.Buf[Word(Context.Size shr 3)], Bytes);
+        Stream.Read(Context.Buf[Word(Context.Size shr 3)], Bytes);
       Context.Size := Context.Size + (Bytes shl 3);
     end;
     ByteIndex := Context.Inx shr 3;
     RawCode := Context.Buf[Word(ByteIndex)] +
       (Word(Context.Buf[Word(ByteIndex + 1)]) shl 8);
     if Context.CodeSize > 8 then
-      RawCode := RawCode + (Longint(Context.Buf[ByteIndex + 2]) shl 16);
+      RawCode := RawCode + (LongInt(Context.Buf[ByteIndex + 2]) shl 16);
     RawCode := RawCode shr (Context.Inx and 7);
     Context.Inx := Context.Inx + Byte(Context.CodeSize);
     Result := RawCode and Context.ReadMask;
@@ -345,7 +346,7 @@ begin
   GetMem(Suffix, SizeOf(TIntCodeTable));
   GetMem(OutCode, SizeOf(TIntCodeTable) + SizeOf(Word));
   try
-    IO.Read(Handle, @MinCodeSize, 1);
+    Stream.Read(MinCodeSize, 1);
     if (MinCodeSize < 2) or (MinCodeSize > 9) then
       RaiseImaging(SGIFDecodingError, []);
     // Initial read context
@@ -690,25 +691,53 @@ var
     end;
   end;
 
-  procedure CopyFrameTransparent(const Image, Frame: TImageData; Left, Top, TransIndex: Integer);
+  procedure CopyFrameTransparent(const Image, Frame: TImageData; Left, Top,
+    TransIndex: Integer; Disposal: TDisposalMethod);
   var
     X, Y: Integer;
     Src, Dst: PByte;
   begin
     Src := Frame.Bits;
 
-    // Copy all pixels from frame to log screen but ignore the transparent ones 
+    // Copy all pixels from frame to log screen but ignore the transparent ones
     for Y := 0 to Frame.Height - 1 do
     begin
       Dst := @PByteArray(Image.Bits)[(Top + Y) * Image.Width + Left];
       for X := 0 to Frame.Width - 1 do
       begin
-        if Src^ <> TransIndex then
+        // If disposal methos is undefined copy all pixels regardless of
+        // transparency (transparency of whole image will be determined by TranspIndex
+        // in image palette) - same effect as filling the image with trasp color
+        // instead of backround color beforehand.
+        // For other methods don't copy transparent pixels from frame to image.
+        if (Src^ <> TransIndex) or (Disposal = dmUndefined) then
           Dst^ := Src^;
         Inc(Src);
         Inc(Dst);
       end;
     end;
+  end;
+
+  procedure CopyLZWData(Dest: TStream);
+  var
+    CodeSize, BlockSize: Byte;
+    InputSize: Integer;
+    Buff: array[Byte] of Byte;
+  begin
+    InputSize := ImagingIO.GetInputSize(GetIO, Handle);
+    // Copy codesize to stream
+    GetIO.Read(Handle, @CodeSize, 1);
+    Dest.Write(CodeSize, 1);
+    repeat
+      // Read and write data blocks, last is block term value of 0
+      GetIO.Read(Handle, @BlockSize, 1);
+      Dest.Write(BlockSize, 1);
+      if BlockSize > 0 then
+      begin
+        GetIO.Read(Handle, @Buff[0], BlockSize);
+        Dest.Write(Buff[0], BlockSize);
+      end;
+    until (BlockSize = 0) or (GetIO.Tell(Handle) >= InputSize);
   end;
 
   procedure ReadFrame;
@@ -719,6 +748,7 @@ var
     LocalPal: TPalette32Size256;
     BlockTerm: Byte;
     Frame: TImageData;
+    LZWStream: TMemoryStream;
   begin
     Idx := Length(Images);
     SetLength(Images, Idx + 1);
@@ -806,15 +836,20 @@ var
           @Header.BackgroundColorIndex);
       end;
 
+      LZWStream := TMemoryStream.Create;
       try
+        // Copy LZW data to temp stream, needed for correct decompression
+        CopyLZWData(LZWStream);
+        LZWStream.Position := 0;
         // Data decompression finally
-        LZWDecompress(GetIO, Handle, ImageDesc.Width, ImageDesc.Height, Interlaced, Frame.Bits);
-        Read(Handle, @BlockTerm, SizeOf(BlockTerm));
+        LZWDecompress(LZWStream, Handle, ImageDesc.Width, ImageDesc.Height, Interlaced, Frame.Bits);
         // Now copy frame to logical screen with skipping of transparent pixels (if enabled)
         TransIndex := Iff(HasTransparency, GraphicExt.TransparentColorIndex, MaxInt);
-        CopyFrameTransparent(Images[Idx], Frame, ImageDesc.Left, ImageDesc.Top, TransIndex);
+        CopyFrameTransparent(Images[Idx], Frame, ImageDesc.Left, ImageDesc.Top,
+          TransIndex, Disposals[Idx]);
       finally
         FreeImage(Frame);
+        LZWStream.Free;
       end;
     end;
   end;
@@ -840,7 +875,6 @@ begin
         Read(Handle, @GlobalPal[I].G, SizeOf(GlobalPal[I].G));
         Read(Handle, @GlobalPal[I].B, SizeOf(GlobalPal[I].B));
       end;
-      GlobalPal[Header.BackgroundColorIndex].A := 0;
     end;
 
     // Read ID of the first block
@@ -972,6 +1006,14 @@ initialization
 
  -- TODOS ----------------------------------------------------
     - nothing now
+
+  -- 0.25.0 Changes/Bug Fixes ---------------------------------
+    - Fixed loading of some rare GIFs, problems with LZW
+      decompression.
+
+  -- 0.24.3 Changes/Bug Fixes ---------------------------------
+    - Better solution to transparency for some GIFs. Background not
+      transparent by default.
 
   -- 0.24.1 Changes/Bug Fixes ---------------------------------
     - Made backround color transparent by default (alpha = 0).

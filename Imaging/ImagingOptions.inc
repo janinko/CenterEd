@@ -1,4 +1,4 @@
-{ $Id: ImagingOptions.inc 100 2007-06-28 21:09:52Z galfar $ }
+{ $Id: ImagingOptions.inc 132 2008-08-27 20:37:38Z galfar $ }
 
 {
   User Options
@@ -212,11 +212,6 @@
   {$PACKENUM 4}            // Min enum size: 4 B
   {$CALLING REGISTER}      // default calling convention is register
   {$IFDEF CPU86}
-    {$IFNDEF DYN_LIBRARY}
-      {$SMARTLINK ON}      // smartlinking on, but not for dll/so -
-                           // nothing gets exported from library when it is on
-                           // in FPC 1.9.8
-    {$ENDIF}
     {$ASMMODE INTEL}       // intel assembler mode
   {$ENDIF}
 {$ENDIF}

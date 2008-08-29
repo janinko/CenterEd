@@ -1,61 +1,120 @@
 object frmElevateSettings: TfrmElevateSettings
   Left = 290
-  Height = 65
+  Height = 115
   Top = 171
-  Width = 131
-  HorzScrollBar.Page = 130
+  Width = 231
+  HorzScrollBar.Page = 230
   HorzScrollBar.Range = 122
-  VertScrollBar.Page = 64
+  VertScrollBar.Page = 114
   VertScrollBar.Range = 59
   ActiveControl = rbRaise
   AutoScroll = False
   BorderIcons = []
   BorderStyle = bsToolWindow
   Caption = 'Elevate'
-  ClientHeight = 65
-  ClientWidth = 131
+  ClientHeight = 115
+  ClientWidth = 231
   Font.Height = -11
   OnClose = FormClose
   OnDeactivate = FormDeactivate
   LCLVersion = '0.9.25'
-  object rbRaise: TRadioButton
+  object Panel1: TPanel
     Left = 8
-    Height = 21
+    Height = 67
     Top = 8
-    Width = 58
-    Caption = 'Raise'
-    Checked = True
-    ParentFont = True
-    State = cbChecked
+    Width = 215
+    Align = alTop
+    BorderSpacing.Around = 8
+    BevelOuter = bvNone
+    ClientHeight = 67
+    ClientWidth = 215
     TabOrder = 0
+    object Panel2: TPanel
+      Height = 67
+      Width = 162
+      Align = alClient
+      BevelOuter = bvNone
+      ClientHeight = 67
+      ClientWidth = 162
+      ParentFont = True
+      TabOrder = 0
+      object rbRaise: TRadioButton
+        Height = 21
+        Width = 162
+        Align = alTop
+        Caption = 'Raise'
+        Checked = True
+        State = cbChecked
+        TabOrder = 2
+      end
+      object rbLower: TRadioButton
+        Height = 21
+        Top = 21
+        Width = 162
+        Align = alTop
+        Caption = 'Lower'
+        ParentFont = True
+        TabOrder = 0
+      end
+      object rbSet: TRadioButton
+        Height = 21
+        Top = 42
+        Width = 162
+        Align = alTop
+        Caption = 'Set'
+        ParentFont = True
+        TabOrder = 1
+      end
+    end
+    object Panel3: TPanel
+      Left = 162
+      Height = 67
+      Width = 53
+      Align = alRight
+      BevelOuter = bvNone
+      ClientHeight = 67
+      ClientWidth = 53
+      TabOrder = 1
+      object seZ: TSpinEdit
+        Left = 7
+        Height = 23
+        Top = 20
+        Width = 47
+        MaxValue = 127
+        MinValue = -128
+        ParentFont = True
+        TabOrder = 0
+        Value = 1
+      end
+    end
   end
-  object rbLower: TRadioButton
+  object Panel4: TPanel
     Left = 8
-    Height = 21
-    Top = 24
-    Width = 59
-    Caption = 'Lower'
-    ParentFont = True
-    TabOrder = 1
-  end
-  object seZ: TSpinEdit
-    Left = 72
     Height = 23
-    Top = 22
-    Width = 50
-    MaxValue = 127
-    MinValue = -128
-    ParentFont = True
-    TabOrder = 3
-    Value = 1
-  end
-  object rbSet: TRadioButton
-    Left = 8
-    Height = 21
-    Top = 40
-    Width = 43
-    Caption = 'Set'
-    ParentFont = True
-    TabOrder = 2
+    Top = 83
+    Width = 215
+    Align = alTop
+    BorderSpacing.Around = 8
+    BevelOuter = bvNone
+    ClientHeight = 23
+    ClientWidth = 215
+    TabOrder = 1
+    object cbRandomHeight: TCheckBox
+      Height = 23
+      Width = 168
+      Align = alClient
+      Caption = 'Add Random Altitude'
+      ParentFont = True
+      TabOrder = 0
+    end
+    object seRandomHeight: TSpinEdit
+      Left = 168
+      Height = 23
+      Width = 47
+      Align = alRight
+      OnChange = seRandomHeightChange
+      ParentFont = True
+      TabOrder = 1
+    end
   end
 end

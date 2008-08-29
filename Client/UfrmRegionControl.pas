@@ -345,6 +345,8 @@ var
   areaInfo: PRect;
   p: TPoint;
 begin
+  if vstRegions.GetFirstSelected = nil then Exit;
+
   FAreaMove := [];
   p := Point(X * 8, Y * 8);
   match := nil;

@@ -619,6 +619,8 @@ begin
 
               if tile is TMapCell then
               begin
+                if frmElevateSettings.cbRandomHeight.Checked then
+                  Inc(z, Random(frmElevateSettings.seRandomHeight.Value));
                 dmNetwork.Send(TDrawMapPacket.Create(tile.X, tile.Y,
                   z, tile.TileID));
               end else

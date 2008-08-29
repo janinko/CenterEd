@@ -16,8 +16,8 @@ object frmLogin: TfrmLogin
   ShowInTaskBar = stAlways
   LCLVersion = '0.9.25'
   object lblCopyright: TLabel
-    Height = 25
-    Top = 240
+    Height = 26
+    Top = 239
     Width = 489
     Align = alBottom
     Alignment = taCenter
@@ -151,6 +151,7 @@ object frmLogin: TfrmLogin
         233023312332233323342335517451745174222C0A2251745174517451745174
         51745174517451745174517451745174517451745174227D3B0A
       }
+      Transparent = True
     end
     object imgUsername: TImage
       Left = 6
@@ -242,6 +243,7 @@ object frmLogin: TfrmLogin
         233123322333233423355174517451745174222C0A2251745174517451745174
         51745174517451745174517451745174517451745174227D3B0A
       }
+      Transparent = True
     end
     object imgPassword: TImage
       Left = 6
@@ -323,6 +325,7 @@ object frmLogin: TfrmLogin
         5174222C0A2251742349234A236E234B51745174517451745174517451745174
         517451745174227D3B0A
       }
+      Transparent = True
     end
     object edHost: TEdit
       Left = 101
@@ -432,11 +435,11 @@ object frmLogin: TfrmLogin
   end
   object GroupBox1: TGroupBox
     Left = 336
-    Height = 84
+    Height = 88
     Top = 112
     Width = 145
     Caption = 'Profiles'
-    ClientHeight = 69
+    ClientHeight = 73
     ClientWidth = 141
     ParentFont = True
     TabOrder = 3

@@ -1,5 +1,5 @@
 {
-  $Id: ImagingOpenGL.pas 106 2007-10-23 23:03:35Z galfar $
+  $Id: ImagingOpenGL.pas 128 2008-07-23 11:57:36Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -33,7 +33,7 @@ unit ImagingOpenGL;
 {$I ImagingOptions.inc}
 
 { Define this symbol if you want to use dglOpenGL header.}
-{ $DEFINE USE_DGL_HEADERS}
+{.$DEFINE USE_DGL_HEADERS}
 
 interface
 
@@ -49,12 +49,17 @@ uses
 type
   { Various texture capabilities of installed OpenGL driver.}
   TGLTextureCaps = record
-    MaxTextureSize: LongInt;
-    PowerOfTwo: Boolean;
-    DXTCompression: Boolean;
-    FloatTextures: Boolean;
-    MaxAnisotropy: LongInt;
-    MaxSimultaneousTextures: LongInt;
+    MaxTextureSize: LongInt;  // Max size of texture in pixels supported by HW
+    NonPowerOfTwo: Boolean;   // HW has full support for NPOT textures
+    DXTCompression: Boolean;  // HW supports S3TC/DXTC compressed textures
+    ATI3DcCompression: Boolean; // HW supports ATI 3Dc compressed textures (ATI2N)
+    LATCCompression: Boolean; // HW supports LATC/RGTC compressed textures (ATI1N+ATI2N)
+    FloatTextures: Boolean;   // HW supports floating point textures
+    MaxAnisotropy: LongInt;   // Max anisotropy for aniso texture filtering
+    MaxSimultaneousTextures: LongInt; // Number of texture units
+    ClampToEdge: Boolean;     // GL_EXT_texture_edge_clamp
+    TextureLOD: Boolean;      // GL_SGIS_texture_lod
+    VertexTextureUnits: Integer; // Texture units accessible in vertex programs
   end;
 
 { Returns texture capabilities of installed OpenGL driver.}
@@ -71,7 +76,7 @@ function IsGLExtensionSupported(const Extension: string): Boolean;
   supported by hardware using GetGLTextureCaps, ImageFormatToGL does not
   check this.}
 function ImageFormatToGL(Format: TImageFormat; var GLFormat: GLenum;
-  var GLType: GLenum; var GLInternal: GLint): Boolean;
+  var GLType: GLenum; var GLInternal: GLint; const Caps: TGLTextureCaps): Boolean;
 
 { All GL textures created by Imaging functions have default parameters set -
   that means that no glTexParameter calls are made so default filtering,
@@ -164,6 +169,14 @@ var
     image->texture process (usually only pow2/nonpow2 stuff and when you
     set custom Width & Height in CreateGLTextureFrom(Multi)Image).}
   PasteNonPow2ImagesIntoPow2: Boolean = False;
+  { Standard behaviur if GL_ARB_texture_non_power_of_two extension is not supported
+    is to rescale image to power of 2 dimensions. NPOT extension is exposed only
+    when HW has full support for NPOT textures but some cards
+    (ATI Radeons, some other maybe) have partial NPOT support. Namely Radeons
+    can use NPOT textures but not mipmapped. If you know what you are doing
+    you can disable NPOT support check so the image won't be rescaled to POT
+    by seting DisableNPOTSupportCheck to True.}
+  DisableNPOTSupportCheck: Boolean = False;
 
 implementation
 
@@ -239,6 +252,11 @@ const
   GL_COMPRESSED_RGBA_S3TC_DXT1_EXT  = $83F1;
   GL_COMPRESSED_RGBA_S3TC_DXT3_EXT  = $83F2;
   GL_COMPRESSED_RGBA_S3TC_DXT5_EXT  = $83F3;
+  GL_COMPRESSED_LUMINANCE_ALPHA_3DC_ATI          = $8837;
+  GL_COMPRESSED_LUMINANCE_LATC1_EXT              = $8C70;
+  GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT       = $8C71;
+  GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT        = $8C72;
+  GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT = $8C73;
 
   // various GL extension constants
   GL_MAX_TEXTURE_UNITS              = $84E2;
@@ -311,36 +329,49 @@ end;
 
 function GetGLTextureCaps(var Caps: TGLTextureCaps): Boolean;
 begin
-  // check DXTC support and load extension functions if necesary
+  // Check DXTC support and load extension functions if necesary
   Caps.DXTCompression := IsGLExtensionSupported('GL_ARB_texture_compression') and
     IsGLExtensionSupported('GL_EXT_texture_compression_s3tc');
   if Caps.DXTCompression then
     glCompressedTexImage2D := GetGLProcAddress('glCompressedTexImage2D');
   Caps.DXTCompression := Caps.DXTCompression and (@glCompressedTexImage2D <> nil);
-  // check non power of 2 textures
-  Caps.PowerOfTwo := not IsGLExtensionSupported('GL_ARB_texture_non_power_of_two');
-  // check for floating point textures support
+  Caps.ATI3DcCompression := Caps.DXTCompression and
+    IsGLExtensionSupported('GL_ATI_texture_compression_3dc');
+  Caps.LATCCompression := Caps.DXTCompression and
+    IsGLExtensionSupported('GL_EXT_texture_compression_latc');
+  // Check non power of 2 textures
+  Caps.NonPowerOfTwo := IsGLExtensionSupported('GL_ARB_texture_non_power_of_two');
+  // Check for floating point textures support
   Caps.FloatTextures := IsGLExtensionSupported('GL_ARB_texture_float');
-  // get max texture size
+  // Get max texture size
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, @Caps.MaxTextureSize);
-  // get max anisotropy
+  // Get max anisotropy
   if IsGLExtensionSupported('GL_EXT_texture_filter_anisotropic') then
     glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, @Caps.MaxAnisotropy)
   else
     Caps.MaxAnisotropy := 0;
-  // get number of texture units
+  // Get number of texture units
   if IsGLExtensionSupported('GL_ARB_multitexture') then
     glGetIntegerv(GL_MAX_TEXTURE_UNITS, @Caps.MaxSimultaneousTextures)
   else
     Caps.MaxSimultaneousTextures := 1;
-  // get max texture size
+  // Get number of vertex texture units
+  if IsGLExtensionSupported('GL_ARB_vertex_shader') then
+    glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, @Caps.VertexTextureUnits)
+  else
+    Caps.VertexTextureUnits := 1;
+  // Get max texture size
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, @Caps.MaxTextureSize);
+  // Clamp texture to edge?
+  Caps.ClampToEdge := IsGLExtensionSupported('GL_EXT_texture_edge_clamp');
+  // Texture LOD extension?
+  Caps.TextureLOD := IsGLExtensionSupported('GL_SGIS_texture_lod');
 
   Result := True;
 end;
 
 function ImageFormatToGL(Format: TImageFormat; var GLFormat: GLenum;
-  var GLType: GLenum; var GLInternal: GLint): Boolean;
+  var GLType: GLenum; var GLInternal: GLint; const Caps: TGLTextureCaps): Boolean;
 begin
   GLFormat := 0;
   GLType := 0;
@@ -437,6 +468,13 @@ begin
     ifDXT1: GLInternal := GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
     ifDXT3: GLInternal := GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
     ifDXT5: GLInternal := GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    ifATI1N: GLInternal := GL_COMPRESSED_LUMINANCE_LATC1_EXT;
+    ifATI2N:
+      begin
+        GLInternal := GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+        if not Caps.LATCCompression and Caps.ATI3DcCompression then
+          GLInternal := GL_COMPRESSED_LUMINANCE_ALPHA_3DC_ATI;
+      end;
   end;
   Result := GLInternal <> 0;
 end;
@@ -500,7 +538,7 @@ function CreateGLTextureFromMultiImage(const Images: TDynImageDataArray;
   Width, Height: LongInt; MipMaps: Boolean; MainLevelIndex: LongInt; OverrideFormat: TImageFormat;
   CreatedWidth, CreatedHeight: PLongInt): GLuint;
 const
-  CompressedFormats: TImageFormats = [ifDXT1, ifDXT3, ifDXT5];
+  BlockCompressedFormats: TImageFormats = [ifDXT1, ifDXT3, ifDXT5, ifATI1N, ifATI2N];
 var
   I, MipLevels, PossibleLevels, ExistingLevels, CurrentWidth, CurrentHeight: LongInt;
   Caps: TGLTextureCaps;
@@ -537,7 +575,7 @@ begin
     // First check desired size and modify it if necessary
     if Width <= 0 then Width := Images[MainLevelIndex].Width;
     if Height <= 0 then Height := Images[MainLevelIndex].Height;
-    if Caps.PowerOfTwo then
+    if not Caps.NonPowerOfTwo and not DisableNPOTSupportCheck then
     begin
       // If device supports only power of 2 texture sizes
       Width := NextPow2(Width);
@@ -564,23 +602,27 @@ begin
     else
       Desired := OverrideFormat;
 
-    // Check if the hardware supports floating point and compressed textures  
+    // Check if the hardware supports floating point and compressed textures
     GetImageFormatInfo(Desired, Info);
     if Info.IsFloatingPoint and not Caps.FloatTextures then
       Desired := ifA8R8G8B8;
     if (Desired in [ifDXT1, ifDXT3, ifDXT5]) and not Caps.DXTCompression then
       Desired := ifA8R8G8B8;
+    if (Desired = ifATI1N)  and not Caps.LATCCompression then
+      Desired := ifGray8;
+    if (Desired = ifATI2N) and not (Caps.ATI3DcCompression or Caps.LATCCompression) then
+      Desired := ifA8Gray8;
 
     // Try to find GL format equivalent to image format and if it is not
     // found use one of default formats
-    if not ImageFormatToGL(Desired, GLFormat, GLType, GLInternal) then
+    if not ImageFormatToGL(Desired, GLFormat, GLType, GLInternal, Caps) then
     begin
       GetImageFormatInfo(Desired, Info);
       if Info.HasGrayChannel then
         ConvTo := ifGray8
       else
         ConvTo := ifA8R8G8B8;
-      if not ImageFormatToGL(ConvTo, GLFormat, GLType, GLInternal) then
+      if not ImageFormatToGL(ConvTo, GLFormat, GLType, GLInternal, Caps) then
         Exit;
     end
     else
@@ -618,7 +660,7 @@ begin
         // Check if input image for this mipmap level has the right
         // size and format
         NeedsConvert := not (Images[I].Format = ConvTo);
-        if ConvTo in CompressedFormats then
+        if ConvTo in BlockCompressedFormats then
         begin
           // Input images in DXTC will have min dimensions of 4, but we need
           // current Width and Height to be lesser (for glCompressedTexImage2D)
@@ -659,7 +701,7 @@ begin
         FillMipMapLevel(LevelsArray[I - 1], CurrentWidth, CurrentHeight, LevelsArray[I]);
       end;
 
-      if ConvTo in CompressedFormats then
+      if ConvTo in BlockCompressedFormats then
       begin
         // Note: GL DXTC texture snaller than 4x4 must have width and height
         // as expected for non-DXTC texture (like 1x1 -  we cannot
@@ -837,6 +879,14 @@ initialization
     - use internal format of texture in CreateMultiImageFromGLTexture
       not only A8R8G8B8
     - support for cube and 3D maps
+
+  -- 0.25.0 Changes/Bug Fixes ---------------------------------
+    - Added 3Dc compressed texture formats support.
+    - Added detection of 3Dc formats to texture caps.
+
+  -- 0.24.3 Changes/Bug Fixes ---------------------------------
+    - Added DisableNPOTSupportCheck option and related functionality.
+    - Added some new texture caps detection.
 
   -- 0.24.1 Changes/Bug Fixes ---------------------------------
     - Added PasteNonPow2ImagesIntoPow2 option and related functionality.

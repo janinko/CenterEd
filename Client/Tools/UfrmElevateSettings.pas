@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UfrmElevateSettings;
 
@@ -31,19 +31,26 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LMessages,
-  LCLIntf, StdCtrls, Spin;
+  LCLIntf, StdCtrls, Spin, ExtCtrls;
 
 type
 
   { TfrmElevateSettings }
 
   TfrmElevateSettings = class(TForm)
-    rbSet: TRadioButton;
+    cbRandomHeight: TCheckBox;
+    Panel1: TPanel;
+    Panel2: TPanel;
+    Panel3: TPanel;
+    Panel4: TPanel;
     rbRaise: TRadioButton;
     rbLower: TRadioButton;
+    rbSet: TRadioButton;
+    seRandomHeight: TSpinEdit;
     seZ: TSpinEdit;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormDeactivate(Sender: TObject);
+    procedure seRandomHeightChange(Sender: TObject);
   protected
     procedure MouseLeave(var msg: TLMessage); message CM_MouseLeave;
   public
@@ -66,6 +73,11 @@ end;
 procedure TfrmElevateSettings.FormDeactivate(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TfrmElevateSettings.seRandomHeightChange(Sender: TObject);
+begin
+  cbRandomHeight.Checked := True;
 end;
 
 procedure TfrmElevateSettings.MouseLeave(var msg: TLMessage);
