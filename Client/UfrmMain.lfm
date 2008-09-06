@@ -5,7 +5,7 @@ object frmMain: TfrmMain
   Width = 766
   ActiveControl = pcLeft
   Caption = 'UO CentrED'
-  ClientHeight = 578
+  ClientHeight = 580
   ClientWidth = 766
   Constraints.MinHeight = 603
   Constraints.MinWidth = 766
@@ -21,7 +21,7 @@ object frmMain: TfrmMain
   WindowState = wsMaximized
   object pnlBottom: TPanel
     Height = 31
-    Top = 547
+    Top = 549
     Width = 766
     Align = alBottom
     BevelOuter = bvNone
@@ -110,7 +110,7 @@ object frmMain: TfrmMain
     end
   end
   object pcLeft: TPageControl
-    Height = 523
+    Height = 525
     Top = 24
     Width = 224
     ActivePage = tsTiles
@@ -120,16 +120,16 @@ object frmMain: TfrmMain
     TabOrder = 1
     object tsTiles: TTabSheet
       Caption = 'Tiles'
-      ClientHeight = 494
-      ClientWidth = 220
+      ClientHeight = 500
+      ClientWidth = 222
       ParentFont = True
       object pnlTileListSettings: TPanel
         Height = 56
-        Width = 220
+        Width = 222
         Align = alTop
         BevelOuter = bvNone
         ClientHeight = 56
-        ClientWidth = 220
+        ClientWidth = 222
         ParentFont = True
         TabOrder = 0
         object lblFilter: TLabel
@@ -143,9 +143,9 @@ object frmMain: TfrmMain
         end
         object cbTerrain: TCheckBox
           Left = 4
-          Height = 21
+          Height = 18
           Top = 8
-          Width = 60
+          Width = 57
           Caption = 'Terrain'
           Checked = True
           OnChange = cbTerrainChange
@@ -155,9 +155,9 @@ object frmMain: TfrmMain
         end
         object cbStatics: TCheckBox
           Left = 4
-          Height = 21
+          Height = 18
           Top = 32
-          Width = 59
+          Width = 56
           Caption = 'Statics'
           Checked = True
           OnChange = cbStaticsChange
@@ -177,9 +177,9 @@ object frmMain: TfrmMain
       end
       object vdtTiles: TVirtualDrawTree
         Tag = 1
-        Height = 240
+        Height = 246
         Top = 56
-        Width = 220
+        Width = 222
         Align = alClient
         DefaultNodeHeight = 44
         DragMode = dmAutomatic
@@ -221,20 +221,20 @@ object frmMain: TfrmMain
       end
       object gbRandom: TGroupBox
         Height = 193
-        Top = 301
-        Width = 220
+        Top = 307
+        Width = 222
         Align = alBottom
         Caption = 'Random pool'
-        ClientHeight = 178
-        ClientWidth = 216
+        ClientHeight = 179
+        ClientWidth = 220
         ParentFont = True
         TabOrder = 2
         object vdtRandom: TVirtualDrawTree
           Tag = 1
           Cursor = 63
-          Height = 126
+          Height = 127
           Top = 22
-          Width = 216
+          Width = 220
           Align = alClient
           DefaultNodeHeight = 44
           DragType = dtVCL
@@ -268,11 +268,11 @@ object frmMain: TfrmMain
         end
         object pnlRandomControl: TPanel
           Height = 22
-          Width = 216
+          Width = 220
           Align = alTop
           BevelOuter = bvNone
           ClientHeight = 22
-          ClientWidth = 216
+          ClientWidth = 220
           ParentFont = True
           TabOrder = 1
           object btnAddRandom: TSpeedButton
@@ -420,13 +420,13 @@ object frmMain: TfrmMain
         object pnlRandomPreset: TPanel
           Left = 4
           Height = 22
-          Top = 152
-          Width = 208
+          Top = 153
+          Width = 212
           Align = alBottom
           BorderSpacing.Around = 4
           BevelOuter = bvNone
           ClientHeight = 22
-          ClientWidth = 208
+          ClientWidth = 212
           ParentFont = True
           TabOrder = 2
           object btnRandomPresetSave: TSpeedButton
@@ -526,10 +526,8 @@ object frmMain: TfrmMain
             ParentShowHint = False
           end
           object cbRandomPreset: TComboBox
-            Height = 29
+            Height = 25
             Width = 152
-            AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
-            MaxLength = 0
             OnChange = cbRandomPresetChange
             ParentFont = True
             Style = csDropDownList
@@ -540,8 +538,8 @@ object frmMain: TfrmMain
       object spTileList: TSplitter
         Cursor = crVSplit
         Height = 5
-        Top = 296
-        Width = 220
+        Top = 302
+        Width = 222
         Align = alBottom
         ResizeAnchor = akBottom
       end
@@ -563,12 +561,12 @@ object frmMain: TfrmMain
     end
     object tsClients: TTabSheet
       Caption = 'Clients'
-      ClientHeight = 494
-      ClientWidth = 220
+      ClientHeight = 498
+      ClientWidth = 222
       ParentFont = True
       object lbClients: TListBox
-        Height = 494
-        Width = 220
+        Height = 498
+        Width = 222
         Align = alClient
         OnDblClick = mnuGoToClientClick
         ParentFont = True
@@ -580,15 +578,15 @@ object frmMain: TfrmMain
     end
     object tsLocations: TTabSheet
       Caption = 'Locations'
-      ClientHeight = 494
-      ClientWidth = 220
+      ClientHeight = 498
+      ClientWidth = 222
       ParentFont = True
       object vstLocations: TVirtualStringTree
         Cursor = 63
         Left = 4
-        Height = 458
+        Height = 462
         Top = 4
-        Width = 212
+        Width = 214
         Align = alClient
         BorderSpacing.Around = 4
         BorderStyle = bsSingle
@@ -614,20 +612,20 @@ object frmMain: TfrmMain
           end        
           item
             Position = 1
-            Width = 137
+            Width = 135
             WideText = 'Name'
           end>
       end
       object pnlLocationControls: TPanel
         Left = 4
         Height = 24
-        Top = 466
-        Width = 212
+        Top = 470
+        Width = 214
         Align = alBottom
         BorderSpacing.Around = 4
         BevelOuter = bvNone
         ClientHeight = 24
-        ClientWidth = 212
+        ClientWidth = 214
         ParentFont = True
         TabOrder = 1
         object btnClearLocations: TSpeedButton
@@ -951,17 +949,17 @@ object frmMain: TfrmMain
   end
   object pnlMain: TPanel
     Left = 224
-    Height = 523
+    Height = 525
     Top = 24
     Width = 542
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 523
+    ClientHeight = 525
     ClientWidth = 542
     ParentFont = True
     TabOrder = 3
     object oglGameWindow: TOpenGLControl
-      Height = 372
+      Height = 374
       Width = 542
       Align = alClient
       OnDblClick = oglGameWindowDblClick
@@ -975,7 +973,7 @@ object frmMain: TfrmMain
     end
     object pnlChatHeader: TPanel
       Height = 24
-      Top = 372
+      Top = 374
       Width = 542
       Align = alBottom
       BevelInner = bvRaised
@@ -1003,7 +1001,7 @@ object frmMain: TfrmMain
     end
     object pnlChat: TPanel
       Height = 122
-      Top = 401
+      Top = 403
       Width = 542
       Align = alBottom
       BevelOuter = bvNone
@@ -1060,7 +1058,7 @@ object frmMain: TfrmMain
     object spChat: TSplitter
       Cursor = crVSplit
       Height = 5
-      Top = 396
+      Top = 398
       Width = 542
       Align = alBottom
       AutoSnap = False

@@ -48,7 +48,6 @@ uses
 begin
   Application.Initialize;
   Application.CreateForm(TdmNetwork, dmNetwork);
-  //Application.CreateForm(TfrmMain, frmMain);
   Application.Run;
 end.
 

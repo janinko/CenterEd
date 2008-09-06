@@ -665,6 +665,9 @@ procedure TfrmMain.oglGameWindowMouseWheel(Sender: TObject; Shift: TShiftState;
 var
   cursorNeedsUpdate: Boolean;
 begin
+  //We want single steps ...
+  WheelDelta := WheelDelta div WHEEL_DELTA;
+
   cursorNeedsUpdate := False;
   if (CurrentTile is TVirtualTile) or ((ssCtrl in Shift) and (frmVirtualLayer.cbShowLayer.Checked)) then
   begin

@@ -40,7 +40,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="29">
+    <Units Count="30">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -244,6 +244,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UAdminHandling"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="UOpenGLUI.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UOpenGLUI"/>
+      </Unit29>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
