@@ -1,11 +1,21 @@
 Changelog:
 [C] = Client, [S] = Server, [-] = Both/Unrelated
 
+Version 0.4.1
+=============
+[C] Added random altitude to the elevate tool
+[C] Fixed Boundaries not being updated when using the spin edits
+[C] Fixed RegionControl to not react on mouseclicks when no region is selected
+[C] Fixed VirtualLayer crashing CentrED when scrolling to the edges of a map
+[C] Fixed elevation with the mouse wheel being far too high
+
 Version 0.4.0
 =============
 [C] Added regional restrictions to accounts
-[C] Visualize these restrictions for users
+[C] Added visualization of these restrictions for users
 [C] Added better GTK2 compatibility to the Linux version
+[C] Added random altitude to the draw tool
+[S] Added more detailed startup messages
 [S] Changed config file to use XML
 [S] Bumped config file version to 3
 [-] Removed some memory leaks

@@ -528,6 +528,7 @@ object frmMain: TfrmMain
           object cbRandomPreset: TComboBox
             Height = 25
             Width = 152
+            MaxLength = -1
             OnChange = cbRandomPresetChange
             ParentFont = True
             Style = csDropDownList
@@ -561,11 +562,11 @@ object frmMain: TfrmMain
     end
     object tsClients: TTabSheet
       Caption = 'Clients'
-      ClientHeight = 498
+      ClientHeight = 500
       ClientWidth = 222
       ParentFont = True
       object lbClients: TListBox
-        Height = 498
+        Height = 500
         Width = 222
         Align = alClient
         OnDblClick = mnuGoToClientClick
@@ -578,13 +579,13 @@ object frmMain: TfrmMain
     end
     object tsLocations: TTabSheet
       Caption = 'Locations'
-      ClientHeight = 498
+      ClientHeight = 500
       ClientWidth = 222
       ParentFont = True
       object vstLocations: TVirtualStringTree
         Cursor = 63
         Left = 4
-        Height = 462
+        Height = 464
         Top = 4
         Width = 214
         Align = alClient
@@ -619,7 +620,7 @@ object frmMain: TfrmMain
       object pnlLocationControls: TPanel
         Left = 4
         Height = 24
-        Top = 470
+        Top = 472
         Width = 214
         Align = alBottom
         BorderSpacing.Around = 4

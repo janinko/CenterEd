@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=CentrED
-AppVerName=CentrED 0.4.0
+AppVerName=CentrED 0.4.1
 AppPublisher=AKS DataBasis
 AppPublisherURL=http://www.aksdb.de/CentrED
 AppSupportURL=http://www.aksdb.de/CentrED
@@ -13,10 +13,10 @@ DefaultGroupName=AKS DataBasis\CentrED
 OutputBaseFilename=CentrED_win32
 Compression=lzma
 SolidCompression=true
-VersionInfoVersion=0.4.0
+VersionInfoVersion=0.4.1
 VersionInfoCompany=AKS DataBasis
 VersionInfoDescription=Client/Server based multiuser map editor
-VersionInfoTextVersion=0.4.0
+VersionInfoTextVersion=0.4.1
 VersionInfoCopyright=Andreas Schneider
 AppCopyright=Andreas Schneider
 InfoBeforeFile=Changelog.txt
