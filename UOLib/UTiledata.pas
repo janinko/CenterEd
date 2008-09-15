@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2008 Andreas Schneider
  *)
 unit UTiledata;
 
@@ -30,7 +30,7 @@ unit UTiledata;
 interface
 
 uses
-  Classes, UMulBlock;
+  Classes, SysUtils, UMulBlock;
 
 const
   tdfBackground = $00000001;
@@ -183,6 +183,7 @@ begin
     AData.Read(FTextureID, SizeOf(Word));
     AData.Read(PChar(FTileName)^, 20);
   end;
+  FTileName := Trim(FTileName);
 end;
 
 destructor TLandTiledata.Destroy;
@@ -234,6 +235,7 @@ begin
     AData.Read(FHeight, SizeOf(Byte));
     AData.Read(PChar(FTileName)^, 20);
   end;
+  FTileName := Trim(FTileName);
 end;
 
 destructor TStaticTiledata.Destroy;
