@@ -559,7 +559,7 @@ begin
                 if frmDrawSettings.cbForceAltitude.Checked then
                   map.Altitude := frmDrawSettings.seForceAltitude.Value;
                 if frmDrawSettings.cbRandomHeight.Checked then
-                  Inc(map.Altitude, Random(frmDrawSettings.seRandomHeight.Value));
+                  map.Altitude := map.Altitude + Random(frmDrawSettings.seRandomHeight.Value);
                 dmNetwork.Send(TDrawMapPacket.Create(map.X, map.Y, map.Z, tileInfo^.ID));
               end else
               begin
@@ -2047,7 +2047,7 @@ begin
         begin
           FGhostTile.Z := CurrentTile.Z;
           if CurrentTile is TStaticItem then
-            Inc(FGhostTile.Z, ResMan.Tiledata.StaticTiles[CurrentTile.TileID].Height);
+            FGhostTile.Z := FGhostTile.Z + ResMan.Tiledata.StaticTiles[CurrentTile.TileID].Height;
         end else
           FGhostTile.Z := frmDrawSettings.seForceAltitude.Value;
       end;

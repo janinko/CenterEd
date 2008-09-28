@@ -1,51 +1,48 @@
 object frmRegionControl: TfrmRegionControl
   Left = 247
-  Height = 392
+  Height = 413
   Top = 139
   Width = 620
-  ActiveControl = vstRegions
   Caption = 'Region Control'
-  ClientHeight = 392
+  ClientHeight = 413
   ClientWidth = 620
   Font.Height = -11
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
+  ParentFont = False
   Position = poOwnerFormCenter
   ShowInTaskBar = stAlways
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.27'
   object Panel1: TPanel
-    Height = 359
+    Height = 380
     Width = 160
     Align = alLeft
-    Caption = 'Panel1'
-    ClientHeight = 359
+    ClientHeight = 380
     ClientWidth = 160
-    ParentFont = True
     TabOrder = 0
     object Label1: TLabel
       Left = 5
-      Height = 13
-      Top = 137
+      Height = 14
+      Top = 176
       Width = 150
       Align = alTop
       BorderSpacing.Left = 4
       BorderSpacing.Right = 4
       Caption = 'Area:'
       ParentColor = False
-      ParentFont = True
     end
     object pnlAreaControls: TPanel
       Left = 5
       Height = 82
-      Top = 272
+      Top = 293
       Width = 150
       Align = alBottom
       BorderSpacing.Around = 4
       BevelOuter = bvNone
       ClientHeight = 82
       ClientWidth = 150
-      ParentFont = True
       TabOrder = 0
       object lblX: TLabel
         Left = 4
@@ -55,7 +52,6 @@ object frmRegionControl: TfrmRegionControl
         Caption = 'X'
         Enabled = False
         ParentColor = False
-        ParentFont = True
       end
       object lblY: TLabel
         Left = 4
@@ -65,7 +61,6 @@ object frmRegionControl: TfrmRegionControl
         Caption = 'Y'
         Enabled = False
         ParentColor = False
-        ParentFont = True
       end
       object btnAddArea: TSpeedButton
         Left = 30
@@ -218,7 +213,6 @@ object frmRegionControl: TfrmRegionControl
         Width = 50
         Enabled = False
         OnChange = seX1Change
-        ParentFont = True
         TabOrder = 0
       end
       object seX2: TSpinEdit
@@ -228,7 +222,6 @@ object frmRegionControl: TfrmRegionControl
         Width = 50
         Enabled = False
         OnChange = seX1Change
-        ParentFont = True
         TabOrder = 1
       end
       object seY1: TSpinEdit
@@ -238,7 +231,6 @@ object frmRegionControl: TfrmRegionControl
         Width = 50
         Enabled = False
         OnChange = seX1Change
-        ParentFont = True
         TabOrder = 2
       end
       object seY2: TSpinEdit
@@ -248,14 +240,13 @@ object frmRegionControl: TfrmRegionControl
         Width = 50
         Enabled = False
         OnChange = seX1Change
-        ParentFont = True
         TabOrder = 3
       end
     end
     object vstArea: TVirtualStringTree
       Left = 5
-      Height = 118
-      Top = 150
+      Height = 99
+      Top = 190
       Width = 150
       Align = alClient
       BorderSpacing.Left = 4
@@ -264,7 +255,6 @@ object frmRegionControl: TfrmRegionControl
       BorderStyle = bsSingle
       Header.MainColumn = -1
       Header.Options = [hoColumnResize, hoDrag]
-      ParentFont = True
       TabOrder = 1
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
       TreeOptions.SelectionOptions = [toFullRowSelect]
@@ -272,48 +262,172 @@ object frmRegionControl: TfrmRegionControl
       OnGetText = vstAreaGetText
       Columns = <>
     end
-    object vstRegions: TVirtualStringTree
+    object spRegionsArea: TSplitter
+      Cursor = crVSplit
       Left = 1
-      Height = 136
+      Height = 5
+      Top = 171
+      Width = 158
+      Align = alTop
+      AutoSnap = False
+      ResizeAnchor = akTop
+    end
+    object Panel4: TPanel
+      Left = 1
+      Height = 170
       Top = 1
       Width = 158
       Align = alTop
-      Header.Options = [hoAutoResize, hoVisible]
-      Header.ParentFont = True
-      Header.Style = hsFlatButtons
-      ParentFont = True
-      PopupMenu = pmRegions
-      TabOrder = 2
-      TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
-      TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
-      TreeOptions.SelectionOptions = [toFullRowSelect]
-      OnChange = vstRegionsChange
-      OnFreeNode = vstRegionsFreeNode
-      OnGetText = vstRegionsGetText
-      Columns = <      
-        item
-          Width = 158
-          WideText = 'Regions'
-        end>
+      Anchors = [akLeft, akRight]
+      BevelOuter = bvNone
+      ClientHeight = 170
+      ClientWidth = 158
+      TabOrder = 3
+      object vstRegions: TVirtualStringTree
+        Height = 144
+        Width = 158
+        Align = alClient
+        Header.Options = [hoAutoResize, hoVisible]
+        Header.ParentFont = True
+        Header.Style = hsFlatButtons
+        PopupMenu = pmRegions
+        TabOrder = 0
+        TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
+        TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
+        TreeOptions.SelectionOptions = [toFullRowSelect]
+        OnChange = vstRegionsChange
+        OnFreeNode = vstRegionsFreeNode
+        OnGetText = vstRegionsGetText
+        Columns = <        
+          item
+            Width = 158
+            WideText = 'Regions'
+          end>
+      end
+      object Panel5: TPanel
+        Height = 26
+        Top = 144
+        Width = 158
+        Align = alBottom
+        BevelOuter = bvNone
+        ClientHeight = 26
+        ClientWidth = 158
+        TabOrder = 1
+        object btnAddRegion: TSpeedButton
+          Left = 54
+          Height = 22
+          Hint = 'Add region'
+          Top = 3
+          Width = 23
+          Color = clBtnFace
+          Glyph.Data = {
+            36040000424D3604000000000000360000002800000010000000100000000100
+            2000000000000004000064000000640000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000003A8C44FF368940FF32873CFF2F84
+            37FF000000000000000000000000000000000000000000000000000000000000
+            00000000000000000000459653FF419950FF7DC28FFF96D0A6FF96CFA6FF78BE
+            89FF368D42FF2C8134FF00000000000000000000000000000000000000000000
+            0000000000004D9C5DFF64B478FFA8DBB5FF87CC98FF66BC7DFF64BA7CFF86CB
+            98FFA5D9B4FF58AA6BFF2C8134FF000000000000000000000000000000000000
+            000056A366FF6AB97DFFA8DBB2FF60BC77FF5CBA73FF59B870FF59B56FFF58B5
+            6FFF5BB774FFA5D9B3FF5AAA6CFF2C8234FF0000000000000000000000000000
+            000053AB68FFAADDB4FF64C179FF5FBE71FF60BC77FFFFFFFFFFFFFFFFFF59B8
+            70FF58B56EFF5CB774FFA6DAB4FF388F43FF00000000000000000000000061AC
+            75FF8ACC98FF89D396FF6BC67AFF63C170FF55AB65FFFFFFFFFFFFFFFFFF59B8
+            70FF59B870FF5BB972FF85CC97FF7BBE8DFF308539FF000000000000000065AF
+            7AFFA9DDB3FF7DCF8AFF75CC81FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFF59B870FF67BE7DFF9CD4ABFF34883DFF000000000000000069B2
+            7EFFB6E2BEFF8BD597FF7AC986FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFF59B870FF69C17EFF9DD4AAFF388B42FF00000000000000006DB5
+            83FFACDDB6FFA6DFAFFF81CB8CFF7CC986FF6EBD79FFFFFFFFFFFFFFFFFF5BAC
+            6AFF60BC77FF5CBA73FF8BD199FF80C592FF3C8E47FF00000000000000000000
+            000085C797FFD2EED7FF95D9A0FF8AD394FF7FC889FFFFFFFFFFFFFFFFFF79CD
+            85FF6BC37CFF6FC77EFFACDFB5FF459E57FF0000000000000000000000000000
+            000070B887FFAADAB7FFD8F1DCFF92D89DFF88CD93FF84CC8EFF8BD496FF8AD4
+            95FF83D28EFFAFE0B7FF6BB97DFF489856FF0000000000000000000000000000
+            00000000000070B887FFAFDCBBFFDCF2E0FFB6E4BDFF9BDBA5FF96D9A0FFA5DF
+            AFFFC0E8C5FF79C28AFF509E5FFF000000000000000000000000000000000000
+            0000000000000000000071B887FF94CEA4FFC3E6CBFFCFEBD4FFC9E9CEFFAFDD
+            B8FF6DB97FFF58A569FF00000000000000000000000000000000000000000000
+            0000000000000000000000000000000000006EB684FF6AB380FF67B17CFF63AE
+            77FF000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000
+          }
+          NumGlyphs = 0
+          OnClick = mnuAddRegionClick
+          ShowHint = True
+          ParentShowHint = False
+        end
+        object btnDeleteRegion: TSpeedButton
+          Left = 82
+          Height = 22
+          Hint = 'Delete region'
+          Top = 3
+          Width = 23
+          Color = clBtnFace
+          Enabled = False
+          Glyph.Data = {
+            36040000424D3604000000000000360000002800000010000000100000000100
+            2000000000000004000064000000640000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000003853BEFF3551BDFF304BBCFF2E4E
+            B8FF000000000000000000000000000000000000000000000000000000000000
+            000000000000000000004255C6FF3C52CCFF757AE8FF8F92EEFF8F92EEFF7178
+            E4FF334DC1FF2B4AB7FF00000000000000000000000000000000000000000000
+            0000000000004959CBFF5C65E0FFA1A6F5FF7E86EFFF5B63E9FF595DE7FF7D84
+            EEFF9EA0F4FF515DD7FF2B4AB7FF000000000000000000000000000000000000
+            00005361CFFF616BE3FFA1ACF5FF545FECFF505CEAFF4D59E9FF4E59E6FF4C56
+            E6FF5056E6FF9EA2F4FF5460D6FF2A4AB8FF0000000000000000000000000000
+            00004B56DBFFA2ABF6FF5664F0FF5266EEFF4D59E9FF4D59E9FF4D59E9FF4D59
+            E9FF4C58E6FF525AE6FF9FA3F5FF3450C4FF0000000000000000000000005C62
+            D7FF818CEEFF7E91F7FF5D73F3FF4D59E9FF4D59E9FF4D59E9FF4D59E9FF4D59
+            E9FF4D59E9FF4F5BE9FF7B83F0FF757BE2FF2E4BBAFF00000000000000005F63
+            DAFFA1ABF7FF7086F8FF6882F6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFF4D59E9FF5C66EAFF969CF1FF3250BCFF00000000000000006469
+            DBFFAFB9F9FF7F93FAFF7085F0FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            FFFFFFFFFFFF4D59E9FF5E6AEEFF969DF1FF364FBEFF0000000000000000676A
+            DEFFA5AFF5FF9DABFAFF778CF0FF545FECFF545FECFF545FECFF545FECFF545F
+            ECFF545FECFF6377F2FF818EF4FF787FE9FF3A53C0FF00000000000000000000
+            00007D83EAFFCDD4FCFF8B9DFAFF7E93F7FF758AEEFF6C84F6FF6C84F6FF6C84
+            F6FF6C84F6FF6379F3FFA4AFF8FF3E4FD0FF0000000000000000000000000000
+            00006A69E0FFA3A7F3FFD4DBFDFF879AFAFF7F91F0FF7A8EF1FF7F94F8FF7E92
+            F9FF768CF8FFA8B6F8FF636EE3FF4557C7FF0000000000000000000000000000
+            0000000000006A69E0FFAAADF2FFD8DCFDFFAEBAFAFF91A3FAFF8B9DFAFF9CA9
+            FBFFBAC7FCFF707BE9FF4C5BCCFF000000000000000000000000000000000000
+            000000000000000000006A6ADFFF8E93EDFFBEC3F8FFCCD3F9FFC4CBF9FFAAB4
+            F4FF6670E2FF535ED1FF00000000000000000000000000000000000000000000
+            000000000000000000000000000000000000686ADDFF6364DCFF6164DAFF5D63
+            D9FF000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000
+          }
+          NumGlyphs = 0
+          OnClick = mnuDeleteRegionClick
+          ShowHint = True
+          ParentShowHint = False
+        end
+      end
     end
   end
   object Panel2: TPanel
     Left = 160
-    Height = 359
+    Height = 380
     Width = 460
     Align = alClient
     Caption = 'Panel2'
-    ClientHeight = 359
+    ClientHeight = 380
     ClientWidth = 460
-    ParentFont = True
     TabOrder = 1
     object sbArea: TScrollBox
       Left = 1
-      Height = 357
+      Height = 378
       Top = 1
       Width = 458
       Align = alClient
-      ParentFont = True
       TabOrder = 0
       object pbArea: TPaintBox
         Height = 105
@@ -327,14 +441,13 @@ object frmRegionControl: TfrmRegionControl
   object Panel3: TPanel
     Left = 4
     Height = 25
-    Top = 363
+    Top = 384
     Width = 612
     Align = alBottom
     BorderSpacing.Around = 4
     BevelOuter = bvNone
     ClientHeight = 25
     ClientWidth = 612
-    ParentFont = True
     TabOrder = 2
     object btnClose: TButton
       Left = 548
@@ -345,7 +458,6 @@ object frmRegionControl: TfrmRegionControl
       BorderSpacing.Left = 4
       Caption = 'Close'
       OnClick = btnCloseClick
-      ParentFont = True
       TabOrder = 0
     end
     object btnSave: TButton
@@ -358,7 +470,6 @@ object frmRegionControl: TfrmRegionControl
       Caption = 'Save'
       Enabled = False
       OnClick = btnSaveClick
-      ParentFont = True
       TabOrder = 1
     end
   end
@@ -369,10 +480,10 @@ object frmRegionControl: TfrmRegionControl
       Caption = 'Add'
       OnClick = mnuAddRegionClick
     end
-    object mnuRemoveRegion: TMenuItem
-      Caption = 'Remove'
+    object mnuDeleteRegion: TMenuItem
+      Caption = 'Delete'
       Enabled = False
-      OnClick = mnuRemoveRegionClick
+      OnClick = mnuDeleteRegionClick
     end
   end
 end

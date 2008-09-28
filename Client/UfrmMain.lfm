@@ -15,9 +15,10 @@ object frmMain: TfrmMain
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  ParentFont = False
   Position = poScreenCenter
   ShowInTaskBar = stAlways
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.27'
   WindowState = wsMaximized
   object pnlBottom: TPanel
     Height = 31
@@ -27,57 +28,53 @@ object frmMain: TfrmMain
     BevelOuter = bvNone
     ClientHeight = 31
     ClientWidth = 766
-    ParentFont = True
     TabOrder = 0
     object lblX: TLabel
       Left = 11
-      Height = 13
+      Height = 14
       Top = 7
-      Width = 12
+      Width = 11
       Caption = 'X:'
       ParentColor = False
-      ParentFont = True
     end
     object lblY: TLabel
       Left = 88
-      Height = 13
+      Height = 14
       Top = 7
-      Width = 12
+      Width = 11
       Caption = 'Y:'
       ParentColor = False
-      ParentFont = True
     end
     object lblTileInfo: TLabel
       Left = 240
-      Height = 13
+      Height = 14
       Top = 7
       Width = 4
       Caption = ' '
       ParentColor = False
-      ParentFont = True
     end
     object lblTip: TLabel
-      Left = 519
+      Left = 554
       Height = 31
-      Width = 239
+      Width = 204
       Align = alRight
       Alignment = taRightJustify
       BorderSpacing.Right = 8
       Caption = 'Right click shows a menu with all the tools.'
       Layout = tlCenter
       ParentColor = False
-      ParentFont = True
     end
     object lblTipC: TLabel
-      Left = 490
+      Left = 530
       Height = 31
-      Width = 29
+      Width = 24
       Align = alRight
       Caption = 'Tip: '
       Font.Height = -11
       Font.Style = [fsBold]
       Layout = tlCenter
       ParentColor = False
+      ParentFont = False
     end
     object edX: TSpinEdit
       Left = 24
@@ -85,7 +82,6 @@ object frmMain: TfrmMain
       Top = 3
       Width = 55
       MaxValue = 100000
-      ParentFont = True
       TabOrder = 0
     end
     object edY: TSpinEdit
@@ -94,7 +90,6 @@ object frmMain: TfrmMain
       Top = 3
       Width = 52
       MaxValue = 100000
-      ParentFont = True
       TabOrder = 1
     end
     object btnGoTo: TButton
@@ -105,7 +100,6 @@ object frmMain: TfrmMain
       BorderSpacing.InnerBorder = 4
       Caption = 'GoTo'
       OnClick = btnGoToClick
-      ParentFont = True
       TabOrder = 2
     end
   end
@@ -115,14 +109,12 @@ object frmMain: TfrmMain
     Width = 224
     ActivePage = tsTiles
     Align = alLeft
-    ParentFont = True
     TabIndex = 0
     TabOrder = 1
     object tsTiles: TTabSheet
       Caption = 'Tiles'
       ClientHeight = 500
       ClientWidth = 222
-      ParentFont = True
       object pnlTileListSettings: TPanel
         Height = 56
         Width = 222
@@ -130,7 +122,6 @@ object frmMain: TfrmMain
         BevelOuter = bvNone
         ClientHeight = 56
         ClientWidth = 222
-        ParentFont = True
         TabOrder = 0
         object lblFilter: TLabel
           Left = 84
@@ -139,7 +130,6 @@ object frmMain: TfrmMain
           Width = 30
           Caption = 'Filter:'
           ParentColor = False
-          ParentFont = True
         end
         object cbTerrain: TCheckBox
           Left = 4
@@ -149,7 +139,6 @@ object frmMain: TfrmMain
           Caption = 'Terrain'
           Checked = True
           OnChange = cbTerrainChange
-          ParentFont = True
           State = cbChecked
           TabOrder = 0
         end
@@ -161,7 +150,6 @@ object frmMain: TfrmMain
           Caption = 'Statics'
           Checked = True
           OnChange = cbStaticsChange
-          ParentFont = True
           State = cbChecked
           TabOrder = 1
         end
@@ -171,7 +159,6 @@ object frmMain: TfrmMain
           Top = 24
           Width = 112
           OnEditingDone = edFilterEditingDone
-          ParentFont = True
           TabOrder = 2
         end
       end
@@ -189,12 +176,11 @@ object frmMain: TfrmMain
         Header.Options = [hoVisible]
         Header.ParentFont = True
         Header.Style = hsFlatButtons
-        ParentFont = True
         PopupMenu = pmTileList
         TabOrder = 1
         TreeOptions.AutoOptions = [toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
         TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
-        TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
+        TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages, toStaticBackground]
         TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect, toCenterScrollIntoView]
         OnClick = vdtTilesClick
         OnDrawNode = vdtTilesDrawNode
@@ -227,7 +213,6 @@ object frmMain: TfrmMain
         Caption = 'Random pool'
         ClientHeight = 179
         ClientWidth = 220
-        ParentFont = True
         TabOrder = 2
         object vdtRandom: TVirtualDrawTree
           Tag = 1
@@ -241,7 +226,6 @@ object frmMain: TfrmMain
           Header.Options = [hoColumnResize, hoDrag, hoVisible]
           Header.ParentFont = True
           Header.Style = hsFlatButtons
-          ParentFont = True
           TabOrder = 0
           TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
           TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
@@ -273,7 +257,6 @@ object frmMain: TfrmMain
           BevelOuter = bvNone
           ClientHeight = 22
           ClientWidth = 220
-          ParentFont = True
           TabOrder = 1
           object btnAddRandom: TSpeedButton
             Left = 2
@@ -427,7 +410,6 @@ object frmMain: TfrmMain
           BevelOuter = bvNone
           ClientHeight = 22
           ClientWidth = 212
-          ParentFont = True
           TabOrder = 2
           object btnRandomPresetSave: TSpeedButton
             Left = 158
@@ -530,7 +512,6 @@ object frmMain: TfrmMain
             Width = 152
             MaxLength = -1
             OnChange = cbRandomPresetChange
-            ParentFont = True
             Style = csDropDownList
             TabOrder = 0
           end
@@ -553,7 +534,6 @@ object frmMain: TfrmMain
         CharCase = ecUppercase
         OnExit = edSearchIDExit
         OnKeyPress = edSearchIDKeyPress
-        ParentFont = True
         ParentShowHint = False
         ShowHint = True
         TabOrder = 3
@@ -564,13 +544,11 @@ object frmMain: TfrmMain
       Caption = 'Clients'
       ClientHeight = 500
       ClientWidth = 222
-      ParentFont = True
       object lbClients: TListBox
         Height = 500
         Width = 222
         Align = alClient
         OnDblClick = mnuGoToClientClick
-        ParentFont = True
         PopupMenu = pmClients
         Sorted = True
         TabOrder = 0
@@ -581,7 +559,6 @@ object frmMain: TfrmMain
       Caption = 'Locations'
       ClientHeight = 500
       ClientWidth = 222
-      ParentFont = True
       object vstLocations: TVirtualStringTree
         Cursor = 63
         Left = 4
@@ -595,7 +572,6 @@ object frmMain: TfrmMain
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
         Header.ParentFont = True
         Header.Style = hsFlatButtons
-        ParentFont = True
         TabOrder = 0
         TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
         TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
@@ -613,7 +589,7 @@ object frmMain: TfrmMain
           end        
           item
             Position = 1
-            Width = 135
+            Width = 139
             WideText = 'Name'
           end>
       end
@@ -627,7 +603,6 @@ object frmMain: TfrmMain
         BevelOuter = bvNone
         ClientHeight = 24
         ClientWidth = 214
-        ParentFont = True
         TabOrder = 1
         object btnClearLocations: TSpeedButton
           Left = 112
@@ -957,7 +932,6 @@ object frmMain: TfrmMain
     BevelOuter = bvNone
     ClientHeight = 525
     ClientWidth = 542
-    ParentFont = True
     TabOrder = 3
     object oglGameWindow: TOpenGLControl
       Height = 374
@@ -981,20 +955,18 @@ object frmMain: TfrmMain
       BevelOuter = bvLowered
       ClientHeight = 24
       ClientWidth = 542
-      ParentFont = True
       TabOrder = 0
       object lblChatHeaderCaption: TLabel
         Cursor = crHandPoint
         Left = 10
         Height = 20
         Top = 2
-        Width = 104
+        Width = 95
         Align = alLeft
         BorderSpacing.Left = 8
         Caption = 'Chat and Messages'
         Layout = tlCenter
         ParentColor = False
-        ParentFont = True
         OnClick = lblChatHeaderCaptionClick
         OnMouseEnter = lblChatHeaderCaptionMouseEnter
         OnMouseLeave = lblChatHeaderCaptionMouseLeave
@@ -1008,7 +980,6 @@ object frmMain: TfrmMain
       BevelOuter = bvNone
       ClientHeight = 122
       ClientWidth = 542
-      ParentFont = True
       TabOrder = 1
       Visible = False
       object vstChat: TVirtualStringTree
@@ -1021,7 +992,6 @@ object frmMain: TfrmMain
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
         Header.ParentFont = True
         Header.Style = hsFlatButtons
-        ParentFont = True
         TabOrder = 0
         TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
         TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
@@ -1052,7 +1022,6 @@ object frmMain: TfrmMain
         Width = 542
         Align = alBottom
         OnKeyPress = edChatKeyPress
-        ParentFont = True
         TabOrder = 1
       end
     end
@@ -1253,6 +1222,42 @@ object frmMain: TfrmMain
       end
       object mnuRegionControl: TMenuItem
         Caption = '&Region Management'
+        Bitmap.Data = {
+          36040000424D3604000000000000360000002800000010000000100000000100
+          2000000000000004000064000000640000000000000000000000454D47FF5F6A
+          61FF636F64FF646F64FF143F56FF295F86FF4988BCFF4A86A7FF5D7070FF646F
+          66FF646F66FF646F67FF646F67FF647067FF616C63FF474E48FF5F6A60FFEBF5
+          ECFFD4EDD7FFD4EED7FF2E6784FF94C7F9FF91C9F9FF4185C9FF256BACFFB7D9
+          D4FFD4E2ECFFCFE5D6FFD5EDD9FFD8EFDCFFD5EDD9FF616C63FF626E64FFEEF8
+          EFFFA4DBBCFF8CCAA6FF4389AAFFE0F2FFFF549AD8FF1A7ABEFF4998C5FF3B86
+          BFFF6074E7FF81C5A3FF8CD0A6FF85CAA0FFD2E9D7FF646F67FF616E64FFECF7
+          EEFF96DBAFFF7FC99AFF63ADA5FF7AB6D5FF90B7D1FF55C9E4FF5BDFF5FF78D0
+          EDFF4696D9FF76C1A1FF87D0A0FF80CA9AFFD6EEDAFF646F66FF616E63FFF7FB
+          F8FF9BDEC4FF73C393FF80CF9FFF53AD9CFF73B9D5FFC2F6FDFF63DFF7FF5DE2
+          F8FF79D3F0FF4395DAFF6CB8A4FF74C38FFFD7EFDAFF646F66FF616E63FFF8FC
+          F9FFBCFBFBFF9DE7DFFF93E1BBFF77C997FF63BDAEFF77CBE7FFC7F7FDFF5EDC
+          F5FF5AE1F7FF7BD4F1FF4395DDFF589BC3FFD0E9DBFF646F66FF606D63FFF8FC
+          F8FFA4EBEDFF8DDFDFFF97EBEBFF72CFB7FF74CA99FF4790BDFF79D3EEFFC7F7
+          FDFF5FDCF5FF5BE2F7FF7AD6F2FF4399DFFFB1D4D9FF646F66FF606D62FFF8FC
+          F8FFAFFAFAFF94EBEBFFA2F9FAFF8AEAEBFF95EDF3FF595FEBFF6BCFE5FF7CD4
+          EEFFC4F6FDFF6CDDF6FF6DCAEDFF63A3D7FF66A1D3FF617474FF606D61FFF8FC
+          F8FF9FF1F1FF81DDDFFF8AEAEBFF75DEDEFF6591EEFF557EE2FF68DCDDFF5BBC
+          C5FF80D5EDFFB2E3F9FF8BC0E7FFAED3F6FFC4E0FCFF669DD0FF5F6D61FFF8FC
+          F8FFA6F9F9FF8BE9EAFF99F8FAFF78D3EBFF656BFFFF77DCEAFF70DFDEFFC1C5
+          B5FFA8C8C8FF77BEE7FFB4D2F0FFE5F3FFFFACD2EFFF4A89BEFF5F6D61FFF8FC
+          F8FF90EAEAFF78DDDEFF81E9EAFF4E6BE2FF639DEEFF5ED7D7FF5BCBC9FFD4B0
+          97FFE2BA9FFFA1ADA9FF58A5D8FF85B1DBFF469DD0FF4E7C8CFF5F6D61FFF7FC
+          F8FF9FF9F9FF85E9EAFF84D3FAFF525AF0FF87F2F7FF60DAD7FF98D5CAFFE0B7
+          9CFFEDC7A9FFE0B394FFE6B898FFDEAE8CFFD7ECD6FF636E64FF5F6D60FFF7FC
+          F8FF8AEAEAFF72DDDEFF5665F0FF569FDFFF73E8E8FF46C1C1FFBBBBA5FFD0A4
+          83FFDEB08EFFD19E7AFFD6A27AFFCF9871FFD7EBD5FF626E64FF5F6D60FFF7FC
+          F8FF9DF9F9FF6CB4EDFF6271FEFF80E7E9FF8CF4F4FF52CDCDFFECC2A4FFDDAD
+          8AFFEBBA97FFDDA780FFE2AB83FFDAA075FFD9EAD4FF616E64FF5C6A5DFFFBFC
+          FBFFFCFEFCFFF7FCF8FFF7FCF8FFF7FCF8FFF8FCF8FFF7FCF9FFF8FCF8FFF8FC
+          F8FFECF7EEFFEDF7EEFFEFF6EDFFEEF4ECFFEBF4EBFF5E6A5FFF536876FF5C6A
+          5DFF5F6D60FF5F6D60FF5F6D60FF5F6D60FF5F6D61FF5F6D61FF5F6D61FF5F6D
+          61FF606D61FF606D62FF606D62FF606D63FF5E6A5FFF454E46FF
+        }
         ImageIndex = 19
         OnClick = mnuRegionControlClick
       end

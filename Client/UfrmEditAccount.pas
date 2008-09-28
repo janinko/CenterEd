@@ -143,8 +143,12 @@ begin
 end;
 
 procedure TfrmEditAccount.RegionDeleted(ARegionName: string);
+var
+  index: Integer;
 begin
-  cbRegions.Items.Delete(cbRegions.Items.IndexOf(ARegionName));
+  index := cbRegions.Items.IndexOf(ARegionName);
+  if index > -1 then
+    cbRegions.Items.Delete(index);
 end;
 
 procedure TfrmEditAccount.RegionList;

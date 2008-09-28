@@ -13,21 +13,20 @@ object frmEditAccount: TfrmEditAccount
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
+  ParentFont = False
   Position = poOwnerFormCenter
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.27'
   object PageControl1: TPageControl
     Height = 173
     Width = 261
     ActivePage = tsGeneral
     Align = alClient
-    ParentFont = True
     TabIndex = 0
     TabOrder = 0
     object tsGeneral: TTabSheet
       Caption = 'General'
-      ClientHeight = 144
-      ClientWidth = 257
-      ParentFont = True
+      ClientHeight = 148
+      ClientWidth = 259
       object lblPasswordHint: TLabel
         Left = 86
         Height = 28
@@ -37,7 +36,6 @@ object frmEditAccount: TfrmEditAccount
         Caption = 'Leave empty to leave the password unchanged.'
         Enabled = False
         ParentColor = False
-        ParentFont = True
         WordWrap = True
       end
       object lblUsername: TLabel
@@ -47,7 +45,6 @@ object frmEditAccount: TfrmEditAccount
         Width = 58
         Caption = 'Username:'
         ParentColor = False
-        ParentFont = True
       end
       object lblPassword: TLabel
         Left = 6
@@ -56,7 +53,6 @@ object frmEditAccount: TfrmEditAccount
         Width = 54
         Caption = 'Password:'
         ParentColor = False
-        ParentFont = True
       end
       object lblAccessLevel: TLabel
         Left = 6
@@ -65,7 +61,6 @@ object frmEditAccount: TfrmEditAccount
         Width = 63
         Caption = 'Accesslevel:'
         ParentColor = False
-        ParentFont = True
       end
       object edUsername: TEdit
         Left = 86
@@ -73,7 +68,6 @@ object frmEditAccount: TfrmEditAccount
         Top = 8
         Width = 160
         Color = clBtnFace
-        ParentFont = True
         ReadOnly = True
         TabOrder = 0
       end
@@ -83,38 +77,33 @@ object frmEditAccount: TfrmEditAccount
         Top = 40
         Width = 160
         EchoMode = emPassword
-        ParentFont = True
         PasswordChar = '*'
         TabOrder = 1
       end
       object cbAccessLevel: TComboBox
         Left = 86
-        Height = 29
+        Height = 25
         Top = 104
         Width = 160
-        AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
         Items.Strings = (
           'None'
           'Viewer'
           'Normal'
           'Administrator'
         )
-        MaxLength = 0
-        ParentFont = True
         Style = csDropDownList
         TabOrder = 2
       end
     end
     object tsRegions: TTabSheet
       Caption = 'Regions'
-      ClientHeight = 144
-      ClientWidth = 257
-      ParentFont = True
+      ClientHeight = 148
+      ClientWidth = 259
       object Label1: TLabel
         Left = 8
         Height = 14
         Top = 8
-        Width = 241
+        Width = 243
         Align = alTop
         BorderSpacing.Left = 8
         BorderSpacing.Top = 8
@@ -122,20 +111,18 @@ object frmEditAccount: TfrmEditAccount
         BorderSpacing.Bottom = 4
         Caption = 'Allowed Regions:'
         ParentColor = False
-        ParentFont = True
       end
       object cbRegions: TCheckListBox
         Left = 8
-        Height = 110
+        Height = 114
         Top = 26
-        Width = 241
+        Width = 243
         Align = alClient
         BorderSpacing.Left = 8
         BorderSpacing.Top = 4
         BorderSpacing.Right = 8
         BorderSpacing.Bottom = 8
         ItemHeight = 13
-        ParentFont = True
         TabOrder = 0
         TopIndex = -1
       end
@@ -151,7 +138,6 @@ object frmEditAccount: TfrmEditAccount
     BevelOuter = bvNone
     ClientHeight = 25
     ClientWidth = 245
-    ParentFont = True
     TabOrder = 1
     object btnCancel: TButton
       Left = 170
@@ -163,7 +149,6 @@ object frmEditAccount: TfrmEditAccount
       Cancel = True
       Caption = 'Cancel'
       ModalResult = 2
-      ParentFont = True
       TabOrder = 0
     end
     object btnOK: TButton
@@ -176,7 +161,6 @@ object frmEditAccount: TfrmEditAccount
       Caption = 'OK'
       Default = True
       ModalResult = 1
-      ParentFont = True
       TabOrder = 1
     end
   end

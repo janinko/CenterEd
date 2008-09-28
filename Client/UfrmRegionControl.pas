@@ -52,18 +52,23 @@ type
 
   TfrmRegionControl = class(TForm)
     btnAddArea: TSpeedButton;
+    btnAddRegion: TSpeedButton;
     btnClearArea: TSpeedButton;
     btnDeleteArea: TSpeedButton;
     btnClose: TButton;
+    btnDeleteRegion: TSpeedButton;
+
     btnSave: TButton;
     Label1: TLabel;
     lblX: TLabel;
     lblY: TLabel;
     mnuAddRegion: TMenuItem;
-    mnuRemoveRegion: TMenuItem;
+    mnuDeleteRegion: TMenuItem;
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
+    Panel4: TPanel;
+    Panel5: TPanel;
     pbArea: TPaintBox;
     pnlAreaControls: TPanel;
     pmRegions: TPopupMenu;
@@ -72,10 +77,12 @@ type
     seX2: TSpinEdit;
     seY1: TSpinEdit;
     seY2: TSpinEdit;
-    vstRegions: TVirtualStringTree;
+    spRegionsArea: TSplitter;
     vstArea: TVirtualStringTree;
+    vstRegions: TVirtualStringTree;
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure mnuAddRegionClick(Sender: TObject);
-    procedure mnuRemoveRegionClick(Sender: TObject);
+    procedure mnuDeleteRegionClick(Sender: TObject);
     procedure btnAddAreaClick(Sender: TObject);
     procedure btnClearAreaClick(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
@@ -101,10 +108,12 @@ type
     FLastX: Integer;
     FLastY: Integer;
     FAreaMove: TAreaMove;
+    FTempRegionNode: PVirtualNode;
     FOnRegionModified: TRegionModifiedEvent;
     FOnRegionDeleted: TRegionDeletedEvent;
     FOnRegionList: TRegionListEvent;
     function FindRegion(AName: string): PVirtualNode;
+    procedure CheckUnsaved;
     procedure OnModifyRegionPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnListRegionsPacket(ABuffer: TEnhancedMemoryStream);
@@ -196,6 +205,8 @@ begin
   
   vstArea.NodeDataSize := SizeOf(TRect);
   vstRegions.NodeDataSize := SizeOf(TRegionInfo);
+
+  FTempRegionNode := nil;
   
   frmRadarMap.Dependencies.Add(pbArea);
   frmMain.RegisterAccessChangedListener(@OnAccessChanged);
@@ -231,7 +242,10 @@ begin
   btnSave.Enabled := False;
 
   //Refresh the current region
-  regionNode := vstRegions.GetFirstSelected;
+  if FTempRegionNode <> nil then
+    regionNode := FTempRegionNode
+  else
+    regionNode := vstRegions.GetFirstSelected;
   if regionNode <> nil then
   begin
     regionInfo := vstRegions.GetNodeData(regionNode);
@@ -251,25 +265,28 @@ begin
 
   //Clear the selection
   vstRegions.ClearSelection;
+
+  FTempRegionNode := nil;
 end;
 
 procedure TfrmRegionControl.mnuAddRegionClick(Sender: TObject);
 var
   regionName: string;
-  node: PVirtualNode;
   regionInfo: PRegionInfo;
 begin
   regionName := '';
   if InputQuery('New Region', 'Enter the name for the new region:', regionName) then
   begin
+    CheckUnsaved;
+
     if FindRegion(regionName) = nil then
     begin
-      node := vstRegions.AddChild(nil);
-      regionInfo := vstRegions.GetNodeData(node);
+      FTempRegionNode := vstRegions.AddChild(nil);
+      regionInfo := vstRegions.GetNodeData(FTempRegionNode);
       regionInfo^.Name := regionName;
       regionInfo^.Areas := TRectList.Create;
       vstRegions.ClearSelection;
-      vstRegions.Selected[node] := True;
+      vstRegions.Selected[FTempRegionNode] := True;
       btnSave.Enabled := True;
     end else
     begin
@@ -279,7 +296,13 @@ begin
   end;
 end;
 
-procedure TfrmRegionControl.mnuRemoveRegionClick(Sender: TObject);
+procedure TfrmRegionControl.FormClose(Sender: TObject;
+  var CloseAction: TCloseAction);
+begin
+  CheckUnsaved;
+end;
+
+procedure TfrmRegionControl.mnuDeleteRegionClick(Sender: TObject);
 var
   regionNode: PVirtualNode;
   regionInfo: PRegionInfo;
@@ -320,13 +343,6 @@ end;
 
 procedure TfrmRegionControl.btnCloseClick(Sender: TObject);
 begin
-  if btnSave.Enabled and (MessageDlg('Unsaved changes', 'There are unsaved ' +
-    'changes.' + #13#10+#13#10+ 'Do you want to save them now?',
-    mtConfirmation, [mbYes, mbNo], 0) = mrYes) then
-  begin
-    btnSaveClick(Sender);
-  end;
-
   Close;
 end;
 
@@ -495,12 +511,7 @@ var
   regionInfo: PRegionInfo;
   areaInfo: PRect;
 begin
-  if btnSave.Enabled and (MessageDlg('Unsaved changes', 'There are unsaved ' +
-    'changes.' + #13#10+#13#10+ 'Do you want to save them now?',
-    mtConfirmation, [mbYes, mbNo], 0) = mrYes) then
-  begin
-    btnSaveClick(Sender);
-  end;
+  CheckUnsaved;
 
   vstArea.BeginUpdate;
   vstArea.Clear;
@@ -509,7 +520,8 @@ begin
   begin
     btnAddArea.Enabled := True;
     btnClearArea.Enabled := True;
-    mnuRemoveRegion.Enabled := True;
+    mnuDeleteRegion.Enabled := (selected <> FTempRegionNode);
+    btnDeleteRegion.Enabled := (selected <> FTempRegionNode);
 
     regionInfo := Sender.GetNodeData(selected);
     for i := 0 to regionInfo^.Areas.Count - 1 do
@@ -529,7 +541,8 @@ begin
     btnAddArea.Enabled := False;
     btnDeleteArea.Enabled := False;
     btnClearArea.Enabled := False;
-    mnuRemoveRegion.Enabled := False;
+    mnuDeleteRegion.Enabled := False;
+    btnDeleteRegion.Enabled := False;
   end;
   vstArea.EndUpdate;
   pbArea.Repaint;
@@ -571,6 +584,24 @@ begin
       found := True
     else
       Result := vstRegions.GetNext(Result);
+  end;
+end;
+
+procedure TfrmRegionControl.CheckUnsaved;
+begin
+  if btnSave.Enabled then
+  begin
+    if MessageDlg('Unsaved changes', 'There are unsaved ' +
+      'changes.' + #13#10+#13#10+ 'Do you want to save them now?',
+      mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+    begin
+      btnSaveClick(nil);
+    end else if FTempRegionNode <> nil then
+    begin
+      btnSave.Enabled := False;
+      vstRegions.DeleteNode(FTempRegionNode);
+      FTempRegionNode := nil;
+    end;
   end;
 end;
 
