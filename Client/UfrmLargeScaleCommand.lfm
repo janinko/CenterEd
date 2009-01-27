@@ -15,28 +15,33 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
   OnShow = FormShow
   Position = poOwnerFormCenter
   ShowInTaskBar = stAlways
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.27'
   object nbActions: TNotebook
     Left = 152
     Height = 364
+    Top = 0
     Width = 468
     Align = alClient
     PageIndex = 4
-    ParentFont = True
     ShowTabs = False
     TabOrder = 0
     object pgArea: TPage
       Caption = 'pgArea'
-      ClientWidth = 464
-      ClientHeight = 335
-      ParentFont = True
+      ClientWidth = 462
+      ClientHeight = 331
       object sbArea: TScrollBox
-        Height = 335
-        Width = 464
+        Left = 0
+        Height = 331
+        Top = 0
+        Width = 462
         Align = alClient
+        ClientHeight = 327
+        ClientWidth = 458
         TabOrder = 0
         object pbArea: TPaintBox
+          Left = 0
           Height = 105
+          Top = 0
           Width = 105
           OnMouseDown = pbAreaMouseDown
           OnMouseMove = pbAreaMouseMove
@@ -46,9 +51,8 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     end
     object pgCopyMove: TPage
       Caption = 'Copy/Move'
-      ClientWidth = 464
-      ClientHeight = 335
-      ParentFont = True
+      ClientWidth = 462
+      ClientHeight = 331
       object rgCMAction: TRadioGroup
         Left = 12
         Height = 40
@@ -64,15 +68,14 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 2
-        ClientHeight = 23
-        ClientWidth = 180
+        ClientHeight = 24
+        ClientWidth = 182
         Columns = 2
         ItemIndex = 0
         Items.Strings = (
           'Copy'
           'Move'
         )
-        ParentFont = True
         TabOrder = 0
       end
       object gbCMOffset: TGroupBox
@@ -81,9 +84,8 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Top = 60
         Width = 121
         Caption = 'Offset'
-        ClientHeight = 64
-        ClientWidth = 117
-        ParentFont = True
+        ClientHeight = 65
+        ClientWidth = 119
         TabOrder = 1
         object Label9: TLabel
           Left = 6
@@ -92,7 +94,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Width = 12
           Caption = 'X:'
           ParentColor = False
-          ParentFont = True
         end
         object Label10: TLabel
           Left = 6
@@ -101,14 +102,12 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Width = 12
           Caption = 'Y:'
           ParentColor = False
-          ParentFont = True
         end
         object seCMOffsetX: TSpinEdit
           Left = 30
           Height = 23
           Top = 8
           Width = 74
-          ParentFont = True
           TabOrder = 0
         end
         object seCMOffsetY: TSpinEdit
@@ -116,7 +115,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Height = 23
           Top = 34
           Width = 74
-          ParentFont = True
           TabOrder = 1
         end
       end
@@ -126,15 +124,13 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Top = 148
         Width = 174
         Caption = 'Erase target area (at offset)'
-        ParentFont = True
         TabOrder = 2
       end
     end
     object pgModifyAltitude: TPage
       Caption = 'Modify altitude'
-      ClientWidth = 464
-      ClientHeight = 335
-      ParentFont = True
+      ClientWidth = 462
+      ClientHeight = 331
       object Label2: TLabel
         Left = 28
         Height = 43
@@ -143,7 +139,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Caption = 'The statics will be elevated according to the terrain change.'
         Enabled = False
         ParentColor = False
-        ParentFont = True
         WordWrap = True
       end
       object Label3: TLabel
@@ -153,7 +148,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 125
         Caption = 'Set the altitude to a value from this range:'
         ParentColor = False
-        ParentFont = True
         WordWrap = True
       end
       object Label4: TLabel
@@ -163,7 +157,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 12
         Caption = 'to'
         ParentColor = False
-        ParentFont = True
       end
       object rbSetTerrainAltitude: TRadioButton
         Left = 12
@@ -172,7 +165,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 124
         Caption = 'Set terrain altitude'
         Checked = True
-        ParentFont = True
         State = cbChecked
         TabOrder = 0
       end
@@ -182,8 +174,8 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Top = 84
         Width = 156
         Caption = 'Relative altitude change'
-        ParentFont = True
         TabOrder = 1
+        TabStop = False
       end
       object seTerrainAltitude1: TSpinEdit
         Left = 228
@@ -192,7 +184,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 50
         MaxValue = 127
         MinValue = -128
-        ParentFont = True
         TabOrder = 2
       end
       object seTerrainAltitude2: TSpinEdit
@@ -202,7 +193,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 50
         MaxValue = 127
         MinValue = -128
-        ParentFont = True
         TabOrder = 3
       end
       object seRelativeAltitude: TSpinEdit
@@ -212,47 +202,44 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 50
         MaxValue = 127
         MinValue = -128
-        ParentFont = True
         TabOrder = 4
       end
     end
     object pgDrawTerrain: TPage
       Caption = 'Draw Terrain'
-      ClientWidth = 464
-      ClientHeight = 335
-      ParentFont = True
+      ClientWidth = 462
+      ClientHeight = 331
       object gbDrawTerrainTiles: TGroupBox
         Left = 8
-        Height = 319
+        Height = 315
         Top = 8
         Width = 225
         Align = alLeft
         BorderSpacing.Around = 8
         Caption = 'Tiles'
-        ClientHeight = 315
-        ClientWidth = 221
-        ParentFont = True
+        ClientHeight = 299
+        ClientWidth = 223
         TabOrder = 0
         object lblDrawTerrainTilesDesc: TLabel
           Left = 4
           Height = 58
-          Width = 213
+          Top = 0
+          Width = 215
           Align = alTop
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
           BorderSpacing.Bottom = 4
           Caption = 'Drag terrain tiles from the main window and drop them on the list. For each cell in the target area, one of these (random) will be used.'
           ParentColor = False
-          ParentFont = True
           WordWrap = True
         end
         object vdtTerrainTiles: TVirtualDrawTree
           Tag = 1
           Cursor = 63
           Left = 4
-          Height = 223
+          Height = 207
           Top = 62
-          Width = 213
+          Width = 215
           Align = alClient
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -260,10 +247,25 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           DefaultNodeHeight = 44
           DragMode = dmAutomatic
           DragType = dtVCL
+          Header.AutoSizeIndex = 0
+          Header.Columns = <          
+            item
+              Position = 0
+              Text = 'ID'
+            end          
+            item
+              Position = 1
+              Text = 'Tile'
+              Width = 44
+            end          
+            item
+              Position = 2
+              Text = 'Name'
+              Width = 100
+            end>
           Header.Options = [hoColumnResize, hoDrag, hoVisible]
           Header.ParentFont = True
           Header.Style = hsFlatButtons
-          ParentFont = True
           TabOrder = 0
           TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
           TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
@@ -271,35 +273,22 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           OnDragOver = vdtTerrainTilesDragOver
           OnDragDrop = vdtTerrainTilesDragDrop
           OnDrawNode = vdtTerrainTilesDrawNode
-          Columns = <          
-            item
-              WideText = 'ID'
-            end          
-            item
-              Position = 1
-              Width = 44
-              WideText = 'Tile'
-            end          
-            item
-              Position = 2
-              Width = 100
-              WideText = 'Name'
-            end>
         end
         object pnlDrawTerrainTilesControls: TPanel
+          Left = 0
           Height = 26
-          Top = 289
-          Width = 221
+          Top = 273
+          Width = 223
           Align = alBottom
           BevelOuter = bvNone
           ClientHeight = 26
-          ClientWidth = 221
-          ParentFont = True
+          ClientWidth = 223
           TabOrder = 1
           object btnClearTerrain: TSpeedButton
             Left = 33
             Height = 22
             Hint = 'Clear'
+            Top = 0
             Width = 23
             Color = clBtnFace
             Glyph.Data = {
@@ -341,13 +330,13 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
             NumGlyphs = 0
             OnClick = btnClearTerrainClick
             ShowHint = True
-            ParentFont = True
             ParentShowHint = False
           end
           object btnDeleteTerrain: TSpeedButton
             Left = 6
             Height = 22
             Hint = 'Delete'
+            Top = 0
             Width = 23
             Color = clBtnFace
             Glyph.Data = {
@@ -389,7 +378,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
             NumGlyphs = 0
             OnClick = btnDeleteTerrainClick
             ShowHint = True
-            ParentFont = True
             ParentShowHint = False
           end
         end
@@ -397,41 +385,39 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     end
     object pgDeleteStatics: TPage
       Caption = 'Delete statics'
-      ClientWidth = 464
-      ClientHeight = 360
-      ParentFont = True
+      ClientWidth = 462
+      ClientHeight = 358
       object gbDeleteStaticsTiles: TGroupBox
         Left = 8
-        Height = 344
+        Height = 342
         Top = 8
         Width = 225
         Align = alLeft
         BorderSpacing.Around = 8
         Caption = 'Tiles'
-        ClientHeight = 329
-        ClientWidth = 221
-        ParentFont = True
+        ClientHeight = 328
+        ClientWidth = 223
         TabOrder = 0
         object lblDeleteStaticsTilesDesc: TLabel
           Left = 4
           Height = 78
-          Width = 213
+          Top = 0
+          Width = 215
           Align = alTop
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
           BorderSpacing.Bottom = 4
           Caption = 'Drag statics tiles from the main window and drop them on the list. Only statics matching these tiles will be deleted. If the list is empty, every static will be deleted.'
           ParentColor = False
-          ParentFont = True
           WordWrap = True
         end
         object vdtDeleteStaticsTiles: TVirtualDrawTree
           Tag = 1
           Cursor = 63
           Left = 4
-          Height = 217
+          Height = 216
           Top = 82
-          Width = 213
+          Width = 215
           Align = alClient
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -439,10 +425,25 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           DefaultNodeHeight = 44
           DragMode = dmAutomatic
           DragType = dtVCL
+          Header.AutoSizeIndex = 0
+          Header.Columns = <          
+            item
+              Position = 0
+              Text = 'ID'
+            end          
+            item
+              Position = 1
+              Text = 'Tile'
+              Width = 44
+            end          
+            item
+              Position = 2
+              Text = 'Name'
+              Width = 100
+            end>
           Header.Options = [hoColumnResize, hoDrag, hoVisible]
           Header.ParentFont = True
           Header.Style = hsFlatButtons
-          ParentFont = True
           TabOrder = 0
           TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
           TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
@@ -450,35 +451,22 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           OnDragOver = vdtTerrainTilesDragOver
           OnDragDrop = vdtTerrainTilesDragDrop
           OnDrawNode = vdtTerrainTilesDrawNode
-          Columns = <          
-            item
-              WideText = 'ID'
-            end          
-            item
-              Position = 1
-              Width = 44
-              WideText = 'Tile'
-            end          
-            item
-              Position = 2
-              Width = 100
-              WideText = 'Name'
-            end>
         end
         object pnlDrawTerrainTilesControls2: TPanel
+          Left = 0
           Height = 26
-          Top = 303
-          Width = 221
+          Top = 302
+          Width = 223
           Align = alBottom
           BevelOuter = bvNone
           ClientHeight = 26
-          ClientWidth = 221
-          ParentFont = True
+          ClientWidth = 223
           TabOrder = 1
           object btnClearDStaticsTiles: TSpeedButton
             Left = 33
             Height = 22
             Hint = 'Clear'
+            Top = 0
             Width = 23
             Color = clBtnFace
             Glyph.Data = {
@@ -520,13 +508,13 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
             NumGlyphs = 0
             OnClick = btnClearDStaticsTilesClick
             ShowHint = True
-            ParentFont = True
             ParentShowHint = False
           end
           object btnDeleteDStaticsTiles: TSpeedButton
             Left = 6
             Height = 22
             Hint = 'Delete'
+            Top = 0
             Width = 23
             Color = clBtnFace
             Glyph.Data = {
@@ -568,7 +556,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
             NumGlyphs = 0
             OnClick = btnDeleteDStaticsTilesClick
             ShowHint = True
-            ParentFont = True
             ParentShowHint = False
           end
         end
@@ -579,31 +566,29 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Top = 8
         Width = 185
         Caption = 'Z Boundaries'
-        ClientHeight = 77
-        ClientWidth = 181
-        ParentFont = True
+        ClientHeight = 78
+        ClientWidth = 183
         TabOrder = 1
         object Label7: TLabel
           Left = 4
           Height = 30
-          Width = 173
+          Top = 0
+          Width = 175
           Align = alTop
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
           BorderSpacing.Bottom = 4
           Caption = 'Only statics within this Z range will be deleted.'
           ParentColor = False
-          ParentFont = True
           WordWrap = True
         end
         object Label8: TLabel
           Left = 64
           Height = 14
           Top = 42
-          Width = 12
+          Width = 11
           Caption = 'to'
           ParentColor = False
-          ParentFont = True
         end
         object seDeleteStaticsZ1: TSpinEdit
           Left = 4
@@ -612,7 +597,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Width = 50
           MaxValue = 127
           MinValue = -128
-          ParentFont = True
           TabOrder = 0
           Value = -128
         end
@@ -623,7 +607,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Width = 50
           MaxValue = 127
           MinValue = -128
-          ParentFont = True
           TabOrder = 1
           Value = 127
         end
@@ -631,40 +614,38 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     end
     object pgInsertStatics: TPage
       Caption = 'Insert statics'
-      ClientWidth = 464
-      ClientHeight = 335
-      ParentFont = True
+      ClientWidth = 462
+      ClientHeight = 331
       object gbInserStaticsTiles: TGroupBox
         Left = 8
-        Height = 319
+        Height = 315
         Top = 8
         Width = 225
         Align = alLeft
         BorderSpacing.Around = 8
         Caption = 'Tiles'
-        ClientHeight = 315
-        ClientWidth = 221
-        ParentFont = True
+        ClientHeight = 299
+        ClientWidth = 223
         TabOrder = 0
         object lblInsertStaticsTiles: TLabel
           Left = 4
           Height = 58
-          Width = 213
+          Top = 0
+          Width = 215
           Align = alTop
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
           BorderSpacing.Bottom = 4
           Caption = 'Drag statics tiles from the main window and drop them on the list. For each cell in the target area, one of these (random) will be used.'
           ParentColor = False
-          ParentFont = True
           WordWrap = True
         end
         object vdtInsertStaticsTiles: TVirtualDrawTree
           Tag = 1
           Left = 4
-          Height = 223
+          Height = 207
           Top = 62
-          Width = 213
+          Width = 215
           Align = alClient
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -672,10 +653,25 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           DefaultNodeHeight = 44
           DragMode = dmAutomatic
           DragType = dtVCL
+          Header.AutoSizeIndex = 0
+          Header.Columns = <          
+            item
+              Position = 0
+              Text = 'ID'
+            end          
+            item
+              Position = 1
+              Text = 'Tile'
+              Width = 44
+            end          
+            item
+              Position = 2
+              Text = 'Name'
+              Width = 100
+            end>
           Header.Options = [hoColumnResize, hoDrag, hoVisible]
           Header.ParentFont = True
           Header.Style = hsFlatButtons
-          ParentFont = True
           TabOrder = 0
           TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
           TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
@@ -683,35 +679,22 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           OnDragOver = vdtTerrainTilesDragOver
           OnDragDrop = vdtTerrainTilesDragDrop
           OnDrawNode = vdtTerrainTilesDrawNode
-          Columns = <          
-            item
-              WideText = 'ID'
-            end          
-            item
-              Position = 1
-              Width = 44
-              WideText = 'Tile'
-            end          
-            item
-              Position = 2
-              Width = 100
-              WideText = 'Name'
-            end>
         end
         object pnlDrawTerrainTilesControls1: TPanel
+          Left = 0
           Height = 26
-          Top = 289
-          Width = 221
+          Top = 273
+          Width = 223
           Align = alBottom
           BevelOuter = bvNone
           ClientHeight = 26
-          ClientWidth = 221
-          ParentFont = True
+          ClientWidth = 223
           TabOrder = 1
           object btnClearIStaticsTiles: TSpeedButton
             Left = 33
             Height = 22
             Hint = 'Clear'
+            Top = 0
             Width = 23
             Color = clBtnFace
             Glyph.Data = {
@@ -753,13 +736,13 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
             NumGlyphs = 0
             OnClick = btnClearIStaticsTilesClick
             ShowHint = True
-            ParentFont = True
             ParentShowHint = False
           end
           object btnDeleteIStaticsTiles: TSpeedButton
             Left = 6
             Height = 22
             Hint = 'Delete'
+            Top = 0
             Width = 23
             Color = clBtnFace
             Glyph.Data = {
@@ -801,7 +784,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
             NumGlyphs = 0
             OnClick = btnDeleteIStaticsTilesClick
             ShowHint = True
-            ParentFont = True
             ParentShowHint = False
           end
         end
@@ -812,21 +794,20 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Top = 8
         Width = 185
         Caption = 'Probability'
-        ClientHeight = 67
-        ClientWidth = 181
-        ParentFont = True
+        ClientHeight = 68
+        ClientWidth = 183
         TabOrder = 1
         object Label5: TLabel
           Left = 4
           Height = 28
-          Width = 173
+          Top = 0
+          Width = 175
           Align = alTop
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
           BorderSpacing.Bottom = 4
           Caption = 'A tile will only be placed with this probability:'
           ParentColor = False
-          ParentFont = True
           WordWrap = True
         end
         object Label6: TLabel
@@ -836,14 +817,12 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Width = 11
           Caption = '%'
           ParentColor = False
-          ParentFont = True
         end
         object seStaticsProbability: TSpinEdit
           Left = 4
           Height = 23
           Top = 36
           Width = 50
-          ParentFont = True
           TabOrder = 0
           Value = 100
         end
@@ -854,9 +833,8 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Top = 100
         Width = 185
         Caption = 'Z Placement'
-        ClientHeight = 103
-        ClientWidth = 181
-        ParentFont = True
+        ClientHeight = 104
+        ClientWidth = 183
         TabOrder = 2
         object rbPlaceStaticsOnTerrain: TRadioButton
           Left = 4
@@ -865,7 +843,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Width = 140
           Caption = 'Place tiles on terrain'
           Checked = True
-          ParentFont = True
           State = cbChecked
           TabOrder = 0
         end
@@ -875,8 +852,8 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Top = 27
           Width = 120
           Caption = 'Place tiles on top'
-          ParentFont = True
           TabOrder = 1
+          TabStop = False
         end
         object rbPlaceStaticsOnZ: TRadioButton
           Left = 4
@@ -884,28 +861,28 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Top = 51
           Width = 103
           Caption = 'Place tiles on:'
-          ParentFont = True
           TabOrder = 2
+          TabStop = False
         end
         object seInsertStaticsZ: TSpinEdit
           Left = 24
           Height = 23
           Top = 75
           Width = 50
-          ParentFont = True
           TabOrder = 3
         end
       end
     end
   end
   object pnlLeft: TPanel
+    Left = 0
     Height = 364
+    Top = 0
     Width = 152
     Align = alLeft
     BevelOuter = bvNone
     ClientHeight = 364
     ClientWidth = 152
-    ParentFont = True
     TabOrder = 1
     object Label1: TLabel
       Left = 4
@@ -917,16 +894,24 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
       BorderSpacing.Right = 4
       Caption = 'Area:'
       ParentColor = False
-      ParentFont = True
     end
     object vstActions: TVirtualStringTree
+      Left = 0
       Height = 136
+      Top = 0
       Width = 152
       Align = alTop
+      DefaultText = 'Node'
+      Header.AutoSizeIndex = 0
+      Header.Columns = <      
+        item
+          Position = 0
+          Text = 'Actions'
+          Width = 152
+        end>
       Header.Options = [hoAutoResize, hoVisible]
       Header.ParentFont = True
       Header.Style = hsFlatButtons
-      ParentFont = True
       TabOrder = 0
       TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
@@ -934,11 +919,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
       OnChange = vstActionsChange
       OnGetText = vstActionsGetText
       OnPaintText = vstActionsPaintText
-      Columns = <      
-        item
-          Width = 152
-          WideText = 'Actions'
-        end>
     end
     object pnlAreaControls: TPanel
       Left = 4
@@ -950,7 +930,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
       BevelOuter = bvNone
       ClientHeight = 82
       ClientWidth = 144
-      ParentFont = True
       TabOrder = 1
       object lblX: TLabel
         Left = 4
@@ -960,7 +939,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Caption = 'X'
         Enabled = False
         ParentColor = False
-        ParentFont = True
       end
       object lblY: TLabel
         Left = 4
@@ -970,12 +948,12 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Caption = 'Y'
         Enabled = False
         ParentColor = False
-        ParentFont = True
       end
       object btnAddArea: TSpeedButton
         Left = 30
         Height = 22
         Hint = 'Add area'
+        Top = 0
         Width = 23
         Color = clBtnFace
         Glyph.Data = {
@@ -1017,13 +995,13 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         NumGlyphs = 0
         OnClick = btnAddAreaClick
         ShowHint = True
-        ParentFont = True
         ParentShowHint = False
       end
       object btnDeleteArea: TSpeedButton
         Left = 59
         Height = 22
         Hint = 'Delete area'
+        Top = 0
         Width = 23
         Color = clBtnFace
         Glyph.Data = {
@@ -1065,13 +1043,13 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         NumGlyphs = 0
         OnClick = btnDeleteAreaClick
         ShowHint = True
-        ParentFont = True
         ParentShowHint = False
       end
       object btnClearArea: TSpeedButton
         Left = 87
         Height = 22
         Hint = 'Delete all areas'
+        Top = 0
         Width = 23
         Color = clBtnFace
         Glyph.Data = {
@@ -1113,7 +1091,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         NumGlyphs = 0
         OnClick = btnClearAreaClick
         ShowHint = True
-        ParentFont = True
         ParentShowHint = False
       end
       object seX1: TSpinEdit
@@ -1123,7 +1100,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 50
         Enabled = False
         OnChange = seX1Change
-        ParentFont = True
         TabOrder = 0
       end
       object seX2: TSpinEdit
@@ -1133,7 +1109,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 50
         Enabled = False
         OnChange = seX1Change
-        ParentFont = True
         TabOrder = 1
       end
       object seY1: TSpinEdit
@@ -1143,7 +1118,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 50
         Enabled = False
         OnChange = seX1Change
-        ParentFont = True
         TabOrder = 2
       end
       object seY2: TSpinEdit
@@ -1153,7 +1127,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
         Width = 50
         Enabled = False
         OnChange = seX1Change
-        ParentFont = True
         TabOrder = 3
       end
     end
@@ -1167,6 +1140,9 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
       BorderSpacing.Right = 4
       BorderSpacing.Bottom = 4
       BorderStyle = bsSingle
+      DefaultText = 'Node'
+      Header.AutoSizeIndex = 0
+      Header.Columns = <>
       Header.MainColumn = -1
       Header.Options = [hoColumnResize, hoDrag]
       TabOrder = 2
@@ -1174,7 +1150,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
       TreeOptions.SelectionOptions = [toFullRowSelect]
       OnChange = vstAreaChange
       OnGetText = vstAreaGetText
-      Columns = <>
     end
   end
   object pnlControls: TPanel
@@ -1187,30 +1162,29 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     BevelOuter = bvNone
     ClientHeight = 25
     ClientWidth = 612
-    ParentFont = True
     TabOrder = 2
     object btnExecute: TButton
       Left = 480
       Height = 25
+      Top = 0
       Width = 64
       Align = alRight
       BorderSpacing.Right = 4
       BorderSpacing.InnerBorder = 4
       Caption = 'Execute'
       OnClick = btnExecuteClick
-      ParentFont = True
       TabOrder = 0
     end
     object btnClose: TButton
       Left = 548
       Height = 25
+      Top = 0
       Width = 64
       Align = alRight
       BorderSpacing.Left = 4
       BorderSpacing.InnerBorder = 4
       Caption = 'Close'
       OnClick = btnCloseClick
-      ParentFont = True
       TabOrder = 1
     end
   end

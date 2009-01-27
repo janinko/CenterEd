@@ -15,12 +15,13 @@ object frmAccountControl: TfrmAccountControl
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poOwnerFormCenter
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.27'
   object tbMain: TToolBar
+    Left = 0
     Height = 26
+    Top = 0
     Width = 369
     Caption = 'tbMain'
-    Flat = True
     Images = ilToolbar
     TabOrder = 0
     object tbRefresh: TToolButton
@@ -72,16 +73,32 @@ object frmAccountControl: TfrmAccountControl
     end
   end
   object vstAccounts: TVirtualStringTree
+    Left = 0
     Height = 352
     Top = 26
     Width = 369
     Align = alClient
+    DefaultText = 'Node'
     Header.AutoSizeIndex = 1
+    Header.Columns = <    
+      item
+        Position = 0
+        Width = 30
+      end    
+      item
+        Position = 1
+        Text = 'Username'
+        Width = 200
+      end    
+      item
+        Position = 2
+        Text = 'Accesslevel'
+        Width = 100
+      end>
     Header.Options = [hoColumnResize, hoDrag, hoVisible]
     Header.ParentFont = True
     Header.Style = hsPlates
     Images = ilAccesslevel
-    ParentFont = True
     TabOrder = 1
     TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
     TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
@@ -91,22 +108,9 @@ object frmAccountControl: TfrmAccountControl
     OnFreeNode = vstAccountsFreeNode
     OnGetText = vstAccountsGetText
     OnGetImageIndex = vstAccountsGetImageIndex
-    Columns = <    
-      item
-        Width = 30
-      end    
-      item
-        Position = 1
-        Width = 200
-        WideText = 'Username'
-      end    
-      item
-        Position = 2
-        Width = 100
-        WideText = 'Accesslevel'
-      end>
   end
   object ilToolbar: TImageList
+    Masked = False
     left = 144
     Bitmap = {
       4C69040000001000000010000000000000000000000000000000000000000000
@@ -241,6 +245,7 @@ object frmAccountControl: TfrmAccountControl
     }
   end
   object ilAccesslevel: TImageList
+    Masked = False
     left = 176
     Bitmap = {
       4C69040000001000000010000000000000000000000000000000000000000000

@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="6"/>
+    <Version Value="7"/>
     <General>
+      <Flags>
+        <LRSInOutputDirectory Value="False"/>
+      </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
     </General>
     <VersionInfo>
@@ -51,7 +52,6 @@
         <ComponentName Value="frmMain"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmMain.lrs"/>
         <UnitName Value="UfrmMain"/>
       </Unit1>
       <Unit2>
@@ -59,7 +59,6 @@
         <ComponentName Value="dmNetwork"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
-        <ResourceFilename Value="UdmNetwork.lrs"/>
         <UnitName Value="UdmNetwork"/>
       </Unit2>
       <Unit3>
@@ -67,7 +66,6 @@
         <ComponentName Value="frmLogin"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmLogin.lrs"/>
         <UnitName Value="UfrmLogin"/>
       </Unit3>
       <Unit4>
@@ -75,7 +73,6 @@
         <ComponentName Value="frmInitialize"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmInitialize.lrs"/>
         <UnitName Value="UfrmInitialize"/>
       </Unit4>
       <Unit5>
@@ -83,7 +80,6 @@
         <ComponentName Value="frmAccountControl"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmAccountControl.lrs"/>
         <UnitName Value="UfrmAccountControl"/>
       </Unit5>
       <Unit6>
@@ -91,7 +87,6 @@
         <ComponentName Value="frmEditAccount"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmEditAccount.lrs"/>
         <UnitName Value="UfrmEditAccount"/>
       </Unit6>
       <Unit7>
@@ -99,7 +94,6 @@
         <ComponentName Value="frmDrawSettings"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="Tools/UfrmDrawSettings.lrs"/>
         <UnitName Value="UfrmDrawSettings"/>
       </Unit7>
       <Unit8>
@@ -107,7 +101,6 @@
         <ComponentName Value="frmBoundaries"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="Tools/UfrmBoundaries.lrs"/>
         <UnitName Value="UfrmBoundaries"/>
       </Unit8>
       <Unit9>
@@ -115,7 +108,6 @@
         <ComponentName Value="frmElevateSettings"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="Tools/UfrmElevateSettings.lrs"/>
         <UnitName Value="UfrmElevateSettings"/>
       </Unit9>
       <Unit10>
@@ -133,7 +125,6 @@
         <ComponentName Value="frmConfirmation"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="Tools/UfrmConfirmation.lrs"/>
         <UnitName Value="UfrmConfirmation"/>
       </Unit12>
       <Unit13>
@@ -141,7 +132,6 @@
         <ComponentName Value="frmMoveSettings"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="Tools/UfrmMoveSettings.lrs"/>
         <UnitName Value="UfrmMoveSettings"/>
       </Unit13>
       <Unit14>
@@ -149,7 +139,6 @@
         <ComponentName Value="frmAbout"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmAbout.lrs"/>
         <UnitName Value="UfrmAbout"/>
       </Unit14>
       <Unit15>
@@ -157,7 +146,6 @@
         <ComponentName Value="frmHueSettings"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="Tools/UfrmHueSettings.lrs"/>
         <UnitName Value="UfrmHueSettings"/>
       </Unit15>
       <Unit16>
@@ -165,7 +153,6 @@
         <ComponentName Value="frmRadarMap"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmRadar.lrs"/>
         <UnitName Value="UfrmRadar"/>
       </Unit16>
       <Unit17>
@@ -173,7 +160,6 @@
         <ComponentName Value="frmLargeScaleCommand"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmLargeScaleCommand.lrs"/>
         <UnitName Value="UfrmLargeScaleCommand"/>
       </Unit17>
       <Unit18>
@@ -181,7 +167,6 @@
         <ComponentName Value="frmVirtualLayer"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="Tools/UfrmVirtualLayer.lrs"/>
         <UnitName Value="UfrmVirtualLayer"/>
       </Unit18>
       <Unit19>
@@ -189,7 +174,6 @@
         <ComponentName Value="frmFilter"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="Tools/UfrmFilter.lrs"/>
         <UnitName Value="UfrmFilter"/>
       </Unit19>
       <Unit20>
@@ -197,7 +181,6 @@
         <ComponentName Value="frmTileInfo"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmTileInfo.lrs"/>
         <UnitName Value="UfrmTileInfo"/>
       </Unit20>
       <Unit21>
@@ -216,7 +199,6 @@
         <HasResources Value="True"/>
         <IsPartOfProject Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <ResourceFilename Value="UfrmRegionControl.lrs"/>
         <UnitName Value="UfrmRegionControl"/>
       </Unit23>
       <Unit24>

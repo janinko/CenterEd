@@ -99,11 +99,11 @@ type
     procedure seX1Change(Sender: TObject);
     procedure vstAreaChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstAreaGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; TextType: TVSTTextType; var CellText: WideString);
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: UTF8String);
     procedure vstRegionsChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstRegionsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstRegionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; TextType: TVSTTextType; var CellText: WideString);
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: UTF8String);
   protected
     FLastX: Integer;
     FLastY: Integer;
@@ -494,7 +494,7 @@ end;
 
 procedure TfrmRegionControl.vstAreaGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var CellText: WideString);
+  var CellText: UTF8String);
 var
   areaInfo: PRect;
 begin
@@ -562,12 +562,12 @@ end;
 
 procedure TfrmRegionControl.vstRegionsGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var CellText: WideString);
+  var CellText: UTF8String);
 var
   regionInfo: PRegionInfo;
 begin
   regionInfo := Sender.GetNodeData(Node);
-  CellText := regionInfo^.Name;
+  CellText := UTF8Encode(regionInfo^.Name);
 end;
 
 function TfrmRegionControl.FindRegion(AName: string): PVirtualNode;

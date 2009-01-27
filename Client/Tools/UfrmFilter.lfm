@@ -81,6 +81,20 @@ object frmFilter: TfrmFilter
       Header.Options = [hoColumnResize, hoDrag, hoVisible]
       Header.ParentFont = True
       Header.Style = hsFlatButtons
+      Header.Columns = <      
+        item
+          Text = 'ID'
+        end      
+        item
+          Position = 1
+          Width = 44
+          Text = 'Tile'
+        end      
+        item
+          Position = 2
+          Width = 100
+          Text = 'Name'
+        end>
       ParentFont = True
       TabOrder = 0
       TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
@@ -88,20 +102,6 @@ object frmFilter: TfrmFilter
       OnDragOver = vdtFilterDragOver
       OnDragDrop = vdtFilterDragDrop
       OnDrawNode = vdtFilterDrawNode
-      Columns = <      
-        item
-          WideText = 'ID'
-        end      
-        item
-          Position = 1
-          Width = 44
-          WideText = 'Tile'
-        end      
-        item
-          Position = 2
-          Width = 100
-          WideText = 'Name'
-        end>
     end
     object pnlControls: TPanel
       Left = 4
@@ -262,6 +262,20 @@ object frmFilter: TfrmFilter
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
       Header.ParentFont = True
       Header.Style = hsFlatButtons
+      Header.Columns = <      
+        item
+          Width = 20
+        end      
+        item
+          Position = 1
+          Width = 38
+          Text = 'Hue'
+        end      
+        item
+          Position = 2
+          Width = 158
+          Text = 'Name'
+        end>
       ParentFont = True
       PopupMenu = pmHues
       TabOrder = 1
@@ -270,20 +284,6 @@ object frmFilter: TfrmFilter
       TreeOptions.SelectionOptions = [toFullRowSelect]
       OnChecked = vdtHuesChecked
       OnDrawNode = vdtHuesDrawNode
-      Columns = <      
-        item
-          Width = 20
-        end      
-        item
-          Position = 1
-          Width = 38
-          WideText = 'Hue'
-        end      
-        item
-          Position = 2
-          Width = 158
-          WideText = 'Name'
-        end>
     end
   end
   object Splitter1: TSplitter

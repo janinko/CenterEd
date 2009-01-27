@@ -61,7 +61,7 @@ type
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
     procedure vstAccountsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; TextType: TVSTTextType; var CellText: WideString);
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: UTF8String);
   protected
     procedure OnModifyUserResponse(ABuffer: TEnhancedMemoryStream);
     procedure OnDeleteUserResponse(ABuffer: TEnhancedMemoryStream);
@@ -279,14 +279,14 @@ end;
 
 procedure TfrmAccountControl.vstAccountsGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var CellText: WideString);
+  var CellText: UTF8String);
 var
   accountInfo: PAccountInfo;
 begin
   accountInfo := Sender.GetNodeData(Node);
   case Column of
-    1: CellText := accountInfo^.Username;
-    2: CellText := GetAccessLevelString(accountInfo^.AccessLevel);
+    1: CellText := UTF8Encode(accountInfo^.Username);
+    2: CellText := UTF8Encode(GetAccessLevelString(accountInfo^.AccessLevel));
   else
     CellText := '';
   end;
