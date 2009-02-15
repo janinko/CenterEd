@@ -532,7 +532,7 @@ var
   x, y: Word;
   cell: TMapCell;
   subscriptions: TLinkedList;
-  item: PLinkedItem;
+  subscriptionItem: PLinkedItem;
   packet: TDrawMapPacket;
 begin
   x := ABuffer.ReadWord;
@@ -548,9 +548,9 @@ begin
     
     packet := TDrawMapPacket.Create(cell);
     subscriptions := FBlockSubscriptions[(y div 8) * FWidth + (x div 8)];
-    item := nil;
-    while subscriptions.Iterate(item) do
-      CEDServerInstance.SendPacket(TNetState(item^.Data), packet, False);
+    subscriptionItem := nil;
+    while subscriptions.Iterate(subscriptionItem) do
+      CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data), packet, False);
     packet.Free;
     
     UpdateRadar(x, y);
@@ -565,7 +565,7 @@ var
   staticItem: TStaticItem;
   targetStaticList: TList;
   subscriptions: TLinkedList;
-  item: PLinkedItem;
+  subscriptionItem: PLinkedItem;
   packet: TInsertStaticPacket;
 begin
   x := ABuffer.ReadWord;
@@ -589,9 +589,9 @@ begin
     
     packet := TInsertStaticPacket.Create(staticItem);
     subscriptions := FBlockSubscriptions[(y div 8) * FWidth + (x div 8)];
-    item := nil;
-    while subscriptions.Iterate(item) do
-      CEDServerInstance.SendPacket(TNetState(item^.Data), packet, False);
+    subscriptionItem := nil;
+    while subscriptions.Iterate(subscriptionItem) do
+      CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data), packet, False);
     packet.Free;
     
     UpdateRadar(x, y);
@@ -607,7 +607,7 @@ var
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
   subscriptions: TLinkedList;
-  item: PLinkedItem;
+  subscriptionItem: PLinkedItem;
   packet: TDeleteStaticPacket;
 begin
   ABuffer.Read(staticInfo, SizeOf(TStaticInfo));
@@ -631,9 +631,9 @@ begin
         staticItem.Delete;
         
         subscriptions := FBlockSubscriptions[(staticInfo.Y div 8) * FWidth + (staticInfo.X div 8)];
-        item := nil;
-        while subscriptions.Iterate(item) do
-          CEDServerInstance.SendPacket(TNetState(item^.Data), packet, False);
+        subscriptionItem := nil;
+        while subscriptions.Iterate(subscriptionItem) do
+          CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data), packet, False);
         packet.Free;
         
         UpdateRadar(staticInfo.X, staticInfo.Y);
@@ -654,7 +654,7 @@ var
   staticItem: TStaticItem;
   newZ: ShortInt;
   subscriptions: TLinkedList;
-  item: PLinkedItem;
+  subscriptionItem: PLinkedItem;
   packet: TElevateStaticPacket;
 begin
   ABuffer.Read(staticInfo, SizeOf(TStaticInfo));
@@ -679,9 +679,9 @@ begin
         SortStaticsList(statics);
 
         subscriptions := FBlockSubscriptions[(staticInfo.Y div 8) * FWidth + (staticInfo.X div 8)];
-        item := nil;
-        while subscriptions.Iterate(item) do
-          CEDServerInstance.SendPacket(TNetState(item^.Data), packet, False);
+        subscriptionItem := nil;
+        while subscriptions.Iterate(subscriptionItem) do
+          CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data), packet, False);
         packet.Free;
         
         UpdateRadar(staticInfo.X, staticInfo.Y);
@@ -703,7 +703,7 @@ var
   staticItem: TStaticItem;
   newX, newY: Word;
   subscriptions: TLinkedList;
-  item: PLinkedItem;
+  subscriptionItem: PLinkedItem;
   insertPacket: TInsertStaticPacket;
   deletePacket: TDeleteStaticPacket;
   movePacket: TMoveStaticPacket;
@@ -757,15 +757,15 @@ begin
 
       sourceSubscriptions := TList.Create;
       subscriptions := FBlockSubscriptions[(staticInfo.Y div 8) * FWidth + (staticInfo.X div 8)];
-      item := nil;
-      while subscriptions.Iterate(item) do
-        sourceSubscriptions.Add(item^.Data);
+      subscriptionItem := nil;
+      while subscriptions.Iterate(subscriptionItem) do
+        sourceSubscriptions.Add(subscriptionItem^.Data);
 
       targetSubscriptions := TList.Create;
       subscriptions := FBlockSubscriptions[(newY div 8) * FWidth + (newX div 8)];
-      item := nil;
-      while subscriptions.Iterate(item) do
-        targetSubscriptions.Add(item^.Data);
+      subscriptionItem := nil;
+      while subscriptions.Iterate(subscriptionItem) do
+        targetSubscriptions.Add(subscriptionItem^.Data);
 
       for i := 0 to sourceSubscriptions.Count - 1 do
       begin
@@ -801,7 +801,7 @@ var
   staticItem: TStaticItem;
   newHue: Word;
   subscriptions: TLinkedList;
-  item: PLinkedItem;
+  subscriptionItem: PLinkedItem;
   packet: THueStaticPacket;
 begin
   ABuffer.Read(staticInfo, SizeOf(TStaticInfo));
@@ -825,9 +825,9 @@ begin
         staticItem.Hue := newHue;
 
         subscriptions := FBlockSubscriptions[(staticInfo.Y div 8) * FWidth + (staticInfo.X div 8)];
-        item := nil;
-        while subscriptions.Iterate(item) do
-          CEDServerInstance.SendPacket(TNetState(item^.Data), packet, False);
+        subscriptionItem := nil;
+        while subscriptions.Iterate(subscriptionItem) do
+          CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data), packet, False);
         packet.Free;
 
         Break;
@@ -857,7 +857,7 @@ var
   end;
   netState: TNetState;
   subscriptions: TLinkedList;
-  item: PLinkedItem;
+  subscriptionItem: PLinkedItem;
   cmOperation: TLSCopyMove;
   additionalAffectedBlocks: TBits;
 begin
@@ -871,6 +871,10 @@ begin
   SetLength(bitMask, FWidth * FHeight);
   for i := Low(bitMask) to High(bitMask) do
     bitMask[i] := TBits.Create(64);
+  //'additionalAffectedBlocks' is used to store whether a certain block was
+  //touched during an operation which was designated to another block (for
+  //example by moving items with an offset). This is (indirectly) merged later
+  //on.
   additionalAffectedBlocks := TBits.Create(FWidth * FHeight);
 
   areaCount := ABuffer.ReadByte;
@@ -985,14 +989,16 @@ begin
           end;
         end;
       end;
-      
+
+      //Find out, which clients are affected by which blocks.
+      //This is used to efficiently update the block subscriptions.
       subscriptions := FBlockSubscriptions[realBlockY * FWidth + realBlockX];
       for i := Low(clients) to High(clients) do
       begin
-        item := nil;
-        while subscriptions.Iterate(item) do
+        subscriptionItem := nil;
+        while subscriptions.Iterate(subscriptionItem) do
         begin
-          if TNetState(item^.Data) = clients[i].NetState then
+          if TNetState(subscriptionItem^.Data) = clients[i].NetState then
           begin
             SetLength(clients[i].Blocks, Length(clients[i].Blocks) + 1);
             with clients[i].Blocks[High(clients[i].Blocks)] do
@@ -1016,13 +1022,15 @@ begin
       blockID := (blockX * FHeight) + blockY;
       if bitMask[blockID].Equals(emptyBits) and additionalAffectedBlocks[blockID] then
       begin
+        //Update the information, which client is affected on which subscribed
+        //block.
         subscriptions := FBlockSubscriptions[blockY * FWidth + blockX];
         for i := Low(clients) to High(clients) do
         begin
-          item := nil;
-          while subscriptions.Iterate(item) do
+          subscriptionItem := nil;
+          while subscriptions.Iterate(subscriptionItem) do
           begin
-            if TNetState(item^.Data) = clients[i].NetState then
+            if TNetState(subscriptionItem^.Data) = clients[i].NetState then
             begin
               SetLength(clients[i].Blocks, Length(clients[i].Blocks) + 1);
               with clients[i].Blocks[High(clients[i].Blocks)] do
