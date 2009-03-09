@@ -165,7 +165,7 @@ begin
   FY := AY;
 
   FItems := TList.Create;
-  if assigned(AData) and (AIndex.Lookup <> LongInt($FFFFFFFF)) then
+  if assigned(AData) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
   begin
     AData.Position := AIndex.Lookup;
     block := TMemoryStream.Create;
@@ -219,9 +219,7 @@ var
   i: Integer;
 begin
   for i := 0 to FItems.Count - 1 do
-  begin
     TStaticItem(FItems[i]).Write(AData);
-  end;
 end;
 
 procedure TStaticBlock.ReverseWrite(AData: TStream);
@@ -297,7 +295,7 @@ begin
   for i := 0 to 63 do
     Cells[i] := TList.Create;
 
-  if (AData <> nil) and (AIndex.Lookup <> LongInt($FFFFFFFF)) then
+  if (AData <> nil) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
   begin
     AData.Position := AIndex.Lookup;
     block := TMemoryStream.Create;

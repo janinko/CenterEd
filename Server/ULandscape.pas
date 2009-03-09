@@ -479,14 +479,14 @@ begin
     FStaIdx.Position := ((AWorldBlock.X * FHeight) + AWorldBlock.Y) * 12;
     index := TGenericIndex.Create(FStaIdx);
     size := AWorldBlock.GetSize;
-    if (size > index.Size) or (index.Lookup = LongInt($FFFFFFFF)) then
+    if (size > index.Size) or (index.Lookup < 0) then
     begin
       FStatics.Position := FStatics.Size;
       index.Lookup := FStatics.Position;
     end;
     index.Size := size;
     if size = 0 then
-      index.Lookup := LongInt($FFFFFFFF)
+      index.Lookup := -1
     else
     begin
       FStatics.Position := index.Lookup;
