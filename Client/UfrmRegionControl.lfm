@@ -48,7 +48,7 @@ object frmRegionControl: TfrmRegionControl
       TabOrder = 0
       object lblX: TLabel
         Left = 4
-        Height = 13
+        Height = 14
         Top = 32
         Width = 8
         Caption = 'X'
@@ -57,7 +57,7 @@ object frmRegionControl: TfrmRegionControl
       end
       object lblY: TLabel
         Left = 4
-        Height = 13
+        Height = 14
         Top = 60
         Width = 8
         Caption = 'Y'
@@ -213,7 +213,7 @@ object frmRegionControl: TfrmRegionControl
       end
       object seX1: TSpinEdit
         Left = 20
-        Height = 23
+        Height = 19
         Top = 29
         Width = 50
         Enabled = False
@@ -222,7 +222,7 @@ object frmRegionControl: TfrmRegionControl
       end
       object seX2: TSpinEdit
         Left = 84
-        Height = 23
+        Height = 19
         Top = 29
         Width = 50
         Enabled = False
@@ -231,7 +231,7 @@ object frmRegionControl: TfrmRegionControl
       end
       object seY1: TSpinEdit
         Left = 20
-        Height = 23
+        Height = 19
         Top = 56
         Width = 50
         Enabled = False
@@ -240,7 +240,7 @@ object frmRegionControl: TfrmRegionControl
       end
       object seY2: TSpinEdit
         Left = 84
-        Height = 23
+        Height = 19
         Top = 56
         Width = 50
         Enabled = False
@@ -261,6 +261,7 @@ object frmRegionControl: TfrmRegionControl
       DefaultText = 'Node'
       Header.AutoSizeIndex = 0
       Header.Columns = <>
+      Header.DefaultHeight = 17
       Header.MainColumn = -1
       Header.Options = [hoColumnResize, hoDrag]
       TabOrder = 1
@@ -304,6 +305,7 @@ object frmRegionControl: TfrmRegionControl
             Text = 'Regions'
             Width = 158
           end>
+        Header.DefaultHeight = 17
         Header.Options = [hoAutoResize, hoVisible]
         Header.ParentFont = True
         Header.Style = hsFlatButtons
@@ -442,8 +444,8 @@ object frmRegionControl: TfrmRegionControl
       Top = 1
       Width = 458
       Align = alClient
-      ClientHeight = 378
-      ClientWidth = 458
+      ClientHeight = 374
+      ClientWidth = 454
       TabOrder = 0
       object pbArea: TPaintBox
         Left = 0

@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 247
+  Left = 236
   Height = 603
-  Top = 91
+  Top = 126
   Width = 766
   ActiveControl = pcLeft
   Caption = 'UO CentrED'
@@ -41,7 +41,7 @@ object frmMain: TfrmMain
       Left = 88
       Height = 14
       Top = 7
-      Width = 11
+      Width = 10
       Caption = 'Y:'
       ParentColor = False
     end
@@ -54,10 +54,10 @@ object frmMain: TfrmMain
       ParentColor = False
     end
     object lblTip: TLabel
-      Left = 554
+      Left = 528
       Height = 31
       Top = 0
-      Width = 204
+      Width = 230
       Align = alRight
       Alignment = taRightJustify
       BorderSpacing.Right = 8
@@ -66,10 +66,10 @@ object frmMain: TfrmMain
       ParentColor = False
     end
     object lblTipC: TLabel
-      Left = 530
+      Left = 498
       Height = 31
       Top = 0
-      Width = 24
+      Width = 30
       Align = alRight
       Caption = 'Tip: '
       Font.Height = -11
@@ -80,7 +80,7 @@ object frmMain: TfrmMain
     end
     object edX: TSpinEdit
       Left = 24
-      Height = 23
+      Height = 19
       Top = 3
       Width = 55
       MaxValue = 100000
@@ -88,7 +88,7 @@ object frmMain: TfrmMain
     end
     object edY: TSpinEdit
       Left = 104
-      Height = 23
+      Height = 19
       Top = 3
       Width = 52
       MaxValue = 100000
@@ -116,31 +116,31 @@ object frmMain: TfrmMain
     TabOrder = 1
     object tsTiles: TTabSheet
       Caption = 'Tiles'
-      ClientHeight = 492
-      ClientWidth = 218
+      ClientHeight = 500
+      ClientWidth = 222
       object pnlTileListSettings: TPanel
         Left = 0
         Height = 56
         Top = 0
-        Width = 218
+        Width = 222
         Align = alTop
         BevelOuter = bvNone
         ClientHeight = 56
-        ClientWidth = 218
+        ClientWidth = 222
         TabOrder = 0
         object lblFilter: TLabel
           Left = 84
           Height = 14
           Top = 8
-          Width = 29
+          Width = 30
           Caption = 'Filter:'
           ParentColor = False
         end
         object cbTerrain: TCheckBox
           Left = 4
-          Height = 22
+          Height = 18
           Top = 8
-          Width = 60
+          Width = 57
           Caption = 'Terrain'
           Checked = True
           OnChange = cbTerrainChange
@@ -149,9 +149,9 @@ object frmMain: TfrmMain
         end
         object cbStatics: TCheckBox
           Left = 4
-          Height = 22
+          Height = 18
           Top = 32
-          Width = 60
+          Width = 56
           Caption = 'Statics'
           Checked = True
           OnChange = cbStaticsChange
@@ -160,7 +160,7 @@ object frmMain: TfrmMain
         end
         object edFilter: TEdit
           Left = 84
-          Height = 23
+          Height = 19
           Top = 24
           Width = 112
           OnEditingDone = edFilterEditingDone
@@ -170,9 +170,9 @@ object frmMain: TfrmMain
       object vdtTiles: TVirtualDrawTree
         Tag = 1
         Left = 0
-        Height = 238
+        Height = 246
         Top = 56
-        Width = 218
+        Width = 222
         Align = alClient
         DefaultNodeHeight = 44
         DragMode = dmAutomatic
@@ -193,6 +193,7 @@ object frmMain: TfrmMain
             Text = 'Name'
             Width = 100
           end>
+        Header.DefaultHeight = 17
         Header.MainColumn = 2
         Header.Options = [hoVisible]
         Header.ParentFont = True
@@ -215,12 +216,12 @@ object frmMain: TfrmMain
       object gbRandom: TGroupBox
         Left = 0
         Height = 193
-        Top = 299
-        Width = 218
+        Top = 307
+        Width = 222
         Align = alBottom
         Caption = 'Random pool'
         ClientHeight = 179
-        ClientWidth = 216
+        ClientWidth = 220
         TabOrder = 2
         object vdtRandom: TVirtualDrawTree
           Tag = 1
@@ -228,7 +229,7 @@ object frmMain: TfrmMain
           Left = 0
           Height = 127
           Top = 22
-          Width = 216
+          Width = 220
           Align = alClient
           DefaultNodeHeight = 44
           DragType = dtVCL
@@ -248,6 +249,7 @@ object frmMain: TfrmMain
               Text = 'Name'
               Width = 100
             end>
+          Header.DefaultHeight = 17
           Header.Options = [hoColumnResize, hoDrag, hoVisible]
           Header.ParentFont = True
           Header.Style = hsFlatButtons
@@ -265,11 +267,11 @@ object frmMain: TfrmMain
           Left = 0
           Height = 22
           Top = 0
-          Width = 216
+          Width = 220
           Align = alTop
           BevelOuter = bvNone
           ClientHeight = 22
-          ClientWidth = 216
+          ClientWidth = 220
           TabOrder = 1
           object btnAddRandom: TSpeedButton
             Left = 2
@@ -420,12 +422,12 @@ object frmMain: TfrmMain
           Left = 4
           Height = 22
           Top = 153
-          Width = 208
+          Width = 212
           Align = alBottom
           BorderSpacing.Around = 4
           BevelOuter = bvNone
           ClientHeight = 22
-          ClientWidth = 208
+          ClientWidth = 212
           TabOrder = 2
           object btnRandomPresetSave: TSpeedButton
             Left = 158
@@ -527,7 +529,7 @@ object frmMain: TfrmMain
           end
           object cbRandomPreset: TComboBox
             Left = 0
-            Height = 29
+            Height = 25
             Top = 0
             Width = 152
             AutoComplete = False
@@ -543,14 +545,14 @@ object frmMain: TfrmMain
         Cursor = crVSplit
         Left = 0
         Height = 5
-        Top = 294
-        Width = 218
+        Top = 302
+        Width = 222
         Align = alBottom
         ResizeAnchor = akBottom
       end
       object edSearchID: TEdit
         Left = 118
-        Height = 23
+        Height = 19
         Hint = 'Append S or T to restrict the search to Statics or Terrain.'
         Top = 256
         Width = 96
@@ -565,13 +567,13 @@ object frmMain: TfrmMain
     end
     object tsClients: TTabSheet
       Caption = 'Clients'
-      ClientHeight = 492
-      ClientWidth = 218
+      ClientHeight = 500
+      ClientWidth = 222
       object lbClients: TListBox
         Left = 0
-        Height = 492
+        Height = 500
         Top = 0
-        Width = 218
+        Width = 222
         Align = alClient
         ItemHeight = 0
         OnDblClick = mnuGoToClientClick
@@ -583,14 +585,14 @@ object frmMain: TfrmMain
     end
     object tsLocations: TTabSheet
       Caption = 'Locations'
-      ClientHeight = 492
-      ClientWidth = 218
+      ClientHeight = 500
+      ClientWidth = 222
       object vstLocations: TVirtualStringTree
         Cursor = 63
         Left = 4
-        Height = 456
+        Height = 464
         Top = 4
-        Width = 210
+        Width = 214
         Align = alClient
         BorderSpacing.Around = 4
         BorderStyle = bsSingle
@@ -607,6 +609,7 @@ object frmMain: TfrmMain
             Text = 'Name'
             Width = 135
           end>
+        Header.DefaultHeight = 17
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
         Header.ParentFont = True
         Header.Style = hsFlatButtons
@@ -624,13 +627,13 @@ object frmMain: TfrmMain
       object pnlLocationControls: TPanel
         Left = 4
         Height = 24
-        Top = 464
-        Width = 210
+        Top = 472
+        Width = 214
         Align = alBottom
         BorderSpacing.Around = 4
         BevelOuter = bvNone
         ClientHeight = 24
-        ClientWidth = 210
+        ClientWidth = 214
         TabOrder = 1
         object btnClearLocations: TSpeedButton
           Left = 112
@@ -1010,7 +1013,7 @@ object frmMain: TfrmMain
       object vstChat: TVirtualStringTree
         Cursor = 63
         Left = 0
-        Height = 99
+        Height = 103
         Top = 0
         Width = 542
         Align = alClient
@@ -1032,6 +1035,7 @@ object frmMain: TfrmMain
             Text = 'Message'
             Width = 392
           end>
+        Header.DefaultHeight = 17
         Header.MainColumn = 2
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
         Header.ParentFont = True
@@ -1047,8 +1051,8 @@ object frmMain: TfrmMain
       end
       object edChat: TEdit
         Left = 0
-        Height = 23
-        Top = 99
+        Height = 19
+        Top = 103
         Width = 542
         Align = alBottom
         OnKeyPress = edChatKeyPress
@@ -1343,7 +1347,6 @@ object frmMain: TfrmMain
     end
   end
   object ImageList1: TImageList
-    Masked = False
     left = 264
     top = 32
     Bitmap = {
@@ -1991,7 +1994,7 @@ object frmMain: TfrmMain
     }
   end
   object pmTileList: TPopupMenu
-    left = 184
+    left = 185
     top = 128
     object mnuAddToRandom: TMenuItem
       Caption = 'Add to random pool'
@@ -1999,13 +2002,6 @@ object frmMain: TfrmMain
     end
   end
   object ApplicationProperties1: TApplicationProperties
-    CaptureExceptions = True
-    HintColor = clInfoBk
-    HintHidePause = 2500
-    HintPause = 500
-    HintShortCuts = True
-    HintShortPause = 0
-    ShowHint = True
     OnIdle = ApplicationProperties1Idle
     left = 295
     top = 33
@@ -2375,7 +2371,6 @@ object frmMain: TfrmMain
       Category = 'Tools'
       Caption = 'Select'
       Checked = True
-      DisableIfNoHandler = True
       GroupIndex = 1
       Hint = 'Select'
       ImageIndex = 4
@@ -2385,7 +2380,6 @@ object frmMain: TfrmMain
     object acDraw: TAction
       Category = 'Tools'
       Caption = 'Draw tiles'
-      DisableIfNoHandler = True
       GroupIndex = 1
       Hint = 'Draw tiles'
       ImageIndex = 5
@@ -2395,7 +2389,6 @@ object frmMain: TfrmMain
     object acMove: TAction
       Category = 'Tools'
       Caption = 'Move tiles'
-      DisableIfNoHandler = True
       GroupIndex = 1
       Hint = 'Move tiles'
       ImageIndex = 6
@@ -2405,7 +2398,6 @@ object frmMain: TfrmMain
     object acElevate: TAction
       Category = 'Tools'
       Caption = 'Elevate tiles'
-      DisableIfNoHandler = True
       GroupIndex = 1
       Hint = 'Elevate tiles'
       ImageIndex = 7
@@ -2415,7 +2407,6 @@ object frmMain: TfrmMain
     object acDelete: TAction
       Category = 'Tools'
       Caption = 'Delete tiles'
-      DisableIfNoHandler = True
       GroupIndex = 1
       Hint = 'Delete tiles'
       ImageIndex = 8
@@ -2425,7 +2416,6 @@ object frmMain: TfrmMain
     object acHue: TAction
       Category = 'Tools'
       Caption = 'Hue tiles'
-      DisableIfNoHandler = True
       GroupIndex = 1
       Hint = 'Hue tiles'
       ImageIndex = 12
@@ -2435,7 +2425,6 @@ object frmMain: TfrmMain
     object acBoundaries: TAction
       Category = 'Settings'
       Caption = 'Boundaries'
-      DisableIfNoHandler = True
       Hint = 'Boundaries'
       ImageIndex = 9
       OnExecute = acBoundariesExecute
@@ -2445,7 +2434,6 @@ object frmMain: TfrmMain
       Category = 'Settings'
       AutoCheck = True
       Caption = 'Filter'
-      DisableIfNoHandler = True
       Hint = 'Filter'
       ImageIndex = 16
       OnExecute = acFilterExecute
@@ -2453,7 +2441,6 @@ object frmMain: TfrmMain
     object acVirtualLayer: TAction
       Category = 'Settings'
       Caption = 'Virtual Layer'
-      DisableIfNoHandler = True
       Hint = 'Virtual Layer'
       ImageIndex = 15
       OnExecute = acVirtualLayerExecute
@@ -2462,7 +2449,6 @@ object frmMain: TfrmMain
     object acFlat: TAction
       Category = 'Settings'
       Caption = 'Flat view'
-      DisableIfNoHandler = True
       Hint = 'Flat view'
       ImageIndex = 17
       OnExecute = acFlatExecute
@@ -2471,7 +2457,6 @@ object frmMain: TfrmMain
       Category = 'Settings'
       Caption = 'NoDraw'
       Checked = True
-      DisableIfNoHandler = True
       Hint = 'Display "No Draw" tiles'
       ImageIndex = 18
       OnExecute = acNoDrawExecute

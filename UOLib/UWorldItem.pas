@@ -43,6 +43,7 @@ type
     FY, FOrgY: Word;
     FZ, FOrgZ: ShortInt;
     FSelected: Boolean;
+    FCanBeEdited: Boolean;
     FLocked: Boolean;
     FChanged: Boolean;
     FPriority: Integer;
@@ -67,6 +68,7 @@ type
     property Y: Word read FY write SetY;
     property Z: ShortInt read FZ write SetZ;
     property Selected: Boolean read FSelected write SetSelected;
+    property CanBeEdited: Boolean read FCanBeEdited write FCanBeEdited;
     property Locked: Boolean read FLocked write SetLocked;
     property Changed: Boolean read FChanged;
     property Priority: Integer read FPriority write FPriority;

@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmMain;
 
@@ -1624,7 +1624,6 @@ end;
 procedure TfrmMain.Render;
 var
   drawDistance: Integer;
-  offsetX, offsetY: Integer;
   lowOffX, lowOffY, highOffX, highOffY: Integer;
   z: ShortInt;
   mat: TMaterial;
@@ -1645,6 +1644,7 @@ var
   staticsFilter: TStaticFilter;
   editing: Boolean;
   intensity: GLfloat;
+  item: TWorldItem;
 
   procedure GetMapDrawOffset(x, y: Integer; out drawX, drawY: Single);
   begin
@@ -1670,222 +1670,208 @@ begin
   rangeX := highOffX - lowOffX;
   rangeY := highOffY - lowOffY;
   
-  if acFilter.Checked then
+  {if acFilter.Checked then
     staticsFilter := @frmFilter.Filter
   else
-    staticsFilter := nil;
-  
-  for j := 0 to rangeX + rangeY - 2 do
+    staticsFilter := nil;} //TODO : update list on change
+
+  draw := FLandscape.GetDrawList(FX + lowOffX, FY + lowOffY, rangeX, rangeY,
+    frmBoundaries.tbMinZ.Position, frmBoundaries.tbMaxZ.Position,
+    nil, nil, tbTerrain.Down, tbStatics.Down, //TODO : ghost tile and virtual tile!
+    acNoDraw.Checked, nil); //TODO : statics filter!
+
+  for i := 0 to draw.Count - 1 do
   begin
-    if j > rangeY then
+    item := TWorldItem(draw[i]);
+
+    GetMapDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
+
+    singleTarget := (CurrentTile <> nil) and
+                    (item.X = CurrentTile.X) and
+                    (item.Y = CurrentTile.Y);
+    multiTarget := (CurrentTile <> nil) and
+                   (SelectedTile <> nil) and
+                   (CurrentTile <> SelectedTile) and
+                   PtInRect(tileRect, Point(item.X, item.Y));
+
+    if acSelect.Checked or item.CanBeEdited then
     begin
-      startOffX := j - rangeY + 1;
-      endOffX := rangeX;
+      editing := True;
+      intensity := 1.0;
+      SetNormalLights;
     end else
     begin
-      startOffX := 0;
-      endOffX := j;
+      editing := False;
+      intensity := 0.5;
+      SetDarkLights;
     end;
-    for k := startOffX to endOffX do
+
+    {if editing and acDraw.Checked and (singleTarget or multiTarget) then
     begin
-      offsetY := j - k + lowOffY;
-      offsetX := k + lowOffX;
-      GetMapDrawOffset(offsetX, offsetY, drawX, drawY);
+      ghostTile := FGhostTile;
+      if (ghostTile is TMapCell) and (not frmDrawSettings.cbForceAltitude.Checked) then
+        ghostTile.Z := FLandscape.MapCell[item.X, item.Y].Z;
+    end else
+      ghostTile := nil;} //TODO : re add Ghost Tile
 
-      singleTarget := (CurrentTile <> nil) and
-                      (FX + offsetX = CurrentTile.X) and
-                      (FY + offsetY = CurrentTile.Y);
-      multiTarget := (CurrentTile <> nil) and
-                     (SelectedTile <> nil) and
-                     (CurrentTile <> SelectedTile) and
-                     PtInRect(tileRect, Point(FX + offsetX, FY + offsetY));
+    {if frmVirtualLayer.cbShowLayer.Checked then
+    begin
+      virtualTile := FVirtualLayer[k, j - k];
+      virtualTile.X := FX + offsetX;
+      virtualTile.Y := FY + offsetY;
+      virtualTile.Z := frmVirtualLayer.seZ.Value;
+    end else
+      virtualTile := nil;}
 
-      if acSelect.Checked or dmNetwork.CanWrite(FX + offsetX, FY + offsetY)  then
+    if not editing then
+      highlight := False
+    {else if item = virtualTile then
+      highlight := False} //todo virtual tile
+    else if acDelete.Checked and multiTarget and (item is TStaticItem) then
+      highlight := True
+    else if ((acElevate.Checked) or (acMove.Checked)) and multiTarget then
+      highlight := True
+    else if (acHue.Checked and multiTarget and (item is TMapCell)) then
+      highlight := True
+    else
+      highlight := (not acSelect.Checked) and
+                   (not acHue.Checked) and
+                   (item = CurrentTile) or
+                   ((item is TMapCell) and (item = ghostTile));
+
+    if highlight then
+    begin
+      glEnable(GL_COLOR_LOGIC_OP);
+      glLogicOp(GL_COPY_INVERTED);
+    end;
+
+    if acFlat.Checked then
+      z := 0
+    else
+      z := item.Z;
+
+    glColor4f(intensity, intensity, intensity, 1.0);
+
+    {if TObject(draw[i]) = virtualTile then
+    begin
+      glBindTexture(GL_TEXTURE_2D, FVLayerMaterial.Texture);
+      glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex2d(drawX - 22, drawY - z * 4);
+        glTexCoord2f(1, 0); glVertex2d(drawX - 22 + FVLayerMaterial.Width, drawY - z * 4);
+        glTexCoord2f(1, 1); glVertex2d(drawX - 22 + FVLayerMaterial.Width, drawY + FVLayerMaterial.Height - z * 4);
+        glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + FVLayerMaterial.Height - z * 4);
+      glEnd;
+
+      FScreenBuffer.Store(Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44), virtualTile, FVLayerMaterial);
+    end else} if item is TMapCell then //TODO : virtual tile!
+    begin
+      cell := TMapCell(item);
+
+      {if ResMan.Tiledata.LandTiles[cell.TileID].HasFlag(tdfTranslucent) then
+        glColor4f(intensity, intensity, intensity, 0.5);} //Possible, but probably not like the OSI client
+
+      mat := nil;
+
+      if not acFlat.Checked then
       begin
-        editing := True;
-        intensity := 1.0;
-        SetNormalLights;
-      end else
-      begin
-        editing := False;
-        intensity := 0.5;
-        SetDarkLights;
+        west := FLandscape.GetLandAlt(item.X, item.Y + 1, z);
+        south := FLandscape.GetLandAlt(item.X + 1, item.Y + 1, z);
+        east := FLandscape.GetLandAlt(item.X + 1, item.Y, z);
+
+        if  (west <> z) or (south <> z) or (east <> z) then
+        begin
+          mat := FTextureManager.GetTexMaterial(cell.TileID);
+        end;
       end;
 
-      if editing and acDraw.Checked and (singleTarget or multiTarget) then
+      if mat = nil then
       begin
-        ghostTile := FGhostTile;
-        if (ghostTile is TMapCell) and (not frmDrawSettings.cbForceAltitude.Checked) then
-          ghostTile.Z := FLandscape.MapCell[FX + offsetX, FY + offsetY].Z;
-      end else
-        ghostTile := nil;
-      
-      if frmVirtualLayer.cbShowLayer.Checked then
-      begin
-        virtualTile := FVirtualLayer[k, j - k];
-        virtualTile.X := FX + offsetX;
-        virtualTile.Y := FY + offsetY;
-        virtualTile.Z := frmVirtualLayer.seZ.Value;
-      end else
-        virtualTile := nil;
-      
-      draw := FLandscape.GetDrawList(FX + offsetX, FY + offsetY,
-        frmBoundaries.tbMinZ.Position, frmBoundaries.tbMaxZ.Position,
-        ghostTile, virtualTile, tbTerrain.Down, tbStatics.Down,
-        acNoDraw.Checked, staticsFilter);
-        
-      for i := 0 to draw.Count - 1 do
-      begin
-        if not editing then
-          highlight := False
-        else if TObject(draw[i]) = virtualTile then
-          highlight := False
-        else if acDelete.Checked and multiTarget and (TObject(draw[i]) is TStaticItem) then
-          highlight := True
-        else if ((acElevate.Checked) or (acMove.Checked)) and multiTarget then
-          highlight := True
-        else if (acHue.Checked and multiTarget and (TObject(draw[i]) is TMapCell)) then
-          highlight := True
-        else
-          highlight := (not acSelect.Checked) and
-                       (not acHue.Checked) and
-                       ((TObject(draw[i]) = CurrentTile) or
-                       ((TObject(draw[i]) is TMapCell) and (TObject(draw[i]) = ghostTile)));
-
-        if highlight then
+        mat := FTextureManager.GetArtMaterial(cell.TileID);
+        if (not (ghostTile is TMapCell)) or
+           (item = ghostTile) then //when we have a ghosttile, only draw that, but still store the real one
         begin
-          glEnable(GL_COLOR_LOGIC_OP);
-          glLogicOp(GL_COPY_INVERTED);
-        end;
-        
-        if acFlat.Checked then
-          z := 0
-        else
-          z := TWorldItem(draw[i]).Z;
-
-        glColor4f(intensity, intensity, intensity, 1.0);
-        
-        if TObject(draw[i]) = virtualTile then
-        begin
-          glBindTexture(GL_TEXTURE_2D, FVLayerMaterial.Texture);
-          glBegin(GL_QUADS);
-            glTexCoord2f(0, 0); glVertex2d(drawX - 22, drawY - z * 4);
-            glTexCoord2f(1, 0); glVertex2d(drawX - 22 + FVLayerMaterial.Width, drawY - z * 4);
-            glTexCoord2f(1, 1); glVertex2d(drawX - 22 + FVLayerMaterial.Width, drawY + FVLayerMaterial.Height - z * 4);
-            glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + FVLayerMaterial.Height - z * 4);
-          glEnd;
-
-          FScreenBuffer.Store(Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44), virtualTile, FVLayerMaterial);
-        end else if TObject(draw[i]) is TMapCell then
-        begin
-          cell := TMapCell(draw[i]);
-          
-          {if ResMan.Tiledata.LandTiles[cell.TileID].HasFlag(tdfTranslucent) then
-            glColor4f(intensity, intensity, intensity, 0.5);} //Possible, but probably not like the OSI client
-
-          mat := nil;
-
-          if not acFlat.Checked then
-          begin
-            west := FLandscape.GetLandAlt(FX + offsetX, FY + offsetY + 1, z);
-            south := FLandscape.GetLandAlt(FX + offsetX + 1, FY + offsetY + 1, z);
-            east := FLandscape.GetLandAlt(FX + offsetX + 1, FY + offsetY, z);
-
-            if  (west <> z) or (south <> z) or (east <> z) then
-            begin
-              mat := FTextureManager.GetTexMaterial(cell.TileID);
-            end;
-          end;
-
-          if mat = nil then
-          begin
-            mat := FTextureManager.GetArtMaterial(cell.TileID);
-            if (not (ghostTile is TMapCell)) or
-               (TObject(draw[i]) = ghostTile) then //when we have a ghosttile, only draw that, but still store the real one
-            begin
-              glBindTexture(GL_TEXTURE_2D, mat.Texture);
-              glBegin(GL_QUADS);
-                glTexCoord2f(0, 0); glVertex2d(drawX - 22, drawY - z * 4);
-                glTexCoord2f(1, 0); glVertex2d(drawX - 22 + mat.Width, drawY - z * 4);
-                glTexCoord2f(1, 1); glVertex2d(drawX - 22 + mat.Width, drawY + mat.Height - z * 4);
-                glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + mat.Height - z * 4);
-              glEnd;
-            end;
-            
-            if TObject(draw[i]) <> ghostTile then
-              FScreenBuffer.Store(Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44), cell, mat);
-          end else // Texture found
-          begin
-            if (not (ghostTile is TMapCell)) or
-               (TObject(draw[i]) = ghostTile) then //when we have a ghosttile, only draw that, but still store the real one
-            begin
-              glBindTexture(GL_TEXTURE_2D, mat.Texture);
-              //if (not cell.Selected) and (intensity = 1.0) then
-              if not cell.Selected then
-                glEnable(GL_LIGHTING);
-              normals := FLandscape.Normals[offsetX, offsetY];
-              glBegin(GL_TRIANGLES);
-                glNormal3f(normals[3].X, normals[3].Y, normals[3].Z);
-                glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + 22 - west * 4);
-                glNormal3f(normals[0].X, normals[0].Y, normals[0].Z);
-                glTexCoord2f(0, 0); glVertex2d(drawX, drawY - z * 4);
-                glNormal3f(normals[1].X, normals[1].Y, normals[1].Z);
-                glTexCoord2f(1, 0); glVertex2d(drawX + 22, drawY + 22 - east * 4);
-                glNormal3f(normals[1].X, normals[1].Y, normals[1].Z);
-                glTexCoord2f(1, 0); glVertex2d(drawX + 22, drawY + 22 - east * 4);
-                glNormal3f(normals[2].X, normals[2].Y, normals[2].Z);
-                glTexCoord2f(1, 1); glVertex2d(drawX, drawY + 44 - south * 4);
-                glNormal3f(normals[3].X, normals[3].Y, normals[3].Z);
-                glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + 22 - west * 4);
-              glEnd;
-              //if (not cell.Selected) and (intensity = 1.0) then
-              if not cell.Selected then
-                glDisable(GL_LIGHTING);
-            end;
-              
-            if TObject(draw[i]) <> ghostTile then
-              FScreenBuffer.Store(Rect(Trunc(drawX - 22), Trunc(drawY - z * 4), Trunc(drawX + 22), Trunc(drawY + 44 - south * 4)), cell, mat);
-          end;
-        end else if TObject(draw[i]) is TStaticItem then
-        begin
-          staticItem := TStaticItem(draw[i]);
-
-          staticTileData := ResMan.Tiledata.StaticTiles[staticItem.TileID];
-          if tbSetHue.Down and ((singleTarget and (TObject(draw[i]) = CurrentTile)) or multiTarget) then
-          begin
-            if frmHueSettings.lbHue.ItemIndex > 0 then
-              hue := ResMan.Hue.Hues[frmHueSettings.lbHue.ItemIndex - 1]
-            else
-              hue := nil;
-          end else if staticItem.Hue > 0 then
-            hue := ResMan.Hue.Hues[staticItem.Hue - 1]
-          else
-            hue := nil;
-            
-          if staticTileData.HasFlag(tdfTranslucent) then
-            glColor4f(intensity, intensity, intensity, 0.5);
-            
-          mat := FTextureManager.GetArtMaterial($4000 + staticItem.TileID, hue, (staticTileData.Flags and tdfPartialHue) = tdfPartialHue);
-          south := mat.RealHeight;
-          east := mat.RealWidth div 2;
           glBindTexture(GL_TEXTURE_2D, mat.Texture);
           glBegin(GL_QUADS);
-            glTexCoord2f(0, 0); glVertex2d(drawX - east, drawY + 44 - south - z * 4);
-            glTexCoord2f(1, 0); glVertex2d(drawX - east + mat.Width, drawY + 44 - south - z * 4);
-            glTexCoord2f(1, 1); glVertex2d(drawX - east + mat.Width, drawY + 44 - south + mat.Height - z * 4);
-            glTexCoord2f(0, 1); glVertex2d(drawX - east, drawY + 44 - south + mat.Height - z * 4);
+            glTexCoord2f(0, 0); glVertex2d(drawX - 22, drawY - z * 4);
+            glTexCoord2f(1, 0); glVertex2d(drawX - 22 + mat.Width, drawY - z * 4);
+            glTexCoord2f(1, 1); glVertex2d(drawX - 22 + mat.Width, drawY + mat.Height - z * 4);
+            glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + mat.Height - z * 4);
           glEnd;
-          
-          if TObject(draw[i]) <> ghostTile then
-            FScreenBuffer.Store(Bounds(Trunc(drawX - east), Trunc(drawY + 44 - south - z * 4), mat.RealWidth, Trunc(south)), staticItem, mat);
         end;
 
-        if highlight then
-          glDisable(GL_COLOR_LOGIC_OP);
+        if item <> ghostTile then
+          FScreenBuffer.Store(Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44), cell, mat);
+      end else // Texture found
+      begin
+        if (not (ghostTile is TMapCell)) or
+           (item = ghostTile) then //when we have a ghosttile, only draw that, but still store the real one
+        begin
+          glBindTexture(GL_TEXTURE_2D, mat.Texture);
+          //if (not cell.Selected) and (intensity = 1.0) then
+          if not cell.Selected then
+            glEnable(GL_LIGHTING);
+          normals := FLandscape.Normals[item.X, item.Y];
+          glBegin(GL_TRIANGLES);
+            glNormal3f(normals[3].X, normals[3].Y, normals[3].Z);
+            glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + 22 - west * 4);
+            glNormal3f(normals[0].X, normals[0].Y, normals[0].Z);
+            glTexCoord2f(0, 0); glVertex2d(drawX, drawY - z * 4);
+            glNormal3f(normals[1].X, normals[1].Y, normals[1].Z);
+            glTexCoord2f(1, 0); glVertex2d(drawX + 22, drawY + 22 - east * 4);
+            glNormal3f(normals[1].X, normals[1].Y, normals[1].Z);
+            glTexCoord2f(1, 0); glVertex2d(drawX + 22, drawY + 22 - east * 4);
+            glNormal3f(normals[2].X, normals[2].Y, normals[2].Z);
+            glTexCoord2f(1, 1); glVertex2d(drawX, drawY + 44 - south * 4);
+            glNormal3f(normals[3].X, normals[3].Y, normals[3].Z);
+            glTexCoord2f(0, 1); glVertex2d(drawX - 22, drawY + 22 - west * 4);
+          glEnd;
+          //if (not cell.Selected) and (intensity = 1.0) then
+          if not cell.Selected then
+            glDisable(GL_LIGHTING);
+        end;
+
+        if item <> ghostTile then
+          FScreenBuffer.Store(Rect(Trunc(drawX - 22), Trunc(drawY - z * 4), Trunc(drawX + 22), Trunc(drawY + 44 - south * 4)), cell, mat);
       end;
-      draw.Free;
+    end else if item is TStaticItem then
+    begin
+      staticItem := TStaticItem(item);
+
+      staticTileData := ResMan.Tiledata.StaticTiles[staticItem.TileID];
+      if tbSetHue.Down and ((singleTarget and (item = CurrentTile)) or multiTarget) then
+      begin
+        if frmHueSettings.lbHue.ItemIndex > 0 then
+          hue := ResMan.Hue.Hues[frmHueSettings.lbHue.ItemIndex - 1]
+        else
+          hue := nil;
+      end else if staticItem.Hue > 0 then
+        hue := ResMan.Hue.Hues[staticItem.Hue - 1]
+      else
+        hue := nil;
+
+      if staticTileData.HasFlag(tdfTranslucent) then
+        glColor4f(intensity, intensity, intensity, 0.5);
+
+      mat := FTextureManager.GetArtMaterial($4000 + staticItem.TileID, hue, (staticTileData.Flags and tdfPartialHue) = tdfPartialHue);
+      south := mat.RealHeight;
+      east := mat.RealWidth div 2;
+      glBindTexture(GL_TEXTURE_2D, mat.Texture);
+      glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex2d(drawX - east, drawY + 44 - south - z * 4);
+        glTexCoord2f(1, 0); glVertex2d(drawX - east + mat.Width, drawY + 44 - south - z * 4);
+        glTexCoord2f(1, 1); glVertex2d(drawX - east + mat.Width, drawY + 44 - south + mat.Height - z * 4);
+        glTexCoord2f(0, 1); glVertex2d(drawX - east, drawY + 44 - south + mat.Height - z * 4);
+      glEnd;
+
+      if TObject(draw[i]) <> ghostTile then
+        FScreenBuffer.Store(Bounds(Trunc(drawX - east), Trunc(drawY + 44 - south - z * 4), mat.RealWidth, Trunc(south)), staticItem, mat);
     end;
+
+    if highlight then
+      glDisable(GL_COLOR_LOGIC_OP);
   end;
+
+  draw.Free;
 
   FOverlayUI.Draw(oglGameWindow);
 end;

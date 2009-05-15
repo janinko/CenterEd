@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit ULandscape;
 
@@ -103,6 +103,7 @@ type
     constructor Create(AWidth, AHeight: Word);
     destructor Destroy; override;
   protected
+    { Members }
     FWidth: Word;
     FHeight: Word;
     FCellWidth: Word;
@@ -110,7 +111,7 @@ type
     FBlockCache: TCacheManager;
     FOnChange: TLandscapeChangeEvent;
     FOpenRequests: array of Boolean;
-    function Compare(left, right: TObject): Integer;
+    { Methods }
     function GetNormals(AX, AY: Word): TNormals;
     function GetMapCell(AX, AY: Word): TMapCell;
     function GetStaticList(AX, AY: Word): TList;
@@ -118,7 +119,6 @@ type
     function GetStaticBlock(AX, AY: Word): TSeperatedStaticBlock;
     procedure UpdateStaticsPriority(AStaticItem: TStaticItem;
       APrioritySolver: Integer);
-    procedure OnBlockChanged(ABlock: TMulBlock);
     procedure OnRemoveCachedObject(AObject: TObject);
     
     procedure OnBlocksPacket(ABuffer: TEnhancedMemoryStream);
@@ -129,6 +129,7 @@ type
     procedure OnMoveStaticPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnHueStaticPacket(ABuffer: TEnhancedMemoryStream);
   public
+    { Fields }
     property Width: Word read FWidth;
     property Height: Word read FHeight;
     property CellWidth: Word read FCellWidth;
@@ -137,10 +138,11 @@ type
     property StaticList[X, Y: Word]: TList read GetStaticList;
     property Normals[X, Y: Word]: TNormals read GetNormals;
     property OnChange: TLandscapeChangeEvent read FOnChange write FOnChange;
-
-    function GetDrawList(AX, AY: Word; AMinZ, AMaxZ: ShortInt;
+    { Methods }
+    function GetDrawList(AX, AY, AWidth, AHeight: Word; AMinZ, AMaxZ: ShortInt;
       AGhostTile: TWorldItem; AVirtualLayer: TStaticItem; AMap,
       AStatics: Boolean; ANoDraw:Boolean; AStaticsFilter: TStaticFilter): TList;
+    procedure UpdateDrawListItems(AList: TList);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
 
@@ -203,15 +205,6 @@ function GetID(AX, AY: Word): Integer;
 begin
   Result := ((AX and $7FFF) shl 15) or (AY and $7FFF);
 end;
-
-{operator=(AStaticItem: TStaticItem; AStaticInfo: TStaticInfo): Boolean;
-begin
-  Result := (AStaticItem.X = AStaticInfo.X) and
-    (AStaticItem.Y = AStaticInfo.Y) and
-    (AStaticItem.Z = AStaticInfo.Z) and
-    (AStaticItem.TileID = AStaticInfo.TileID) and
-    (AStaticItem.Hue = AStaticInfo.Hue);
-end;}
 
 { TLandTextureManager }
 
@@ -410,88 +403,113 @@ begin
   end;
 end;
 
-function TLandscape.Compare(left, right: TObject): Integer;
+function Compare(AItem1, AItem2: Pointer): Integer;
 begin
-  Result := TWorldItem(right).Priority - TWorldItem(left).Priority;
+  if TWorldItem(AItem1).X <> TWorldItem(AItem2).X then
+    Exit(TWorldItem(AItem1).X - TWorldItem(AItem2).X);
+
+  if TWorldItem(AItem1).Y <> TWorldItem(AItem2).Y then
+    Exit(TWorldItem(AItem1).Y - TWorldItem(AItem2).Y);
+
+  Result := TWorldItem(AItem1).Priority - TWorldItem(AItem2).Priority;
   if Result = 0 then
   begin
-    if (left is TMapCell) and (right is TStaticItem) then
-      Result := 1
-    else if (left is TStaticItem) and (right is TMapCell) then
-      Result := -1;
+    if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TStaticItem) then
+      Result := -1
+    else if (TObject(AItem1) is TStaticItem) and (TObject(AItem2) is TMapCell) then
+      Result := 1;
   end;
 
   if Result = 0 then
-    Result := TWorldItem(right).PriorityBonus - TWorldItem(left).PriorityBonus;
+    Result := TWorldItem(AItem1).PriorityBonus - TWorldItem(AItem2).PriorityBonus;
 
   if Result = 0 then
-    Result := TWorldItem(right).PrioritySolver - TWorldItem(left).PrioritySolver;
+    Result := TWorldItem(AItem1).PrioritySolver - TWorldItem(AItem2).PrioritySolver;
 end;
 
-function TLandscape.GetDrawList(AX, AY: Word; AMinZ, AMaxZ: ShortInt;
-  AGhostTile: TWorldItem; AVirtualLayer: TStaticItem; AMap,
-  AStatics: Boolean; ANoDraw:Boolean; AStaticsFilter: TStaticFilter): TList;
+function TLandscape.GetDrawList(AX, AY, AWidth, AHeight: Word;
+  AMinZ, AMaxZ: ShortInt; AGhostTile: TWorldItem; AVirtualLayer: TStaticItem;
+  AMap, AStatics: Boolean; ANoDraw: Boolean;
+  AStaticsFilter: TStaticFilter): TList;
 var
   landAlt: ShortInt;
   drawMapCell: TMapCell;
   drawStatics: TList;
-  i: Integer;
+  i, x, y: Integer;
 begin
   Result := TList.Create;
-  if AMap then
-  begin
-    landAlt := GetLandAlt(AX, AY, 0);
-    if (landAlt >= AMinZ) and (landAlt <= AMaxZ) then
+  for x := AX to AX + AWidth do
+    for y := AY to AY + AWidth do
     begin
-      drawMapCell := GetMapCell(AX, AY);
-      if (drawMapCell <> nil) and (ANoDraw or (drawMapCell.TileID > 2)) then
+      if AMap then
       begin
-        drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
-        drawMapCell.PriorityBonus := 0;
-        drawMapCell.PrioritySolver := 0;
-        Result.Add(drawMapCell);
-      end;
-      
-      if AGhostTile is TMapCell then
-      begin
-        AGhostTile.X := AX;
-        AGhostTile.Y := AY;
-        AGhostTile.Priority := GetEffectiveAltitude(TMapCell(AGhostTile));
-        AGhostTile.PriorityBonus := 0;
-        AGhostTile.PrioritySolver := 0;
-        Result.Add(AGhostTile);
-      end;
-    end;
-  end;
-
-  if AStatics then
-  begin
-    drawStatics := GetStaticList(AX, AY);
-    if drawStatics <> nil then
-      for i := 0 to drawStatics.Count - 1 do
-        if (TStaticItem(drawStatics[i]).Z >= AMinZ) and
-           (TStaticItem(drawStatics[i]).Z <= AMaxZ) and
-           ((AStaticsFilter = nil) or AStaticsFilter(TStaticItem(drawStatics[i]))) then
+        landAlt := GetLandAlt(x, y, 0);
+        if (landAlt >= AMinZ) and (landAlt <= AMaxZ) then
         begin
-          UpdateStaticsPriority(TStaticItem(drawStatics[i]), i + 1);
-          Result.Add(Pointer(drawStatics[i]));
-        end;
-        
+          drawMapCell := GetMapCell(x, y);
+          if (drawMapCell <> nil) and (ANoDraw or (drawMapCell.TileID > 2)) then
+          begin
+            drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
+            drawMapCell.PriorityBonus := 0;
+            drawMapCell.PrioritySolver := 0;
+            Result.Add(drawMapCell);
+          end;
 
-    if AGhostTile is TStaticItem then
-    begin
-      UpdateStaticsPriority(TStaticItem(AGhostTile), MaxInt);
-      Result.Add(AGhostTile);
+          if AGhostTile is TMapCell then
+          begin
+            AGhostTile.X := x;
+            AGhostTile.Y := y;
+            AGhostTile.Priority := GetEffectiveAltitude(TMapCell(AGhostTile));
+            AGhostTile.PriorityBonus := 0;
+            AGhostTile.PrioritySolver := 0;
+            Result.Add(AGhostTile);
+          end;
+        end;
+      end;
+
+      if AStatics then
+      begin
+        drawStatics := GetStaticList(x, y);
+        if drawStatics <> nil then
+          for i := 0 to drawStatics.Count - 1 do
+            if (TStaticItem(drawStatics[i]).Z >= AMinZ) and
+               (TStaticItem(drawStatics[i]).Z <= AMaxZ) and
+               ((AStaticsFilter = nil) or AStaticsFilter(TStaticItem(drawStatics[i]))) then
+            begin
+              UpdateStaticsPriority(TStaticItem(drawStatics[i]), i + 1);
+              Result.Add(Pointer(drawStatics[i]));
+            end;
+
+
+        if AGhostTile is TStaticItem then
+        begin
+          UpdateStaticsPriority(TStaticItem(AGhostTile), MaxInt);
+          Result.Add(AGhostTile);
+        end;
+      end;
+
+      //TODO : re add virtual layer
+      {if AVirtualLayer <> nil then
+      begin
+        UpdateStaticsPriority(AVirtualLayer, MaxInt-1);
+        Result.Add(AVirtualLayer);
+      end;}
     end;
-  end;
-  
-  if AVirtualLayer <> nil then
+
+  Result.Sort(@Compare);
+  //ListSort(Result, @Compare);
+end;
+
+procedure TLandscape.UpdateDrawListItems(AList: TList);
+var
+  worldItem: TWorldItem;
+  i: Integer;
+begin
+  for i := 0 to AList.Count - 1 do
   begin
-    UpdateStaticsPriority(AVirtualLayer, MaxInt-1);
-    Result.Add(AVirtualLayer);
+    worldItem := TWorldItem(AList.Items[i]);
+    worldItem.CanBeEdited := dmNetwork.CanWrite(worldItem.X, worldItem.Y);
   end;
-  
-  ListSort(Result, @Compare);
 end;
 
 function TLandscape.GetEffectiveAltitude(ATile: TMapCell): ShortInt;
@@ -591,37 +609,6 @@ begin
   Result[3] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
 end;
 
-procedure TLandscape.OnBlockChanged(ABlock: TMulBlock);
-var
-  block, old: TWorldBlock;
-  mode: Byte;
-  id, blockID: Integer;
-begin
-  {block := ABlock as TWorldBlock;
-  if block <> nil then
-  begin
-    if block is TSeperatedStaticBlock then
-      mode := mStatics
-    else
-      mode := mMap;
-    id := GetID(block.X, block.Y, mode);
-    blockID := (block.X * FHeight) + block.Y;
-    if block.Changed or (block.RefCount > 0) then
-    begin
-      if FPersistentBlocks[blockID][mode] = nil then
-      begin
-        FPersistentBlocks[blockID][mode] := block;
-        FBlockCache.DiscardID(id);
-      end;
-    end else
-    begin
-      FPersistentBlocks[blockID][mode] := nil;
-      if not FBlockCache.QueryID(id, TObject(old)) then
-        FBlockCache.StoreID(id, block);
-    end;
-  end;}
-end;
-
 procedure TLandscape.MoveStatic(AStatic: TStaticItem; AX, AY: Word);
 var
   sourceBlock, targetBlock: TSeperatedStaticBlock;
@@ -639,7 +626,8 @@ begin
       targetStaticList.Add(AStatic);
       for i := 0 to targetStaticList.Count - 1 do
         UpdateStaticsPriority(TStaticItem(targetStaticList.Items[i]), i);
-      ListSort(targetStaticList, @Compare);
+      targetStaticList.Sort(@Compare);
+      //ListSort(targetStaticList, @Compare);
       AStatic.UpdatePos(AX, AY, AStatic.Z);
       AStatic.Owner := targetBlock;
     end;
@@ -788,7 +776,8 @@ begin
     targetStaticList.Add(staticItem);
     for i := 0 to targetStaticList.Count - 1 do
       UpdateStaticsPriority(TStaticItem(targetStaticList.Items[i]), i);
-    ListSort(targetStaticList, @Compare);
+    targetStaticList.Sort(@Compare);
+    //ListSort(targetStaticList, @Compare);
     staticItem.Owner := block;
     if Assigned(FOnChange) then FOnChange;
   end;
@@ -846,7 +835,8 @@ begin
         staticItem.Z := ABuffer.ReadShortInt;
         for j := 0 to statics.Count - 1 do
           UpdateStaticsPriority(TStaticItem(statics.Items[j]), j);
-        ListSort(statics, @Compare);
+        statics.Sort(@Compare);
+        //ListSort(statics, @Compare);
         if Assigned(FOnChange) then FOnChange;
         Break;
       end;
@@ -906,7 +896,8 @@ begin
     statics.Add(staticItem);
     for i := 0 to statics.Count - 1 do
       UpdateStaticsPriority(TStaticItem(statics.Items[i]), i);
-    ListSort(statics, @Compare);
+    statics.Sort(@Compare);
+    //ListSort(statics, @Compare);
     staticItem.Owner := targetBlock;
   end;
   
@@ -987,7 +978,6 @@ var
   pixel: TColor32Rec;
 begin
   Result := False;
-  //writeln(FGraphic.Width, ',', FGraphic.Height, ',', AX, ',', AY);
   if InRange(AX, 0, FGraphic.Width - 1) and
      InRange(AY, 0, FGraphic.Height - 1) then
   begin
