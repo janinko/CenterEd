@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UArt;
 
@@ -87,7 +87,7 @@ begin
   FBuffer := TMemoryStream.Create;
   FArtType := AArtType;
   AArtColor := AArtColor or $8000; //set alpha bit on background
-  if Assigned(AData) and (AIndex.Lookup <> LongInt($FFFFFFFF)) then
+  if Assigned(AData) and (AIndex.Lookup > -1) then
   begin
     AData.Position := AIndex.Lookup;
     block := TMemoryStream.Create;
