@@ -1675,7 +1675,7 @@ begin
   else
     staticsFilter := nil;} //TODO : update list on change
 
-  draw := FLandscape.GetDrawList(FX + lowOffX, FY + lowOffY, rangeX, rangeY,
+  {draw := FLandscape.GetDrawList(FX + lowOffX, FY + lowOffY, rangeX, rangeY,
     frmBoundaries.tbMinZ.Position, frmBoundaries.tbMaxZ.Position,
     nil, nil, tbTerrain.Down, tbStatics.Down, //TODO : ghost tile and virtual tile!
     acNoDraw.Checked, nil); //TODO : statics filter!
@@ -1871,7 +1871,7 @@ begin
       glDisable(GL_COLOR_LOGIC_OP);
   end;
 
-  draw.Free;
+  draw.Free;}
 
   FOverlayUI.Draw(oglGameWindow);
 end;

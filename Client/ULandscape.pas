@@ -30,12 +30,12 @@ unit ULandscape;
 interface
 
 uses
-  SysUtils, Classes, math, contnrs, LCLIntf, GL, GLU, ImagingOpenGL,
-  Imaging, ImagingClasses, ImagingTypes, ImagingUtility,
+  SysUtils, Classes, math, LCLIntf, GL, GLU, ImagingOpenGL, Imaging,
+  ImagingClasses, ImagingTypes, ImagingUtility,
   UGenericIndex, UMap, UStatics, UArt, UTexture, UTiledata, UHue, UWorldItem,
   UMulBlock,
-  UListSort, UVector, UEnhancedMemoryStream,
-  UCacheManager, ULinkedList;
+  UVector, UEnhancedMemoryStream,
+  UCacheManager;
 
 type
   TNormals = array[0..3] of TVector;
@@ -97,6 +97,8 @@ type
   TLandscapeChangeEvent = procedure of object;
   TStaticFilter = function(AStatic: TStaticItem): Boolean of object;
 
+  TScreenBuffer = class;
+
   { TLandscape }
 
   TLandscape = class(TObject)
@@ -112,15 +114,13 @@ type
     FOnChange: TLandscapeChangeEvent;
     FOpenRequests: array of Boolean;
     { Methods }
-    function GetNormals(AX, AY: Word): TNormals;
-    function GetMapCell(AX, AY: Word): TMapCell;
-    function GetStaticList(AX, AY: Word): TList;
     function GetMapBlock(AX, AY: Word): TMapBlock;
+    function GetMapCell(AX, AY: Word): TMapCell;
+    function GetNormals(AX, AY: Word): TNormals;
     function GetStaticBlock(AX, AY: Word): TSeperatedStaticBlock;
-    procedure UpdateStaticsPriority(AStaticItem: TStaticItem;
-      APrioritySolver: Integer);
+    function GetStaticList(AX, AY: Word): TList;
+    { Events }
     procedure OnRemoveCachedObject(AObject: TObject);
-    
     procedure OnBlocksPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnDrawMapPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnInsertStaticPacket(ABuffer: TEnhancedMemoryStream);
@@ -139,21 +139,22 @@ type
     property Normals[X, Y: Word]: TNormals read GetNormals;
     property OnChange: TLandscapeChangeEvent read FOnChange write FOnChange;
     { Methods }
-    function GetDrawList(AX, AY, AWidth, AHeight: Word; AMinZ, AMaxZ: ShortInt;
-      AGhostTile: TWorldItem; AVirtualLayer: TStaticItem; AMap,
-      AStatics: Boolean; ANoDraw:Boolean; AStaticsFilter: TStaticFilter): TList;
-    procedure UpdateDrawListItems(AList: TList);
+    procedure FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
+      AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
+      ANoDraw: Boolean; AStaticsFilter: TStaticFilter);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
-
     procedure MoveStatic(AStatic: TStaticItem; AX, AY: Word);
     procedure PrepareBlocks(AX1, AY1, AX2, AY2: Word);
+    procedure UpdateStaticsPriority(AStaticItem: TStaticItem;
+      APrioritySolver: Integer);
   end;
   PBlockInfo = ^TBlockInfo;
   TBlockInfo = record
     ScreenRect: TRect;
     Item: TWorldItem;
     Material: TMaterial;
+    Ghost: Boolean;
     Next: PBlockInfo;
   end;
 
@@ -163,9 +164,11 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
   protected
+    { Fields }
     FFirst: PBlockInfo;
     FLastBlock: PBlockInfo;
   public
+    { Methods }
     procedure Clear; virtual;
     function Iterate(var ABlockInfo: PBlockInfo): Boolean; virtual;
     procedure Add(AItem: TWorldItem); virtual;
@@ -176,11 +179,19 @@ type
   { TScreenBuffer }
 
   TScreenBuffer = class(TTileList)
+    constructor Create; override;
+  protected
+    { Members }
+    FSerial: Cardinal;
   public
-    procedure OnTileRemoved(ATile: TMulBlock);
+    { Methods }
     procedure Clear; override;
     function Find(AScreenPosition: TPoint): PBlockInfo;
-    procedure Store(AScreenRect: TRect; AItem: TWorldItem; AMaterial: TMaterial);
+    function GetSerial: Cardinal;
+    procedure Store(AItem: TWorldItem; AMaterial: TMaterial = nil;
+      AGhost: Boolean = False);
+    { Events }
+    procedure OnTileRemoved(ATile: TMulBlock);
   end;
   
   TStaticInfo = packed record
@@ -190,7 +201,6 @@ type
     TileID: Word;
     Hue: Word;
   end;
-  //operator=(AStaticItem: TStaticItem; AStaticInfo: TStaticInfo): Boolean;
 
 implementation
 
@@ -204,6 +214,30 @@ const
 function GetID(AX, AY: Word): Integer;
 begin
   Result := ((AX and $7FFF) shl 15) or (AY and $7FFF);
+end;
+
+function CompareWorldItems(AItem1, AItem2: Pointer): Integer;
+begin
+  if TWorldItem(AItem1).X <> TWorldItem(AItem2).X then
+    Exit(TWorldItem(AItem1).X - TWorldItem(AItem2).X);
+
+  if TWorldItem(AItem1).Y <> TWorldItem(AItem2).Y then
+    Exit(TWorldItem(AItem1).Y - TWorldItem(AItem2).Y);
+
+  Result := TWorldItem(AItem1).Priority - TWorldItem(AItem2).Priority;
+  if Result = 0 then
+  begin
+    if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TStaticItem) then
+      Result := -1
+    else if (TObject(AItem1) is TStaticItem) and (TObject(AItem2) is TMapCell) then
+      Result := 1;
+  end;
+
+  if Result = 0 then
+    Result := TWorldItem(AItem1).PriorityBonus - TWorldItem(AItem2).PriorityBonus;
+
+  if Result = 0 then
+    Result := TWorldItem(AItem1).PrioritySolver - TWorldItem(AItem2).PrioritySolver;
 end;
 
 { TLandTextureManager }
@@ -335,7 +369,7 @@ begin
   SetLength(FOpenRequests, FWidth * FHeight);
   for blockID := 0 to Length(FOpenRequests) - 1 do
     FOpenRequests[blockID] := False;
-  
+
   RegisterPacketHandler($04, TPacketHandler.Create(0, @OnBlocksPacket));
   RegisterPacketHandler($06, TPacketHandler.Create(8, @OnDrawMapPacket));
   RegisterPacketHandler($07, TPacketHandler.Create(10, @OnInsertStaticPacket));
@@ -346,8 +380,6 @@ begin
 end;
 
 destructor TLandscape.Destroy;
-var
-  i: Integer;
 begin
   if FBlockCache <> nil then
   begin
@@ -366,6 +398,18 @@ begin
   inherited Destroy;
 end;
 
+function TLandscape.GetMapBlock(AX, AY: Word): TMapBlock;
+var
+  block: TBlock;
+begin
+  Result := nil;
+  if (AX >= 0) and (AX < FWidth) and (AY >= 0) and (AY < FHeight) then
+  begin
+    if FBlockCache.QueryID(GetID(AX, AY), TObject(block)) then
+      Result := block.Map;
+  end;
+end;
+
 function TLandscape.GetMapCell(AX, AY: Word): TMapCell;
 var
   block: TMapBlock;
@@ -377,154 +421,6 @@ begin
     if block <> nil then
       Result := block.Cells[(AY mod 8) * 8 + AX mod 8];
   end;
-end;
-
-function TLandscape.GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
-var
-  cell: TMapCell;
-begin
-  cell := MapCell[AX, AY];
-  if cell <> nil then
-    Result := cell.Altitude
-  else
-    Result := ADefault;
-end;
-
-function TLandscape.GetStaticList(AX, AY: Word): TList;
-var
-  block: TSeperatedStaticBlock;
-begin
-  Result := nil;
-  if (AX >= 0) and (AX <= FCellWidth) and (AY >= 0) and (AY <= FCellHeight) then
-  begin
-    block := GetStaticBlock(AX div 8, AY div 8);
-    if block <> nil then
-      Result := block.Cells[(AY mod 8) * 8 + AX mod 8];
-  end;
-end;
-
-function Compare(AItem1, AItem2: Pointer): Integer;
-begin
-  if TWorldItem(AItem1).X <> TWorldItem(AItem2).X then
-    Exit(TWorldItem(AItem1).X - TWorldItem(AItem2).X);
-
-  if TWorldItem(AItem1).Y <> TWorldItem(AItem2).Y then
-    Exit(TWorldItem(AItem1).Y - TWorldItem(AItem2).Y);
-
-  Result := TWorldItem(AItem1).Priority - TWorldItem(AItem2).Priority;
-  if Result = 0 then
-  begin
-    if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TStaticItem) then
-      Result := -1
-    else if (TObject(AItem1) is TStaticItem) and (TObject(AItem2) is TMapCell) then
-      Result := 1;
-  end;
-
-  if Result = 0 then
-    Result := TWorldItem(AItem1).PriorityBonus - TWorldItem(AItem2).PriorityBonus;
-
-  if Result = 0 then
-    Result := TWorldItem(AItem1).PrioritySolver - TWorldItem(AItem2).PrioritySolver;
-end;
-
-function TLandscape.GetDrawList(AX, AY, AWidth, AHeight: Word;
-  AMinZ, AMaxZ: ShortInt; AGhostTile: TWorldItem; AVirtualLayer: TStaticItem;
-  AMap, AStatics: Boolean; ANoDraw: Boolean;
-  AStaticsFilter: TStaticFilter): TList;
-var
-  landAlt: ShortInt;
-  drawMapCell: TMapCell;
-  drawStatics: TList;
-  i, x, y: Integer;
-begin
-  Result := TList.Create;
-  for x := AX to AX + AWidth do
-    for y := AY to AY + AWidth do
-    begin
-      if AMap then
-      begin
-        landAlt := GetLandAlt(x, y, 0);
-        if (landAlt >= AMinZ) and (landAlt <= AMaxZ) then
-        begin
-          drawMapCell := GetMapCell(x, y);
-          if (drawMapCell <> nil) and (ANoDraw or (drawMapCell.TileID > 2)) then
-          begin
-            drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
-            drawMapCell.PriorityBonus := 0;
-            drawMapCell.PrioritySolver := 0;
-            Result.Add(drawMapCell);
-          end;
-
-          if AGhostTile is TMapCell then
-          begin
-            AGhostTile.X := x;
-            AGhostTile.Y := y;
-            AGhostTile.Priority := GetEffectiveAltitude(TMapCell(AGhostTile));
-            AGhostTile.PriorityBonus := 0;
-            AGhostTile.PrioritySolver := 0;
-            Result.Add(AGhostTile);
-          end;
-        end;
-      end;
-
-      if AStatics then
-      begin
-        drawStatics := GetStaticList(x, y);
-        if drawStatics <> nil then
-          for i := 0 to drawStatics.Count - 1 do
-            if (TStaticItem(drawStatics[i]).Z >= AMinZ) and
-               (TStaticItem(drawStatics[i]).Z <= AMaxZ) and
-               ((AStaticsFilter = nil) or AStaticsFilter(TStaticItem(drawStatics[i]))) then
-            begin
-              UpdateStaticsPriority(TStaticItem(drawStatics[i]), i + 1);
-              Result.Add(Pointer(drawStatics[i]));
-            end;
-
-
-        if AGhostTile is TStaticItem then
-        begin
-          UpdateStaticsPriority(TStaticItem(AGhostTile), MaxInt);
-          Result.Add(AGhostTile);
-        end;
-      end;
-
-      //TODO : re add virtual layer
-      {if AVirtualLayer <> nil then
-      begin
-        UpdateStaticsPriority(AVirtualLayer, MaxInt-1);
-        Result.Add(AVirtualLayer);
-      end;}
-    end;
-
-  Result.Sort(@Compare);
-  //ListSort(Result, @Compare);
-end;
-
-procedure TLandscape.UpdateDrawListItems(AList: TList);
-var
-  worldItem: TWorldItem;
-  i: Integer;
-begin
-  for i := 0 to AList.Count - 1 do
-  begin
-    worldItem := TWorldItem(AList.Items[i]);
-    worldItem.CanBeEdited := dmNetwork.CanWrite(worldItem.X, worldItem.Y);
-  end;
-end;
-
-function TLandscape.GetEffectiveAltitude(ATile: TMapCell): ShortInt;
-var
-  north, west, south, east: ShortInt;
-begin
-  north := ATile.Altitude;
-  west := GetLandAlt(ATile.X, ATile.Y + 1, north);
-  south := GetLandAlt(ATile.X + 1, ATile.Y + 1, north);
-  east := GetLandAlt(ATile.X + 1, ATile.Y, north);
-
-  if Abs(north - south) > Abs(west - east) then
-    Result := (north + south) div 2
-  else
-    Result := (west + east) div 2;
 end;
 
 function TLandscape.GetNormals(AX, AY: Word): TNormals;
@@ -609,74 +505,6 @@ begin
   Result[3] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
 end;
 
-procedure TLandscape.MoveStatic(AStatic: TStaticItem; AX, AY: Word);
-var
-  sourceBlock, targetBlock: TSeperatedStaticBlock;
-  targetStaticList: TList;
-  i: Integer;
-begin
-  if (AX >= 0) and (AX <= FCellWidth) and (AY >= 0) and (AY <= FCellHeight) then
-  begin
-    sourceBlock := AStatic.Owner as TSeperatedStaticBlock;
-    targetBlock := GetStaticBlock(AX div 8, AY div 8);
-    if (sourceBlock <> nil) and (targetBlock <> nil) then
-    begin
-      sourceBlock.Cells[(AStatic.Y mod 8) * 8 + AStatic.X mod 8].Remove(AStatic);
-      targetStaticList := targetBlock.Cells[(AY mod 8) * 8 + AX mod 8];
-      targetStaticList.Add(AStatic);
-      for i := 0 to targetStaticList.Count - 1 do
-        UpdateStaticsPriority(TStaticItem(targetStaticList.Items[i]), i);
-      targetStaticList.Sort(@Compare);
-      //ListSort(targetStaticList, @Compare);
-      AStatic.UpdatePos(AX, AY, AStatic.Z);
-      AStatic.Owner := targetBlock;
-    end;
-  end;
-end;
-
-procedure TLandscape.PrepareBlocks(AX1, AY1, AX2, AY2: Word);
-var
-  x, y, i, mapID, staticID: Integer;
-  coords: TBlockCoordsArray;
-  obj: TObject;
-begin
-  AX1 := EnsureRange(AX1, 0, FWidth - 1);
-  AY1 := EnsureRange(AY1, 0, FHeight - 1);
-  AX2 := EnsureRange(AX2, 0, FWidth - 1);
-  AY2 := EnsureRange(AY2, 0, FHeight - 1);
-
-  SetLength(coords, 0);
-  for x := AX1 to AX2 do
-  begin
-    for y := AY1 to AY2 do
-    begin
-      if (not FOpenRequests[y * FWidth + x]) and
-         (not FBlockCache.QueryID(GetID(x, y), obj)) then
-      begin
-        SetLength(coords, Length(coords) + 1);
-        i := High(coords);
-        coords[i].X := x;
-        coords[i].Y := y;
-        FOpenRequests[y * FWidth + x] := True;
-      end;
-    end;
-  end;
-  if Length(coords) > 0 then
-    dmNetwork.Send(TRequestBlocksPacket.Create(coords));
-end;
-
-function TLandscape.GetMapBlock(AX, AY: Word): TMapBlock;
-var
-  block: TBlock;
-begin
-  Result := nil;
-  if (AX >= 0) and (AX < FWidth) and (AY >= 0) and (AY < FHeight) then
-  begin
-    if FBlockCache.QueryID(GetID(AX, AY), TObject(block)) then
-      Result := block.Map;
-  end;
-end;
-
 function TLandscape.GetStaticBlock(AX, AY: Word): TSeperatedStaticBlock;
 var
   block: TBlock;
@@ -689,19 +517,26 @@ begin
   end;
 end;
 
-procedure TLandscape.UpdateStaticsPriority(AStaticItem: TStaticItem;
-  APrioritySolver: Integer);
+function TLandscape.GetStaticList(AX, AY: Word): TList;
 var
-  staticTileData: TStaticTileData;
+  block: TSeperatedStaticBlock;
 begin
-  staticTileData := ResMan.Tiledata.StaticTiles[AStaticItem.TileID];
-  AStaticItem.PriorityBonus := 0;
-  if not ((staticTileData.Flags and tdfBackground) = tdfBackground) then
-    AStaticItem.PriorityBonus := AStaticItem.PriorityBonus + 1;
-  if staticTileData.Height > 0 then
-    AStaticItem.PriorityBonus := AStaticItem.PriorityBonus + 1;
-  AStaticItem.Priority := AStaticItem.Z + AStaticItem.PriorityBonus;
-  AStaticItem.PrioritySolver := APrioritySolver;
+  Result := nil;
+  if (AX >= 0) and (AX <= FCellWidth) and (AY >= 0) and (AY <= FCellHeight) then
+  begin
+    block := GetStaticBlock(AX div 8, AY div 8);
+    if block <> nil then
+      Result := block.Cells[(AY mod 8) * 8 + AX mod 8];
+  end;
+end;
+
+procedure TLandscape.OnRemoveCachedObject(AObject: TObject);
+var
+  block: TBlock;
+begin
+  block := AObject as TBlock;
+  if block <> nil then
+    dmNetwork.Send(TFreeBlockPacket.Create(block.Map.X, block.Map.Y));
 end;
 
 procedure TLandscape.OnBlocksPacket(ABuffer: TEnhancedMemoryStream);
@@ -718,19 +553,19 @@ begin
   begin
     ABuffer.Read(coords, SizeOf(TBlockCoords));
     id := GetID(coords.X, coords.Y);
-  
+
     map := TMapBlock.Create(ABuffer, coords.X, coords.Y);
     count := ABuffer.ReadWord;
     if count > 0 then
       index.Lookup := ABuffer.Position
     else
-      index.Lookup := $FFFFFFFF;
+      index.Lookup := -1;
     index.Size := count * 7;
     statics := TSeperatedStaticBlock.Create(ABuffer, index, coords.X, coords.Y);
 
     FBlockCache.RemoveID(id);
     FBlockCache.StoreID(id, TBlock.Create(map, statics));
-    
+
     FOpenRequests[coords.Y * FWidth + coords.X] := False;
   end;
   index.Free;
@@ -776,8 +611,7 @@ begin
     targetStaticList.Add(staticItem);
     for i := 0 to targetStaticList.Count - 1 do
       UpdateStaticsPriority(TStaticItem(targetStaticList.Items[i]), i);
-    targetStaticList.Sort(@Compare);
-    //ListSort(targetStaticList, @Compare);
+    targetStaticList.Sort(@CompareWorldItems);
     staticItem.Owner := block;
     if Assigned(FOnChange) then FOnChange;
   end;
@@ -835,8 +669,7 @@ begin
         staticItem.Z := ABuffer.ReadShortInt;
         for j := 0 to statics.Count - 1 do
           UpdateStaticsPriority(TStaticItem(statics.Items[j]), j);
-        statics.Sort(@Compare);
-        //ListSort(statics, @Compare);
+        statics.Sort(@CompareWorldItems);
         if Assigned(FOnChange) then FOnChange;
         Break;
       end;
@@ -852,7 +685,6 @@ var
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
   newX, newY: Word;
-  item: PLinkedItem;
 begin
   staticItem := nil;
   ABuffer.Read(staticInfo, SizeOf(TStaticInfo));
@@ -883,7 +715,7 @@ begin
       staticItem.Delete;
     end;
   end;
-  
+
   if targetBlock <> nil then
   begin
     staticItem := TStaticItem.Create(nil, nil, 0, 0);
@@ -896,18 +728,17 @@ begin
     statics.Add(staticItem);
     for i := 0 to statics.Count - 1 do
       UpdateStaticsPriority(TStaticItem(statics.Items[i]), i);
-    statics.Sort(@Compare);
-    //ListSort(statics, @Compare);
+    statics.Sort(@CompareWorldItems);
     staticItem.Owner := targetBlock;
   end;
-  
+
   if Assigned(FOnChange) then FOnChange;
 end;
 
 procedure TLandscape.OnHueStaticPacket(ABuffer: TEnhancedMemoryStream);
 var
   block: TSeperatedStaticBlock;
-  i,j : Integer;
+  i : Integer;
   statics: TList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
@@ -932,13 +763,145 @@ begin
   end;
 end;
 
-procedure TLandscape.OnRemoveCachedObject(AObject: TObject);
+procedure TLandscape.FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
+  AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
+  ANoDraw: Boolean; AStaticsFilter: TStaticFilter);
 var
-  block: TBlock;
+  landAlt: ShortInt;
+  drawMapCell: TMapCell;
+  drawStatics: TList;
+  i, x, y: Integer;
 begin
-  block := AObject as TBlock;
-  if block <> nil then
-    dmNetwork.Send(TFreeBlockPacket.Create(block.Map.X, block.Map.Y));
+  ADrawList.Clear;
+  for x := AX to AX + AWidth do
+    for y := AY to AY + AWidth do
+    begin
+      if AMap then
+      begin
+        landAlt := GetLandAlt(x, y, 0);
+        if (landAlt >= AMinZ) and (landAlt <= AMaxZ) then
+        begin
+          drawMapCell := GetMapCell(x, y);
+          if (drawMapCell <> nil) and (ANoDraw or (drawMapCell.TileID > 2)) then
+          begin
+            drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
+            drawMapCell.PriorityBonus := 0;
+            drawMapCell.PrioritySolver := 0;
+            ADrawList.Store(drawMapCell);
+          end;
+        end;
+      end;
+
+      if AStatics then
+      begin
+        drawStatics := GetStaticList(x, y);
+        if drawStatics <> nil then
+          for i := 0 to drawStatics.Count - 1 do
+            if (TStaticItem(drawStatics[i]).Z >= AMinZ) and
+               (TStaticItem(drawStatics[i]).Z <= AMaxZ) and
+               ((AStaticsFilter = nil) or AStaticsFilter(TStaticItem(drawStatics[i]))) then
+            begin
+              UpdateStaticsPriority(TStaticItem(drawStatics[i]), ADrawList.GetSerial);
+              ADrawList.Store(TWorldItem(drawStatics[i]));
+            end;
+      end;
+    end;
+end;
+
+function TLandscape.GetEffectiveAltitude(ATile: TMapCell): ShortInt;
+var
+  north, west, south, east: ShortInt;
+begin
+  north := ATile.Altitude;
+  west := GetLandAlt(ATile.X, ATile.Y + 1, north);
+  south := GetLandAlt(ATile.X + 1, ATile.Y + 1, north);
+  east := GetLandAlt(ATile.X + 1, ATile.Y, north);
+
+  if Abs(north - south) > Abs(west - east) then
+    Result := (north + south) div 2
+  else
+    Result := (west + east) div 2;
+end;
+
+function TLandscape.GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
+var
+  cell: TMapCell;
+begin
+  cell := MapCell[AX, AY];
+  if cell <> nil then
+    Result := cell.Altitude
+  else
+    Result := ADefault;
+end;
+
+procedure TLandscape.MoveStatic(AStatic: TStaticItem; AX, AY: Word);
+var
+  sourceBlock, targetBlock: TSeperatedStaticBlock;
+  targetStaticList: TList;
+  i: Integer;
+begin
+  if (AX >= 0) and (AX <= FCellWidth) and (AY >= 0) and (AY <= FCellHeight) then
+  begin
+    sourceBlock := AStatic.Owner as TSeperatedStaticBlock;
+    targetBlock := GetStaticBlock(AX div 8, AY div 8);
+    if (sourceBlock <> nil) and (targetBlock <> nil) then
+    begin
+      sourceBlock.Cells[(AStatic.Y mod 8) * 8 + AStatic.X mod 8].Remove(AStatic);
+      targetStaticList := targetBlock.Cells[(AY mod 8) * 8 + AX mod 8];
+      targetStaticList.Add(AStatic);
+      for i := 0 to targetStaticList.Count - 1 do
+        UpdateStaticsPriority(TStaticItem(targetStaticList.Items[i]), i);
+      targetStaticList.Sort(@CompareWorldItems);
+      AStatic.UpdatePos(AX, AY, AStatic.Z);
+      AStatic.Owner := targetBlock;
+    end;
+  end;
+end;
+
+procedure TLandscape.PrepareBlocks(AX1, AY1, AX2, AY2: Word);
+var
+  x, y, i: Integer;
+  coords: TBlockCoordsArray;
+  obj: TObject;
+begin
+  AX1 := EnsureRange(AX1, 0, FWidth - 1);
+  AY1 := EnsureRange(AY1, 0, FHeight - 1);
+  AX2 := EnsureRange(AX2, 0, FWidth - 1);
+  AY2 := EnsureRange(AY2, 0, FHeight - 1);
+
+  SetLength(coords, 0);
+  for x := AX1 to AX2 do
+  begin
+    for y := AY1 to AY2 do
+    begin
+      if (not FOpenRequests[y * FWidth + x]) and
+         (not FBlockCache.QueryID(GetID(x, y), obj)) then
+      begin
+        SetLength(coords, Length(coords) + 1);
+        i := High(coords);
+        coords[i].X := x;
+        coords[i].Y := y;
+        FOpenRequests[y * FWidth + x] := True;
+      end;
+    end;
+  end;
+  if Length(coords) > 0 then
+    dmNetwork.Send(TRequestBlocksPacket.Create(coords));
+end;
+
+procedure TLandscape.UpdateStaticsPriority(AStaticItem: TStaticItem;
+  APrioritySolver: Integer);
+var
+  staticTileData: TStaticTileData;
+begin
+  staticTileData := ResMan.Tiledata.StaticTiles[AStaticItem.TileID];
+  AStaticItem.PriorityBonus := 0;
+  if not ((staticTileData.Flags and tdfBackground) = tdfBackground) then
+    AStaticItem.PriorityBonus := AStaticItem.PriorityBonus + 1;
+  if staticTileData.Height > 0 then
+    AStaticItem.PriorityBonus := AStaticItem.PriorityBonus + 1;
+  AStaticItem.Priority := AStaticItem.Z + AStaticItem.PriorityBonus;
+  AStaticItem.PrioritySolver := APrioritySolver;
 end;
 
 { TMaterial }
@@ -993,8 +956,6 @@ begin
 
   FTexture := CreateGLTextureFromImage(FGraphic.ImageDataPointer^, 0, 0, False, ifUnknown, @FWidth, @FHeight);
   glBindTexture(GL_TEXTURE_2D, FTexture);
-  {glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, @FWidth);
-  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, @FHeight);}
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -1076,6 +1037,90 @@ end;
 
 { TScreenBuffer }
 
+constructor TScreenBuffer.Create;
+begin
+  inherited Create;
+  FSerial := 0;
+end;
+
+procedure TScreenBuffer.Clear;
+var
+  current, next: PBlockInfo;
+begin
+  current := FFirst;
+  while current <> nil do
+  begin
+    next := current^.Next;
+    current^.Item.Locked := False;
+    current^.Item.OnDestroy.UnregisterEvent(@OnTileRemoved);
+    Dispose(current);
+    current := next;
+  end;
+  FFirst := nil;
+  FLastBlock := nil;
+
+  FSerial := 0;
+end;
+
+function TScreenBuffer.Find(AScreenPosition: TPoint): PBlockInfo;
+var
+  current: PBlockInfo;
+begin
+  Result := nil;
+  current := FFirst;
+  while (current <> nil) and (Result = nil) do
+  begin
+    if (not current^.Ghost) and PtInRect(current^.ScreenRect, AScreenPosition) and
+       current^.Material.HitTest(AScreenPosition.x - current^.ScreenRect.Left,
+                                 AScreenPosition.y - current^.ScreenRect.Top) then
+    begin
+      Result := current;
+    end;
+    current := current^.Next;
+  end;
+end;
+
+function TScreenBuffer.GetSerial: Cardinal;
+begin
+  Result := FSerial
+  Inc(FSerial);
+end;
+
+procedure TScreenBuffer.Store(AItem: TWorldItem; AMaterial: TMaterial = nil;
+  AGhost: Boolean = False);
+var
+  current, existing: PBlockInfo;
+begin
+  New(current);
+  AItem.Locked := True;
+  AItem.OnDestroy.RegisterEvent(@OnTileRemoved);
+  current^.Item := AItem;
+  current^.Material := AMaterial;
+  current^.Ghost := AGhost;
+
+  if (FFirst = nil) or (CompareWorldItems(AItem, FFirst) > 0) then
+  begin
+    current^.Next := FFirst;
+    if FFirst = nil then
+      FLastBlock := current;
+    FFirst := current;
+  end else
+  begin
+    existing := FFirst;
+    while (existing^.Next = nil) and
+          (CompareWorldItems(AItem, existing^.Next^.Item) > 0) do
+    begin
+      existing := existing^.Next;
+    end;
+
+    if existing^.Next = nil then
+      FLastBlock := current;
+
+    current^.Next := existing^.Next;
+    existing^.Next := current;
+  end;
+end;
+
 procedure TScreenBuffer.OnTileRemoved(ATile: TMulBlock);
 var
   currentItem, lastItem, nextItem: PBlockInfo;
@@ -1096,57 +1141,6 @@ begin
     lastItem := currentItem;
     currentItem := nextItem;
   end;
-end;
-
-procedure TScreenBuffer.Clear;
-var
-  current, next: PBlockInfo;
-begin
-  current := FFirst;
-  while current <> nil do
-  begin
-    next := current^.Next;
-    current^.Item.Locked := False;
-    current^.Item.OnDestroy.UnregisterEvent(@OnTileRemoved);
-    Dispose(current);
-    current := next;
-  end;
-  FFirst := nil;
-  FLastBlock := nil;
-end;
-
-function TScreenBuffer.Find(AScreenPosition: TPoint): PBlockInfo;
-var
-  current: PBlockInfo;
-begin
-  Result := nil;
-  current := FFirst;
-  while (current <> nil) and (Result = nil) do
-  begin
-    if PtInRect(current^.ScreenRect, AScreenPosition) and
-       current^.Material.HitTest(AScreenPosition.x - current^.ScreenRect.Left,
-                                 AScreenPosition.y - current^.ScreenRect.Top) then
-    begin
-      Result := current;
-    end;
-    current := current^.Next;
-  end;
-end;
-
-procedure TScreenBuffer.Store(AScreenRect: TRect; AItem: TWorldItem;
-  AMaterial: TMaterial);
-var
-  current: PBlockInfo;
-begin
-  New(current);
-  AItem.Locked := True;
-  AItem.OnDestroy.RegisterEvent(@OnTileRemoved);
-  current^.ScreenRect := AScreenRect;
-  current^.Item := AItem;
-  current^.Material := AMaterial;
-  current^.Next := FFirst;
-  FFirst := current;
-  if FLastBlock = nil then FLastBlock := current;
 end;
 
 end.
