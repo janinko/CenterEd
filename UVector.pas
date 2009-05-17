@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UVector;
 
@@ -36,8 +36,13 @@ type
     Y: Real;
     Z: Real;
   end;
+  TVector2D = record
+    X: Single;
+    Y: Single;
+  end;
 
 function Vector(AX, AY, AZ: Real): TVector;
+function Vector(AX, AY: Single): TVector2D;
 function VectorAdd(AVector1, AVector2: TVector): TVector;
 function VectorDot(AVector1, AVector2: TVector): TVector;
 function VectorCross(AVector1, AVector2: TVector): TVector;
@@ -50,6 +55,12 @@ begin
   Result.X := AX;
   Result.Y := AY;
   Result.Z := AZ;
+end;
+
+function Vector(AX, AY: Single): TVector2D;
+begin
+  Result.X := AX;
+  Result.Y := AY;
 end;
 
 function VectorAdd(AVector1, AVector2: TVector): TVector;

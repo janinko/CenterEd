@@ -43,7 +43,7 @@ type
   PRadarBlock = ^TRadarBlock;
   TRadarBlock = array[0..7, 0..7] of Word;
   
-  { TMaterial }
+  { TMaterial }             //TODO : add ref counting
   
   TMaterial = class(TObject)
     constructor Create(AWidth, AHeight: Integer; AGraphic: TSingleImage);
@@ -145,6 +145,7 @@ type
       ANoDraw: Boolean; AStaticsFilter: TStaticFilter);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
+    procedure GetNormals(AX, AY: Word; var ANormals: TNormals);
     procedure MoveStatic(AStatic: TStaticItem; AX, AY: Word);
     procedure PrepareBlocks(AX1, AY1, AX2, AY2: Word);
     procedure UpdateStaticsPriority(AStaticItem: TStaticItem;
@@ -152,10 +153,13 @@ type
   end;
 
   TScreenState = (tsNormal, tsFiltered, tsGhost);
+  PDrawQuad = ^TDrawQuad;
+  TDrawQuad = array[0..3] of TVector2D;
 
   PBlockInfo = ^TBlockInfo;
   TBlockInfo = record
     ScreenRect: TRect;
+    DrawQuad: PDrawQuad;
     Item: TWorldItem;
     HighRes: TMaterial;
     LowRes: TMaterial;
@@ -429,85 +433,8 @@ begin
 end;
 
 function TLandscape.GetNormals(AX, AY: Word): TNormals;
-var
-  cells: array[0..2, 0..2] of TNormals;
-  north, west, south, east: TVector;
-  i, j: Integer;
-
-  function GetPlainNormals(X, Y: SmallInt): TNormals;
-  var
-    cell: TMapCell;
-    north, west, south, east: ShortInt;
-    u, v: TVector;
-  begin
-    cell := GetMapCell(X, Y);
-    if Assigned(cell) then
-    begin
-      north := cell.Altitude;
-      west := GetLandAlt(cell.X, cell.Y + 1, north);
-      south := GetLandAlt(cell.X + 1, cell.Y + 1, north);
-      east := GetLandAlt(cell.X + 1, cell.Y, north);
-    end else
-    begin
-      north := 0;
-      west := 0;
-      east := 0;
-      south := 0;
-    end;
-
-    if (north = west) and (west = east) and (north = south) then
-    begin
-      Result[0] := Vector(0, 0, 1);
-      Result[1] := Vector(0, 0, 1);
-      Result[2] := Vector(0, 0, 1);
-      Result[3] := Vector(0, 0, 1);
-    end else
-    begin
-      u := Vector(-22, 22, (north - east) * 4);
-      v := Vector(-22, -22, (west - north) * 4);
-      Result[0] := VectorNorm(VectorCross(u, v));
-
-      u := Vector(22, 22, (east - south) * 4);
-      v := Vector(-22, 22, (north - east) * 4);
-      Result[1] := VectorNorm(VectorCross(u, v));
-
-      u := Vector(22, -22, (south - west) * 4);
-      v := Vector(22, 22, (east - south) * 4);
-      Result[2] := VectorNorm(VectorCross(u, v));
-
-      u := Vector(-22, -22, (west - north) * 4);
-      v := Vector(22, -22, (south - west) * 4);
-      Result[3] := VectorNorm(VectorCross(u, v));
-    end;
-  end;
 begin
-  for i := 0 to 2 do
-    for j := 0 to 2 do
-      cells[i, j] := GetPlainNormals(AX - 1 + i, AY - 1 + j);
-
-  north := cells[0, 0][2];
-  west := cells[0, 1][1];
-  east := cells[1, 0][3];
-  south := cells[1, 1][0];
-  Result[0] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
-
-  north := cells[1, 0][2];
-  west := cells[1, 1][1];
-  east := cells[2, 0][3];
-  south := cells[2, 1][0];
-  Result[1] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
-
-  north := cells[1, 1][2];
-  west := cells[1, 2][1];
-  east := cells[2, 1][3];
-  south := cells[2, 2][0];
-  Result[2] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
-
-  north := cells[0, 1][2];
-  west := cells[0, 2][1];
-  east := cells[1, 1][3];
-  south := cells[1, 2][0];
-  Result[3] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+  GetNormals(AX, AY, Result);
 end;
 
 function TLandscape.GetStaticBlock(AX, AY: Word): TSeperatedStaticBlock;
@@ -591,6 +518,7 @@ begin
     cell.TileID := ABuffer.ReadWord;
     if Assigned(FOnChange) then FOnChange;
   end;
+  //TODO : update surrounding normals
 end;
 
 procedure TLandscape.OnInsertStaticPacket(ABuffer: TEnhancedMemoryStream);
@@ -838,6 +766,88 @@ begin
     Result := ADefault;
 end;
 
+procedure TLandscape.GetNormals(AX, AY: Word; var ANormals: TNormals);
+var
+  cells: array[0..2, 0..2] of TNormals;
+  north, west, south, east: TVector;
+  i, j: Integer;
+
+  function GetPlainNormals(X, Y: SmallInt): TNormals;
+  var
+    cell: TMapCell;
+    north, west, south, east: ShortInt;
+    u, v: TVector;
+  begin
+    cell := GetMapCell(X, Y);
+    if Assigned(cell) then
+    begin
+      north := cell.Altitude;
+      west := GetLandAlt(cell.X, cell.Y + 1, north);
+      south := GetLandAlt(cell.X + 1, cell.Y + 1, north);
+      east := GetLandAlt(cell.X + 1, cell.Y, north);
+    end else
+    begin
+      north := 0;
+      west := 0;
+      east := 0;
+      south := 0;
+    end;
+
+    if (north = west) and (west = east) and (north = south) then
+    begin
+      ANormals[0] := Vector(0, 0, 1);
+      ANormals[1] := Vector(0, 0, 1);
+      ANormals[2] := Vector(0, 0, 1);
+      ANormals[3] := Vector(0, 0, 1);
+    end else
+    begin
+      u := Vector(-22, 22, (north - east) * 4);
+      v := Vector(-22, -22, (west - north) * 4);
+      ANormals[0] := VectorNorm(VectorCross(u, v));
+
+      u := Vector(22, 22, (east - south) * 4);
+      v := Vector(-22, 22, (north - east) * 4);
+      ANormals[1] := VectorNorm(VectorCross(u, v));
+
+      u := Vector(22, -22, (south - west) * 4);
+      v := Vector(22, 22, (east - south) * 4);
+      ANormals[2] := VectorNorm(VectorCross(u, v));
+
+      u := Vector(-22, -22, (west - north) * 4);
+      v := Vector(22, -22, (south - west) * 4);
+      ANormals[3] := VectorNorm(VectorCross(u, v));
+    end;
+  end;
+begin
+  for i := 0 to 2 do
+    for j := 0 to 2 do
+      cells[i, j] := GetPlainNormals(AX - 1 + i, AY - 1 + j);
+
+  north := cells[0, 0][2];
+  west := cells[0, 1][1];
+  east := cells[1, 0][3];
+  south := cells[1, 1][0];
+  ANormals[0] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+
+  north := cells[1, 0][2];
+  west := cells[1, 1][1];
+  east := cells[2, 0][3];
+  south := cells[2, 1][0];
+  ANormals[1] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+
+  north := cells[1, 1][2];
+  west := cells[1, 2][1];
+  east := cells[2, 1][3];
+  south := cells[2, 2][0];
+  ANormals[2] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+
+  north := cells[0, 1][2];
+  west := cells[0, 2][1];
+  east := cells[1, 1][3];
+  south := cells[1, 2][0];
+  ANormals[3] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+end;
+
 procedure TLandscape.MoveStatic(AStatic: TStaticItem; AX, AY: Word);
 var
   sourceBlock, targetBlock: TSeperatedStaticBlock;
@@ -1031,8 +1041,8 @@ begin
       if FLastBlock = current then FLastBlock := last;
       if last <> nil then last^.Next := current^.Next;
 
-      if current^.Normals <> nil then
-        Dispose(current^.Normals);
+      if current^.Normals <> nil then Dispose(current^.Normals);
+      if current^.DrawQuad <> nil then Dispose(current^.DrawQuad);
 
       Dispose(current);
       next := nil;
@@ -1062,8 +1072,8 @@ begin
     next := current^.Next;
     current^.Item.Locked := False;
     current^.Item.OnDestroy.UnregisterEvent(@OnTileRemoved);
-    if current^.Normals <> nil then
-      Dispose(current^.Normals);
+    if current^.Normals <> nil then Dispose(current^.Normals);
+    if current^.DrawQuad <> nil then Dispose(current^.DrawQuad);
     Dispose(current);
     current := next;
   end;
@@ -1106,6 +1116,7 @@ begin
   AItem.Locked := True;
   AItem.OnDestroy.RegisterEvent(@OnTileRemoved);
   Result^.Item := AItem;
+  Result^.DrawQuad := nil;
   Result^.HighRes := nil;
   Result^.LowRes := nil;
   Result^.Normals := nil;

@@ -34,7 +34,7 @@ uses
   ComCtrls, OpenGLContext, GL, GLU, UGameResources, ULandscape, ExtCtrls,
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
-  ImagingClasses, dateutils, UPlatformTypes;
+  ImagingClasses, dateutils, UPlatformTypes, UVector;
 
 type
 
@@ -1656,7 +1656,6 @@ var
   z: ShortInt;
   mat: TMaterial;
   cell: TMapCell;
-  west, south, east: Single;
   drawX, drawY: Single;
   staticItem: TStaticItem;
   normals: TNormals;
@@ -1996,6 +1995,16 @@ begin
 end;
 
 procedure TfrmMain.RebuildScreenBuffer;
+var
+  blockInfo: PBlockInfo;
+  item: TWorldItem;
+  drawX, drawY: Single;
+  west, south, east: Single;
+  z: SmallInt;
+  drawQuad: PDrawQuad;
+  staticItem: TStaticItem;
+  hue: THue;
+  staticTiledata: TStaticTiledata;
 begin
   FLandscape.PrepareBlocks((FX + FLowOffsetX) div 8, (FY + FLowOffsetY) div 8, (FX + FHighOffsetX) div 8 + 1, (FY + FHighOffsetY) div 8 + 1);
   PrepareVirtualLayer(FDrawDistance * 2 + 1, FDrawDistance * 2 + 1);
@@ -2007,6 +2016,63 @@ begin
     frmBoundaries.tbMaxZ.Position, tbTerrain.Down, tbStatics.Down,
     acNoDraw.Checked, nil); //TODO : statics filter
   //TODO : ghost tile
+
+  //Pre-process the buffer - add normals to map tiles and materials where possible
+  blockInfo := nil;
+  while FScreenBuffer.Iterate(blockInfo) do
+  begin
+    item := blockInfo^.Item;
+
+    if acFlat.Checked then
+      z := 0
+    else
+      z := item.Z;
+
+    if item is TMapCell then
+    begin
+      if not acFlat.Checked then
+      begin
+        west := FLandscape.GetLandAlt(item.X, item.Y + 1, z);
+        south := FLandscape.GetLandAlt(item.X + 1, item.Y + 1, z);
+        east := FLandscape.GetLandAlt(item.X + 1, item.Y, z);
+
+        if  (west <> z) or (south <> z) or (east <> z) then
+        begin
+          blockInfo^.HighRes := FTextureManager.GetTexMaterial(item.TileID);
+        end;
+      end;
+
+      if blockInfo^.HighRes <> nil then
+      begin
+        New(blockInfo^.Normals);
+        FLandscape.GetNormals(item.X, item.Y, blockInfo^.Normals^);
+        New(blockInfo^.DrawQuad);
+        drawQuad := blockInfo^.DrawQuad;
+        drawQuad^[0] := Vector(drawX, drawY - z * 4);
+        drawQuad^[1] := Vector(drawX + 22, drawY + 22 - east * 4);
+        drawQuad^[2] := Vector(drawX, drawY + 44 - south * 4);
+        drawQuad^[3] := Vector(drawX - 22, drawY + 22 - west * 4);
+      end;
+
+      blockInfo^.LowRes := FTextureManager.GetArtMaterial(item.TileID);
+      blockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44);
+    end else
+    begin
+      staticItem := TStaticItem(item);
+
+      staticTiledata := ResMan.Tiledata.StaticTiles[staticItem.TileID];
+      if staticItem.Hue > 0 then
+        hue := ResMan.Hue.Hues[staticItem.Hue - 1]
+      else
+        hue := nil;
+
+      blockInfo^.LowRes := FTextureManager.GetArtMaterial($4000 + staticItem.TileID, hue, (staticTileData.Flags and tdfPartialHue) = tdfPartialHue);
+      blockInfo^.ScreenRect := Bounds(Trunc(drawX - blockInfo^.LowRes.RealWidth div 2),
+        Trunc(drawY + 44 - blockInfo^.LowRes.RealHeight - z * 4),
+        blockInfo^.LowRes.RealWidth,
+        Trunc(blockInfo^.LowRes.RealHeight));
+    end;
+  end;
 end;
 
 procedure TfrmMain.UpdateCurrentTile;
