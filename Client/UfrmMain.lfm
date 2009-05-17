@@ -971,6 +971,7 @@ object frmMain: TfrmMain
       OnMouseUp = oglGameWindowMouseUp
       OnMouseWheel = oglGameWindowMouseWheel
       OnPaint = oglGameWindowPaint
+      OnResize = oglGameWindowResize
     end
     object pnlChatHeader: TPanel
       Left = 0

@@ -217,6 +217,7 @@ type
     procedure oglGameWindowMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure oglGameWindowPaint(Sender: TObject);
+    procedure oglGameWindowResize(Sender: TObject);
     procedure pmGrabTileInfoPopup(Sender: TObject);
     procedure tbFilterMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -265,8 +266,16 @@ type
     procedure vstLocationsSaveNode(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Stream: TStream);
   protected
+    { Members }
     FX: Integer;
     FY: Integer;
+    FDrawDistance: Integer;
+    FLowOffsetX: Integer;
+    FLowOffsetY: Integer;
+    FHighOffsetX: Integer;
+    FHighOffsetY: Integer;
+    FRangeX: Integer;
+    FRangeY: Integer;
     FLandscape: TLandscape;
     FTextureManager: TLandTextureManager;
     FScreenBuffer: TScreenBuffer;
@@ -280,38 +289,44 @@ type
     FRandomPresetLocation: string;
     FLastDraw: TDateTime;
     FAccessChangedListeners: array of TAccessChangedListener;
-    procedure SetX(const AValue: Integer);
-    procedure SetY(const AValue: Integer);
-    procedure SetCurrentTile(const AValue: TWorldItem);
-    procedure SetSelectedTile(const AValue: TWorldItem);
-    procedure SetNormalLights; inline;
-    procedure SetDarkLights; inline;
+    { Methods }
+    procedure BuildTileList;
+    function  CanBeModified(ATile: TWorldItem): Boolean;
+    function  ConfirmAction: Boolean;
+    procedure GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
+      DrawY: Single);
+    function  GetInternalTileID(ATile: TWorldItem): Word;
+    function  GetSelectedRect: TRect;
     procedure InitRender;
     procedure InitSize;
-    procedure Render;
-    procedure OnLandscapeChanged;
-    procedure BuildTileList;
+    procedure PrepareVirtualLayer(AWidth, AHeight: Word);
     procedure ProcessToolState;
     procedure ProcessAccessLevel;
+    procedure RebuildScreenBuffer;
+    procedure Render;
+    procedure SetCurrentTile(const AValue: TWorldItem);
+    procedure SetDarkLights; inline;
+    procedure SetNormalLights; inline;
+    procedure SetSelectedTile(const AValue: TWorldItem);
+    procedure SetX(const AValue: Integer);
+    procedure SetY(const AValue: Integer);
     procedure UpdateCurrentTile;
     procedure UpdateCurrentTile(AX, AY: Integer);
-    procedure TileRemoved(ATile: TMulBlock);
     procedure WriteChatMessage(ASender, AMessage: string);
-    procedure PrepareVirtualLayer(AWidth, AHeight: Word);
+    { Events }
     procedure OnClientHandlingPacket(ABuffer: TEnhancedMemoryStream);
-    function GetInternalTileID(ATile: TWorldItem): Word;
-    function GetSelectedRect: TRect;
-    function ConfirmAction: Boolean;
-    function CanBeModified(ATile: TWorldItem): Boolean;
+    procedure OnLandscapeChanged;
+    procedure OnTileRemoved(ATile: TMulBlock);
   public
+    { Fields }
     property X: Integer read FX write SetX;
     property Y: Integer read FY write SetY;
     property Landscape: TLandscape read FLandscape;
     property CurrentTile: TWorldItem read FCurrentTile write SetCurrentTile;
     property SelectedTile: TWorldItem read FSelectedTile write SetSelectedTile;
-    
-    procedure SetPos(AX, AY: Word);
+    { Methods }
     procedure RegisterAccessChangedListener(AListener: TAccessChangedListener);
+    procedure SetPos(AX, AY: Word);
     procedure UnregisterAccessChangedListener(AListener: TAccessChangedListener);
   end; 
 
@@ -1149,6 +1164,21 @@ begin
   oglGameWindow.SwapBuffers;
 end;
 
+procedure TfrmMain.oglGameWindowResize(Sender: TObject);
+begin
+  FDrawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width + oglGamewindow.Height * oglGamewindow.Height) / 44);
+
+  {$HINTS off}{$WARNINGS off}
+  if FX - FDrawDistance < 0 then FLowOffsetX := -FX else FLowOffsetX := -FDrawDistance;
+  if FY - FDrawDistance < 0 then FLowOffsetY := -FY else FLowOffsetY := -FDrawDistance;
+  if FX + FDrawDistance >= FLandscape.Width * 8 then FHighOffsetX := FLandscape.Width * 8 - FX - 1 else FHighOffsetX := FDrawDistance;
+  if FY + FDrawDistance >= FLandscape.Height * 8 then FHighOffsetY := FLandscape.Height * 8 - FY - 1 else FHighOffsetY := FDrawDistance;
+  {$HINTS on}{$WARNINGS on}
+
+  FRangeX := FHighOffsetX - FLowOffsetX;
+  FRangeY := FHighOffsetY - FLowOffsetY;
+end;
+
 procedure TfrmMain.pmGrabTileInfoPopup(Sender: TObject);
 begin
   mnuGrabHue.Enabled := CurrentTile is TStaticItem;
@@ -1559,19 +1589,19 @@ end;
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
 begin
   if FCurrentTile <> nil then
-    FCurrentTile.OnDestroy.UnregisterEvent(@TileRemoved);
+    FCurrentTile.OnDestroy.UnregisterEvent(@OnTileRemoved);
   FCurrentTile := AValue;
   if FCurrentTile <> nil then
-    FCurrentTile.OnDestroy.RegisterEvent(@TileRemoved);
+    FCurrentTile.OnDestroy.RegisterEvent(@OnTileRemoved);
 end;
 
 procedure TfrmMain.SetSelectedTile(const AValue: TWorldItem);
 begin
   if FSelectedTile <> nil then
-    FSelectedTile.OnDestroy.UnregisterEvent(@TileRemoved);
+    FSelectedTile.OnDestroy.UnregisterEvent(@OnTileRemoved);
   FSelectedTile := AValue;
   if FSelectedTile <> nil then
-    FSelectedTile.OnDestroy.RegisterEvent(@TileRemoved);
+    FSelectedTile.OnDestroy.RegisterEvent(@OnTileRemoved);
 end;
 
 procedure TfrmMain.SetNormalLights;
@@ -1623,17 +1653,12 @@ end;
 
 procedure TfrmMain.Render;
 var
-  drawDistance: Integer;
-  lowOffX, lowOffY, highOffX, highOffY: Integer;
   z: ShortInt;
   mat: TMaterial;
   cell: TMapCell;
   west, south, east: Single;
   drawX, drawY: Single;
-  draw: TList;
   staticItem: TStaticItem;
-  i, j, k: Integer;
-  startOffX, endOffX, rangeX, rangeY: Integer;
   normals: TNormals;
   staticTileData: TStaticTileData;
   hue: THue;
@@ -1644,47 +1669,24 @@ var
   staticsFilter: TStaticFilter;
   editing: Boolean;
   intensity: GLfloat;
+  blockInfo: PBlockInfo;
   item: TWorldItem;
-
-  procedure GetMapDrawOffset(x, y: Integer; out drawX, drawY: Single);
-  begin
-    drawX := (oglGameWindow.Width div 2) + (x - y) * 22;
-    drawY := (oglGamewindow.Height div 2) + (x + y) * 22;
-  end;
 begin
-  drawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width + oglGamewindow.Height * oglGamewindow.Height) / 44);
-
-  {$HINTS off}{$WARNINGS off}
-  if FX - drawDistance < 0 then lowOffX := -FX else lowOffX := -drawDistance;
-  if FY - drawDistance < 0 then lowOffY := -FY else lowOffY := -drawDistance;
-  if FX + drawDistance >= FLandscape.Width * 8 then highOffX := FLandscape.Width * 8 - FX - 1 else highOffX := drawDistance;
-  if FY + drawDistance >= FLandscape.Height * 8 then highOffY := FLandscape.Height * 8 - FY - 1 else highOffY := drawDistance;
-  {$HINTS on}{$WARNINGS on}
-
-  FLandscape.PrepareBlocks((FX + lowOffX) div 8, (FY + lowOffY) div 8, (FX + highOffX) div 8 + 1, (FY + highOffY) div 8 + 1);
-  PrepareVirtualLayer(drawDistance * 2 + 1, drawDistance * 2 + 1);
-
   tileRect := GetSelectedRect;
-  FScreenBuffer.Clear;
 
-  rangeX := highOffX - lowOffX;
-  rangeY := highOffY - lowOffY;
+  RebuildScreenBuffer;
   
   {if acFilter.Checked then
     staticsFilter := @frmFilter.Filter
   else
-    staticsFilter := nil;} //TODO : update list on change
+    staticsFilter := nil;} //TODO : update list on change}
 
-  {draw := FLandscape.GetDrawList(FX + lowOffX, FY + lowOffY, rangeX, rangeY,
-    frmBoundaries.tbMinZ.Position, frmBoundaries.tbMaxZ.Position,
-    nil, nil, tbTerrain.Down, tbStatics.Down, //TODO : ghost tile and virtual tile!
-    acNoDraw.Checked, nil); //TODO : statics filter!
-
-  for i := 0 to draw.Count - 1 do
+  blockInfo := nil;
+  while FScreenBuffer.Iterate(blockInfo) do
   begin
-    item := TWorldItem(draw[i]);
+    item := blockInfo^.Item;
 
-    GetMapDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
+    {GetMapDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
 
     singleTarget := (CurrentTile <> nil) and
                     (item.X = CurrentTile.X) and
@@ -1868,10 +1870,8 @@ begin
     end;
 
     if highlight then
-      glDisable(GL_COLOR_LOGIC_OP);
+      glDisable(GL_COLOR_LOGIC_OP);}
   end;
-
-  draw.Free;}
 
   FOverlayUI.Draw(oglGameWindow);
 end;
@@ -1995,6 +1995,20 @@ begin
   Caption := Format('UO CentrED - [%s (%s)]', [dmNetwork.Username, GetAccessLevelString(dmNetwork.AccessLevel)]);
 end;
 
+procedure TfrmMain.RebuildScreenBuffer;
+begin
+  FLandscape.PrepareBlocks((FX + FLowOffsetX) div 8, (FY + FLowOffsetY) div 8, (FX + FHighOffsetX) div 8 + 1, (FY + FHighOffsetY) div 8 + 1);
+  PrepareVirtualLayer(FDrawDistance * 2 + 1, FDrawDistance * 2 + 1);
+
+  FScreenBuffer.Clear;
+  //TODO : Virtual Layer
+  FLandscape.FillDrawList(FScreenBuffer, FX + FLowOffsetX, FY + FLowOffsetY,
+    FRangeX, FRangeY, frmBoundaries.tbMinZ.Position,
+    frmBoundaries.tbMaxZ.Position, tbTerrain.Down, tbStatics.Down,
+    acNoDraw.Checked, nil); //TODO : statics filter
+  //TODO : ghost tile
+end;
+
 procedure TfrmMain.UpdateCurrentTile;
 var
   localPos: TPoint;
@@ -2041,7 +2055,7 @@ begin
   end;
 end;
 
-procedure TfrmMain.TileRemoved(ATile: TMulBlock);
+procedure TfrmMain.OnTileRemoved(ATile: TMulBlock);
 begin
   if ATile = FCurrentTile then
     FCurrentTile := nil
@@ -2227,6 +2241,13 @@ begin
   end;
   if not oglGameWindow.MouseEntered then
     oglGameWindowMouseLeave(nil);
+end;
+
+procedure TfrmMain.GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
+  DrawY: Single);
+begin
+  DrawX := (oglGameWindow.Width div 2) + (ARelativeX - ARelativeY) * 22;
+  DrawY := (oglGamewindow.Height div 2) + (ARelativeX + ARelativeY) * 22;
 end;
 
 function TfrmMain.CanBeModified(ATile: TWorldItem): Boolean;

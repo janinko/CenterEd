@@ -38,6 +38,7 @@ uses
   UCacheManager;
 
 type
+  PNormals = ^TNormals;
   TNormals = array[0..3] of TVector;
   PRadarBlock = ^TRadarBlock;
   TRadarBlock = array[0..7, 0..7] of Word;
@@ -149,12 +150,17 @@ type
     procedure UpdateStaticsPriority(AStaticItem: TStaticItem;
       APrioritySolver: Integer);
   end;
+
+  TScreenState = (tsNormal, tsFiltered, tsGhost);
+
   PBlockInfo = ^TBlockInfo;
   TBlockInfo = record
     ScreenRect: TRect;
     Item: TWorldItem;
-    Material: TMaterial;
-    Ghost: Boolean;
+    HighRes: TMaterial;
+    LowRes: TMaterial;
+    Normals: PNormals;
+    State: TScreenState;
     Next: PBlockInfo;
   end;
 
@@ -188,8 +194,7 @@ type
     procedure Clear; override;
     function Find(AScreenPosition: TPoint): PBlockInfo;
     function GetSerial: Cardinal;
-    procedure Store(AItem: TWorldItem; AMaterial: TMaterial = nil;
-      AGhost: Boolean = False);
+    function Store(AItem: TWorldItem): PBlockInfo;
     { Events }
     procedure OnTileRemoved(ATile: TMulBlock);
   end;
@@ -772,7 +777,6 @@ var
   drawStatics: TList;
   i, x, y: Integer;
 begin
-  ADrawList.Clear;
   for x := AX to AX + AWidth do
     for y := AY to AY + AWidth do
     begin
@@ -1026,10 +1030,15 @@ begin
       if FFirst = current then FFirst := current^.Next;
       if FLastBlock = current then FLastBlock := last;
       if last <> nil then last^.Next := current^.Next;
+
+      if current^.Normals <> nil then
+        Dispose(current^.Normals);
+
       Dispose(current);
       next := nil;
     end else
       next := current^.Next;
+
     last := current;
     current := next;
   end;
@@ -1053,6 +1062,8 @@ begin
     next := current^.Next;
     current^.Item.Locked := False;
     current^.Item.OnDestroy.UnregisterEvent(@OnTileRemoved);
+    if current^.Normals <> nil then
+      Dispose(current^.Normals);
     Dispose(current);
     current := next;
   end;
@@ -1070,9 +1081,10 @@ begin
   current := FFirst;
   while (current <> nil) and (Result = nil) do
   begin
-    if (not current^.Ghost) and PtInRect(current^.ScreenRect, AScreenPosition) and
-       current^.Material.HitTest(AScreenPosition.x - current^.ScreenRect.Left,
-                                 AScreenPosition.y - current^.ScreenRect.Top) then
+    if (current^.State = tsNormal) and
+       PtInRect(current^.ScreenRect, AScreenPosition) and
+       current^.LowRes.HitTest(AScreenPosition.x - current^.ScreenRect.Left,
+                               AScreenPosition.y - current^.ScreenRect.Top) then
     begin
       Result := current;
     end;
@@ -1082,65 +1094,49 @@ end;
 
 function TScreenBuffer.GetSerial: Cardinal;
 begin
-  Result := FSerial
+  Result := FSerial;
   Inc(FSerial);
 end;
 
-procedure TScreenBuffer.Store(AItem: TWorldItem; AMaterial: TMaterial = nil;
-  AGhost: Boolean = False);
+function TScreenBuffer.Store(AItem: TWorldItem): PBlockInfo;
 var
-  current, existing: PBlockInfo;
+  current: PBlockInfo;
 begin
-  New(current);
+  New(Result);
   AItem.Locked := True;
   AItem.OnDestroy.RegisterEvent(@OnTileRemoved);
-  current^.Item := AItem;
-  current^.Material := AMaterial;
-  current^.Ghost := AGhost;
+  Result^.Item := AItem;
+  Result^.HighRes := nil;
+  Result^.LowRes := nil;
+  Result^.Normals := nil;
+  Result^.State := tsNormal;
 
   if (FFirst = nil) or (CompareWorldItems(AItem, FFirst) > 0) then
   begin
-    current^.Next := FFirst;
+    Result^.Next := FFirst;
     if FFirst = nil then
-      FLastBlock := current;
-    FFirst := current;
+      FLastBlock := Result;
+    FFirst := Result;
   end else
   begin
-    existing := FFirst;
-    while (existing^.Next = nil) and
-          (CompareWorldItems(AItem, existing^.Next^.Item) > 0) do
+    current := FFirst;
+    while (current^.Next = nil) and
+          (CompareWorldItems(AItem, current^.Next^.Item) > 0) do
     begin
-      existing := existing^.Next;
+      current := current^.Next;
     end;
 
-    if existing^.Next = nil then
-      FLastBlock := current;
+    if current^.Next = nil then
+      FLastBlock := Result;
 
-    current^.Next := existing^.Next;
-    existing^.Next := current;
+    Result^.Next := current^.Next;
+    current^.Next := Result;
   end;
 end;
 
 procedure TScreenBuffer.OnTileRemoved(ATile: TMulBlock);
-var
-  currentItem, lastItem, nextItem: PBlockInfo;
 begin
-  lastItem := nil;
-  currentItem := FFirst;
-  while currentItem <> nil do
-  begin
-    if currentItem^.Item = ATile then
-    begin
-      if FFirst = currentItem then FFirst := currentItem^.Next;
-      if FLastBlock = currentItem then FLastBlock := lastItem;
-      if lastItem <> nil then lastItem^.Next := currentItem^.Next;
-      Dispose(currentItem);
-      nextItem := nil;
-    end else
-      nextItem := currentItem^.Next;
-    lastItem := currentItem;
-    currentItem := nextItem;
-  end;
+  Delete(TWorldItem(ATile));
 end;
 
 end.
