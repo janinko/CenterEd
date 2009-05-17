@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 program CentrED;
 

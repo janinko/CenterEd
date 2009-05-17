@@ -279,6 +279,7 @@ type
     FLandscape: TLandscape;
     FTextureManager: TLandTextureManager;
     FScreenBuffer: TScreenBuffer;
+    FScreenBufferValid: Boolean;
     FCurrentTile: TWorldItem;
     FSelectedTile: TWorldItem;
     FGhostTile: TWorldItem;
@@ -294,11 +295,12 @@ type
     function  CanBeModified(ATile: TWorldItem): Boolean;
     function  ConfirmAction: Boolean;
     procedure GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
-      DrawY: Single);
+      DrawY: Single); inline;
     function  GetInternalTileID(ATile: TWorldItem): Word;
     function  GetSelectedRect: TRect;
     procedure InitRender;
     procedure InitSize;
+    procedure InvalidateScreenBuffer;
     procedure PrepareVirtualLayer(AWidth, AHeight: Word);
     procedure ProcessToolState;
     procedure ProcessAccessLevel;
@@ -721,6 +723,7 @@ begin
   FLandscape.OnChange := @OnLandscapeChanged;
   FTextureManager := TLandTextureManager.Create;
   FScreenBuffer := TScreenBuffer.Create;
+  FScreenBufferValid := False;
   X := 0;
   Y := 0;
   edX.MaxValue := FLandscape.CellWidth;
@@ -1166,17 +1169,7 @@ end;
 
 procedure TfrmMain.oglGameWindowResize(Sender: TObject);
 begin
-  FDrawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width + oglGamewindow.Height * oglGamewindow.Height) / 44);
-
-  {$HINTS off}{$WARNINGS off}
-  if FX - FDrawDistance < 0 then FLowOffsetX := -FX else FLowOffsetX := -FDrawDistance;
-  if FY - FDrawDistance < 0 then FLowOffsetY := -FY else FLowOffsetY := -FDrawDistance;
-  if FX + FDrawDistance >= FLandscape.Width * 8 then FHighOffsetX := FLandscape.Width * 8 - FX - 1 else FHighOffsetX := FDrawDistance;
-  if FY + FDrawDistance >= FLandscape.Height * 8 then FHighOffsetY := FLandscape.Height * 8 - FY - 1 else FHighOffsetY := FDrawDistance;
-  {$HINTS on}{$WARNINGS on}
-
-  FRangeX := FHighOffsetX - FLowOffsetX;
-  FRangeY := FHighOffsetY - FLowOffsetY;
+  InvalidateScreenBuffer;
 end;
 
 procedure TfrmMain.pmGrabTileInfoPopup(Sender: TObject);
@@ -1546,6 +1539,7 @@ begin
     FY := AY;
     edY.Value := FY;
     dmNetwork.Send(TUpdateClientPosPacket.Create(AX, AY));
+    InvalidateScreenBuffer;
     Repaint;
     if frmRadarMap <> nil then frmRadarMap.Repaint;
   end;
@@ -1651,14 +1645,16 @@ begin
   glLoadIdentity;
 end;
 
+procedure TfrmMain.InvalidateScreenBuffer;
+begin
+  FScreenBufferValid := False;
+end;
+
 procedure TfrmMain.Render;
 var
   z: ShortInt;
   mat: TMaterial;
-  cell: TMapCell;
-  drawX, drawY: Single;
   staticItem: TStaticItem;
-  normals: TNormals;
   staticTileData: TStaticTileData;
   hue: THue;
   highlight, singleTarget, multiTarget: Boolean;
@@ -1673,7 +1669,8 @@ var
 begin
   tileRect := GetSelectedRect;
 
-  RebuildScreenBuffer;
+  if not FScreenBufferValid then
+    RebuildScreenBuffer;
   
   {if acFilter.Checked then
     staticsFilter := @frmFilter.Filter
@@ -1683,9 +1680,56 @@ begin
   blockInfo := nil;
   while FScreenBuffer.Iterate(blockInfo) do
   begin
+    if blockInfo^.State = ssFiltered then
+      Continue;
+
     item := blockInfo^.Item;
 
-    {GetMapDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
+    intensity := 1.0;
+    SetNormalLights;
+    glColor4f(intensity, intensity, intensity, 1.0);
+
+    if item is TMapCell then
+    begin
+      if blockInfo^.HighRes <> nil then
+      begin
+        glBindTexture(GL_TEXTURE_2D, blockInfo^.HighRes.Texture);
+        glBegin(GL_TRIANGLES);
+          glNormal3fv(@blockInfo^.Normals^[3]);
+          glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
+          glNormal3fv(@blockInfo^.Normals^[0]);
+          glTexCoord2f(0, 0); glVertex2fv(@blockInfo^.DrawQuad[0]);
+          glNormal3fv(@blockInfo^.Normals^[1]);
+          glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
+          glNormal3fv(@blockInfo^.Normals^[1]);
+          glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
+          glNormal3fv(@blockInfo^.Normals^[2]);
+          glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
+          glNormal3fv(@blockInfo^.Normals^[3]);
+          glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
+        glEnd;
+      end else
+      begin
+        glBindTexture(GL_TEXTURE_2D, blockInfo^.LowRes.Texture);
+        glBegin(GL_QUADS);
+          glTexCoord2f(0, 0); glVertex2fv(@blockInfo^.DrawQuad[0]);
+          glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
+          glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
+          glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
+        glEnd;
+      end;
+    end else
+    begin
+      glBindTexture(GL_TEXTURE_2D, blockInfo^.LowRes.Texture);
+      glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex2fv(@blockInfo^.DrawQuad[0]);
+        glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
+        glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
+        glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
+      glEnd;
+    end;
+
+    {GetDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
 
     singleTarget := (CurrentTile <> nil) and
                     (item.X = CurrentTile.X) and
@@ -2001,11 +2045,22 @@ var
   drawX, drawY: Single;
   west, south, east: Single;
   z: SmallInt;
-  drawQuad: PDrawQuad;
   staticItem: TStaticItem;
   hue: THue;
   staticTiledata: TStaticTiledata;
 begin
+  FDrawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width + oglGamewindow.Height * oglGamewindow.Height) / 44);
+
+  {$HINTS off}{$WARNINGS off}
+  if FX - FDrawDistance < 0 then FLowOffsetX := -FX else FLowOffsetX := -FDrawDistance;
+  if FY - FDrawDistance < 0 then FLowOffsetY := -FY else FLowOffsetY := -FDrawDistance;
+  if FX + FDrawDistance >= FLandscape.Width * 8 then FHighOffsetX := FLandscape.Width * 8 - FX - 1 else FHighOffsetX := FDrawDistance;
+  if FY + FDrawDistance >= FLandscape.Height * 8 then FHighOffsetY := FLandscape.Height * 8 - FY - 1 else FHighOffsetY := FDrawDistance;
+  {$HINTS on}{$WARNINGS on}
+
+  FRangeX := FHighOffsetX - FLowOffsetX;
+  FRangeY := FHighOffsetY - FLowOffsetY;
+
   FLandscape.PrepareBlocks((FX + FLowOffsetX) div 8, (FY + FLowOffsetY) div 8, (FX + FHighOffsetX) div 8 + 1, (FY + FHighOffsetY) div 8 + 1);
   PrepareVirtualLayer(FDrawDistance * 2 + 1, FDrawDistance * 2 + 1);
 
@@ -2022,6 +2077,8 @@ begin
   while FScreenBuffer.Iterate(blockInfo) do
   begin
     item := blockInfo^.Item;
+
+    GetDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
 
     if acFlat.Checked then
       z := 0
@@ -2042,20 +2099,32 @@ begin
         end;
       end;
 
+      blockInfo^.LowRes := FTextureManager.GetArtMaterial(item.TileID);
+      blockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44);
+
       if blockInfo^.HighRes <> nil then
       begin
         New(blockInfo^.Normals);
         FLandscape.GetNormals(item.X, item.Y, blockInfo^.Normals^);
-        New(blockInfo^.DrawQuad);
-        drawQuad := blockInfo^.DrawQuad;
-        drawQuad^[0] := Vector(drawX, drawY - z * 4);
-        drawQuad^[1] := Vector(drawX + 22, drawY + 22 - east * 4);
-        drawQuad^[2] := Vector(drawX, drawY + 44 - south * 4);
-        drawQuad^[3] := Vector(drawX - 22, drawY + 22 - west * 4);
+        blockInfo^.DrawQuad[0][0] := drawX;
+        blockInfo^.DrawQuad[0][1] := drawY - z * 4;
+        blockInfo^.DrawQuad[1][0] := drawX + 22;
+        blockInfo^.DrawQuad[1][1] := drawY + 22 - east * 4;
+        blockInfo^.DrawQuad[2][0] := drawX;
+        blockInfo^.DrawQuad[2][1] := drawY + 44 - south * 4;
+        blockInfo^.DrawQuad[3][0] := drawX - 22;
+        blockInfo^.DrawQuad[3][1] := drawY + 22 - west * 4;
+      end else
+      begin
+        blockInfo^.DrawQuad[0][0] := drawX - 22;
+        blockInfo^.DrawQuad[0][1] := drawY - z * 4;
+        blockInfo^.DrawQuad[1][0] := drawX - 22 + blockInfo^.LowRes.Width;
+        blockInfo^.DrawQuad[1][1] := drawY - z * 4;
+        blockInfo^.DrawQuad[2][0] := drawX - 22 + blockInfo^.LowRes.Width;
+        blockInfo^.DrawQuad[2][1] := drawY + blockInfo^.LowRes.Height - z * 4;
+        blockInfo^.DrawQuad[3][0] := drawX - 22;
+        blockInfo^.DrawQuad[3][1] := drawY + blockInfo^.LowRes.Height - z * 4;
       end;
-
-      blockInfo^.LowRes := FTextureManager.GetArtMaterial(item.TileID);
-      blockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44);
     end else
     begin
       staticItem := TStaticItem(item);
@@ -2071,8 +2140,22 @@ begin
         Trunc(drawY + 44 - blockInfo^.LowRes.RealHeight - z * 4),
         blockInfo^.LowRes.RealWidth,
         Trunc(blockInfo^.LowRes.RealHeight));
+
+      south := blockInfo^.LowRes.RealHeight;
+      east := blockInfo^.LowRes.RealWidth div 2;
+
+      blockInfo^.DrawQuad[0][0] := drawX - east;
+      blockInfo^.DrawQuad[0][1] := drawY + 44 - south - z * 4;
+      blockInfo^.DrawQuad[1][0] := drawX - east + blockInfo^.LowRes.Width;
+      blockInfo^.DrawQuad[1][1] := drawY + 44 - south - z * 4;
+      blockInfo^.DrawQuad[2][0] := drawX - east + blockInfo^.LowRes.Width;
+      blockInfo^.DrawQuad[2][1] := drawY + 44 - south + blockInfo^.LowRes.Height - z * 4;
+      blockInfo^.DrawQuad[3][0] := drawX - east;
+      blockInfo^.DrawQuad[3][1] := drawY + 44 - south + blockInfo^.LowRes.Height - z * 4;
     end;
   end;
+
+  FScreenBufferValid := True;
 end;
 
 procedure TfrmMain.UpdateCurrentTile;
@@ -2310,7 +2393,7 @@ begin
 end;
 
 procedure TfrmMain.GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
-  DrawY: Single);
+  DrawY: Single); inline;
 begin
   DrawX := (oglGameWindow.Width div 2) + (ARelativeX - ARelativeY) * 22;
   DrawY := (oglGamewindow.Height div 2) + (ARelativeX + ARelativeY) * 22;

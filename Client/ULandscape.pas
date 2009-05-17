@@ -152,14 +152,12 @@ type
       APrioritySolver: Integer);
   end;
 
-  TScreenState = (tsNormal, tsFiltered, tsGhost);
-  PDrawQuad = ^TDrawQuad;
-  TDrawQuad = array[0..3] of TVector2D;
+  TScreenState = (ssNormal, ssFiltered, ssGhost);
 
   PBlockInfo = ^TBlockInfo;
   TBlockInfo = record
     ScreenRect: TRect;
-    DrawQuad: PDrawQuad;
+    DrawQuad: array[0..3,0..1] of TGLfloat;
     Item: TWorldItem;
     HighRes: TMaterial;
     LowRes: TMaterial;
@@ -1042,7 +1040,6 @@ begin
       if last <> nil then last^.Next := current^.Next;
 
       if current^.Normals <> nil then Dispose(current^.Normals);
-      if current^.DrawQuad <> nil then Dispose(current^.DrawQuad);
 
       Dispose(current);
       next := nil;
@@ -1073,7 +1070,6 @@ begin
     current^.Item.Locked := False;
     current^.Item.OnDestroy.UnregisterEvent(@OnTileRemoved);
     if current^.Normals <> nil then Dispose(current^.Normals);
-    if current^.DrawQuad <> nil then Dispose(current^.DrawQuad);
     Dispose(current);
     current := next;
   end;
@@ -1091,7 +1087,7 @@ begin
   current := FFirst;
   while (current <> nil) and (Result = nil) do
   begin
-    if (current^.State = tsNormal) and
+    if (current^.State = ssNormal) and
        PtInRect(current^.ScreenRect, AScreenPosition) and
        current^.LowRes.HitTest(AScreenPosition.x - current^.ScreenRect.Left,
                                AScreenPosition.y - current^.ScreenRect.Top) then
@@ -1116,11 +1112,10 @@ begin
   AItem.Locked := True;
   AItem.OnDestroy.RegisterEvent(@OnTileRemoved);
   Result^.Item := AItem;
-  Result^.DrawQuad := nil;
   Result^.HighRes := nil;
   Result^.LowRes := nil;
   Result^.Normals := nil;
-  Result^.State := tsNormal;
+  Result^.State := ssNormal;
 
   if (FFirst = nil) or (CompareWorldItems(AItem, FFirst) > 0) then
   begin
@@ -1131,7 +1126,7 @@ begin
   end else
   begin
     current := FFirst;
-    while (current^.Next = nil) and
+    while (current^.Next <> nil) and
           (CompareWorldItems(AItem, current^.Next^.Item) > 0) do
     begin
       current := current^.Next;
