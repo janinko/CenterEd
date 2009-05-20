@@ -838,6 +838,7 @@ begin
     oglGameWindow.Repaint;
     FLastDraw := Now;
   end;
+  Done := False;
 end;
 
 procedure TfrmMain.btnAddLocationClick(Sender: TObject);
@@ -1540,7 +1541,6 @@ begin
     edY.Value := FY;
     dmNetwork.Send(TUpdateClientPosPacket.Create(AX, AY));
     InvalidateScreenBuffer;
-    Repaint;
     if frmRadarMap <> nil then frmRadarMap.Repaint;
   end;
 end;
@@ -1921,6 +1921,7 @@ end;
 
 procedure TfrmMain.OnLandscapeChanged;
 begin
+  InvalidateScreenBuffer;
   oglGameWindow.Repaint;
   UpdateCurrentTile;
 end;
@@ -2155,6 +2156,7 @@ begin
     end;
   end;
 
+  FScreenBuffer.UpdateShortcuts;
   FScreenBufferValid := True;
 end;
 

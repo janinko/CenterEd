@@ -166,37 +166,28 @@ type
     Next: PBlockInfo;
   end;
 
-  { TTileList }
+  { TScreenBuffer }
 
-  TTileList = class(TObject)
+  TScreenBuffer = class(TObject)
     constructor Create; virtual;
     destructor Destroy; override;
   protected
-    { Fields }
-    FFirst: PBlockInfo;
-    FLastBlock: PBlockInfo;
-  public
-    { Methods }
-    procedure Clear; virtual;
-    function Iterate(var ABlockInfo: PBlockInfo): Boolean; virtual;
-    procedure Add(AItem: TWorldItem); virtual;
-    procedure Delete(AItem: TWorldItem); virtual;
-    property LastBlock: PBlockInfo read FLastBlock;
-  end;
-
-  { TScreenBuffer }
-
-  TScreenBuffer = class(TTileList)
-    constructor Create; override;
-  protected
     { Members }
+    FCount: Cardinal;
+    FShortCuts: array[-1..10] of PBlockInfo; //-1 = last, 0 = first, 1..10 = other shortcuts
+    FShortCutsValid: Boolean;
     FSerial: Cardinal;
   public
     { Methods }
-    procedure Clear; override;
+    function Add(AItem: TWorldItem): PBlockInfo;
+    procedure Clear;
+    procedure Delete(AItem: TWorldItem);
     function Find(AScreenPosition: TPoint): PBlockInfo;
     function GetSerial: Cardinal;
-    function Store(AItem: TWorldItem): PBlockInfo;
+    function Iterate(var ABlockInfo: PBlockInfo): Boolean;
+    function Insert(AItem: TWorldItem): PBlockInfo;
+    procedure Sort;
+    procedure UpdateShortcuts;
     { Events }
     procedure OnTileRemoved(ATile: TMulBlock);
   end;
@@ -704,6 +695,7 @@ var
   i, x, y: Integer;
 begin
   for x := AX to AX + AWidth do
+  begin
     for y := AY to AY + AWidth do
     begin
       if AMap then
@@ -717,7 +709,7 @@ begin
             drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
             drawMapCell.PriorityBonus := 0;
             drawMapCell.PrioritySolver := 0;
-            ADrawList.Store(drawMapCell);
+            ADrawList.Add(drawMapCell);
           end;
         end;
       end;
@@ -732,10 +724,12 @@ begin
                ((AStaticsFilter = nil) or AStaticsFilter(TStaticItem(drawStatics[i]))) then
             begin
               UpdateStaticsPriority(TStaticItem(drawStatics[i]), ADrawList.GetSerial);
-              ADrawList.Store(TWorldItem(drawStatics[i]));
+              ADrawList.Add(TWorldItem(drawStatics[i]));
             end;
       end;
     end;
+  end;
+  ADrawList.Sort;
 end;
 
 function TLandscape.GetEffectiveAltitude(ATile: TMapCell): ShortInt;
@@ -974,96 +968,52 @@ begin
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 end;
 
-{ TTileList }
-
-constructor TTileList.Create;
-begin
-  inherited Create;
-  FFirst := nil;
-  FLastBlock := nil;
-end;
-
-destructor TTileList.Destroy;
-begin
-  Clear;
-  inherited Destroy;
-end;
-
-procedure TTileList.Clear;
-var
-  current, next: PBlockInfo;
-begin
-  current := FFirst;
-  while current <> nil do
-  begin
-    next := current^.Next;
-    Dispose(current);
-    current := next;
-  end;
-  FFirst := nil;
-  FLastBlock := nil;
-end;
-
-function TTileList.Iterate(var ABlockInfo: PBlockInfo): Boolean;
-begin
-  if ABlockInfo = nil then
-    ABlockInfo := FFirst
-  else
-    ABlockInfo := ABlockInfo^.Next;
-  Result := ABlockInfo <> nil;
-end;
-
-procedure TTileList.Add(AItem: TWorldItem);
-var
-  current: PBlockInfo;
-begin
-  New(current);
-  current^.Item := AItem;
-  current^.Next := nil;
-  if FFirst = nil then FFirst := current;
-  if FLastBlock <> nil then FLastBlock^.Next := current;
-  FLastBlock := current;
-end;
-
-procedure TTileList.Delete(AItem: TWorldItem);
-var
-  current, last, next: PBlockInfo;
-begin
-  last := nil;
-  current := FFirst;
-  while current <> nil do
-  begin
-    if current^.Item = AItem then
-    begin
-      if FFirst = current then FFirst := current^.Next;
-      if FLastBlock = current then FLastBlock := last;
-      if last <> nil then last^.Next := current^.Next;
-
-      if current^.Normals <> nil then Dispose(current^.Normals);
-
-      Dispose(current);
-      next := nil;
-    end else
-      next := current^.Next;
-
-    last := current;
-    current := next;
-  end;
-end;
-
 { TScreenBuffer }
 
 constructor TScreenBuffer.Create;
 begin
   inherited Create;
+  FCount := 0;
   FSerial := 0;
+  UpdateShortcuts;
+end;
+
+destructor TScreenBuffer.Destroy;
+begin
+  Clear;
+  inherited Destroy;
+end;
+
+function TScreenBuffer.Add(AItem: TWorldItem): PBlockInfo;
+begin
+  New(Result);
+  AItem.Locked := True;
+  AItem.OnDestroy.RegisterEvent(@OnTileRemoved);
+  Result^.Item := AItem;
+  Result^.HighRes := nil;
+  Result^.LowRes := nil;
+  Result^.Normals := nil;
+  Result^.State := ssNormal;
+  Result^.Next := nil;
+
+  if FShortCuts[0] = nil then //First element
+  begin
+    FShortCuts[0] := Result;
+    FShortCuts[-1] := Result; //Last element
+  end else
+  begin
+    FShortCuts[-1]^.Next := Result;
+    FShortCuts[-1] := Result;
+  end;
+
+  Inc(FCount);
 end;
 
 procedure TScreenBuffer.Clear;
 var
   current, next: PBlockInfo;
 begin
-  current := FFirst;
+  current := FShortCuts[0];
   while current <> nil do
   begin
     next := current^.Next;
@@ -1073,10 +1023,41 @@ begin
     Dispose(current);
     current := next;
   end;
-  FFirst := nil;
-  FLastBlock := nil;
+  FShortCuts[0] := nil;
+  FShortCuts[-1] := nil;
 
+  FCount := 0;
   FSerial := 0;
+
+  UpdateShortcuts;
+end;
+
+procedure TScreenBuffer.Delete(AItem: TWorldItem);
+var
+  current, last, next: PBlockInfo;
+begin
+  last := nil;
+  current := FShortCuts[0];
+  while current <> nil do
+  begin
+    if current^.Item = AItem then
+    begin
+      if FShortCuts[-1] = current then FShortCuts[-1] := last;
+      if FShortCuts[0] = current then FShortCuts[0] := current^.Next;
+      if last <> nil then last^.Next := current^.Next;
+
+      if current^.Normals <> nil then Dispose(current^.Normals);
+
+      Dispose(current);
+      Dec(FCount);
+      FShortCutsValid := False;
+      next := nil;
+    end else
+      next := current^.Next;
+
+    last := current;
+    current := next;
+  end;
 end;
 
 function TScreenBuffer.Find(AScreenPosition: TPoint): PBlockInfo;
@@ -1084,7 +1065,7 @@ var
   current: PBlockInfo;
 begin
   Result := nil;
-  current := FFirst;
+  current := FShortCuts[0];
   while (current <> nil) and (Result = nil) do
   begin
     if (current^.State = ssNormal) and
@@ -1104,10 +1085,23 @@ begin
   Inc(FSerial);
 end;
 
-function TScreenBuffer.Store(AItem: TWorldItem): PBlockInfo;
+function TScreenBuffer.Iterate(var ABlockInfo: PBlockInfo): Boolean;
+begin
+  if ABlockInfo = nil then
+    ABlockInfo := FShortCuts[0]
+  else
+    ABlockInfo := ABlockInfo^.Next;
+  Result := ABlockInfo <> nil;
+end;
+
+function TScreenBuffer.Insert(AItem: TWorldItem): PBlockInfo;
 var
   current: PBlockInfo;
+  shortcut: Integer;
 begin
+  if not FShortCutsValid then
+    UpdateShortcuts;
+
   New(Result);
   AItem.Locked := True;
   AItem.OnDestroy.RegisterEvent(@OnTileRemoved);
@@ -1117,27 +1111,118 @@ begin
   Result^.Normals := nil;
   Result^.State := ssNormal;
 
-  if (FFirst = nil) or (CompareWorldItems(AItem, FFirst) > 0) then
+  if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]) > 0) then
   begin
-    Result^.Next := FFirst;
-    if FFirst = nil then
-      FLastBlock := Result;
-    FFirst := Result;
+    //TODO : update last element if necessary
+    Result^.Next := FShortCuts[0];
+    FShortCuts[0] := Result;
   end else
   begin
-    current := FFirst;
+    //find best entry point
+    shortcut := 0;
+    while (shortcut <= 10) and (FShortCuts[shortcut] <> nil) and
+      (CompareWorldItems(AItem, FShortCuts[shortcut]) <= 0) do
+    begin
+      current := FShortCuts[shortcut];
+      Inc(shortcut);
+    end;
+
+    //now find the real match
     while (current^.Next <> nil) and
           (CompareWorldItems(AItem, current^.Next^.Item) > 0) do
     begin
       current := current^.Next;
     end;
-
-    if current^.Next = nil then
-      FLastBlock := Result;
+    //TODO : update last element if necessary
 
     Result^.Next := current^.Next;
     current^.Next := Result;
   end;
+
+  Inc(FCount);
+end;
+
+//Mergesort
+procedure TScreenBuffer.Sort;
+
+  function Merge(AHead1, AHead2: PBlockInfo): PBlockInfo;
+  begin
+    if AHead1 = nil then
+      Exit(AHead2);
+
+    if AHead2 = nil then
+      Exit(AHead1);
+
+    if CompareWorldItems(AHead1^.Item, AHead2^.Item) < 0 then
+    begin
+      Result := AHead1;
+      Result^.Next := Merge(Result^.Next, AHead2);
+    end else
+    begin
+      Result := AHead2;
+      Result^.Next := Merge(AHead1, Result^.Next);
+    end;
+  end;
+
+  function MergeSort(AHead: PBlockInfo): PBlockInfo;
+  var
+    head1, head2: PBlockInfo;
+  begin
+    if (AHead <> nil) and (AHead^.Next <> nil) then
+    begin
+      head1 := AHead;
+      head2 := AHead^.Next;
+      while (head2 <> nil) and (head2^.Next <> nil) do
+      begin
+        AHead := AHead^.Next;
+        head2 := AHead^.Next^.Next;
+      end;
+      head2 := AHead^.Next;
+      AHead^.Next := nil;
+
+      Result := Merge(MergeSort(head1), MergeSort(head2));
+    end else
+      Result := AHead;
+  end;
+
+begin
+  if FShortCuts[0] <> nil then
+    FShortCuts[0] := MergeSort(FShortCuts[0]);
+  UpdateShortcuts;
+end;
+
+procedure TScreenBuffer.UpdateShortcuts;
+var
+  shortcut, step, nextStep, stepSize: Integer;
+  blockInfo: PBlockInfo;
+begin
+  if FCount < 10 then
+  begin
+    for shortcut := 1 to 10 do
+      FShortCuts[shortcut] := nil;
+  end
+  else if FShortCuts[0] <> nil then
+  begin
+    stepSize := FCount div 10;
+    nextStep := stepSize;
+    step := 0;
+    shortcut := 1;
+    blockInfo := FShortCuts[0];
+    repeat
+      if step = nextStep then
+      begin
+        FShortCuts[shortcut] := blockInfo;
+        Inc(shortcut);
+        Inc(nextStep, stepSize);
+      end;
+
+      Inc(step);
+
+      FShortCuts[-1] := blockInfo; //update last known item
+      blockInfo := blockInfo^.Next;
+    until (blockInfo = nil);
+  end;
+  FShortCutsValid := True;
 end;
 
 procedure TScreenBuffer.OnTileRemoved(ATile: TMulBlock);

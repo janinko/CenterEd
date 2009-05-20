@@ -1,5 +1,5 @@
 object frmMain: TfrmMain
-  Left = 232
+  Left = 229
   Height = 603
   Top = 126
   Width = 766
@@ -1076,7 +1076,7 @@ object frmMain: TfrmMain
   object MainMenu1: TMainMenu
     Images = ImageList1
     left = 232
-    top = 32
+    top = 33
     object mnuCentrED: TMenuItem
       Caption = '&CentrED'
       object mnuDisconnect: TMenuItem
