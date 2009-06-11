@@ -532,9 +532,7 @@ object frmMain: TfrmMain
             Height = 25
             Top = 0
             Width = 152
-            AutoComplete = False
             ItemHeight = 0
-            ItemWidth = 0
             OnChange = cbRandomPresetChange
             Style = csDropDownList
             TabOrder = 0

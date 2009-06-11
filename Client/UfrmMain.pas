@@ -1694,19 +1694,15 @@ begin
       if blockInfo^.HighRes <> nil then
       begin
         glBindTexture(GL_TEXTURE_2D, blockInfo^.HighRes.Texture);
-        glBegin(GL_TRIANGLES);
-          glNormal3fv(@blockInfo^.Normals^[3]);
-          glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
+        glBegin(GL_QUADS);
           glNormal3fv(@blockInfo^.Normals^[0]);
           glTexCoord2f(0, 0); glVertex2fv(@blockInfo^.DrawQuad[0]);
-          glNormal3fv(@blockInfo^.Normals^[1]);
-          glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
-          glNormal3fv(@blockInfo^.Normals^[1]);
-          glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
-          glNormal3fv(@blockInfo^.Normals^[2]);
-          glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
           glNormal3fv(@blockInfo^.Normals^[3]);
           glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
+          glNormal3fv(@blockInfo^.Normals^[2]);
+          glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
+          glNormal3fv(@blockInfo^.Normals^[1]);
+          glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
         glEnd;
       end else
       begin
