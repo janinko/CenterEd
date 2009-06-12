@@ -741,10 +741,10 @@ begin
   south := GetLandAlt(ATile.X + 1, ATile.Y + 1, north);
   east := GetLandAlt(ATile.X + 1, ATile.Y, north);
 
-  if Abs(north - south) > Abs(west - east) then
-    Result := (north + south) div 2
+  if Abs(north - south) >= Abs(west - east) then
+    Result := Min(north, south) + Abs(west - east) div 2
   else
-    Result := (west + east) div 2;
+    Result := Min(north, south) + Abs(north - south) div 2;
 end;
 
 function TLandscape.GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
