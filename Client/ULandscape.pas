@@ -163,6 +163,7 @@ type
     LowRes: TMaterial;
     Normals: PNormals;
     State: TScreenState;
+    Highlighted: Boolean;
     Next: PBlockInfo;
   end;
 
@@ -994,6 +995,7 @@ begin
   Result^.LowRes := nil;
   Result^.Normals := nil;
   Result^.State := ssNormal;
+  Result^.Highlighted := False;
   Result^.Next := nil;
 
   if FShortCuts[0] = nil then //First element
@@ -1110,6 +1112,7 @@ begin
   Result^.LowRes := nil;
   Result^.Normals := nil;
   Result^.State := ssNormal;
+  Result^.Highlighted := False;
 
   if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]) > 0) then
   begin

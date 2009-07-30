@@ -314,6 +314,7 @@ type
     procedure SetY(const AValue: Integer);
     procedure UpdateCurrentTile;
     procedure UpdateCurrentTile(AX, AY: Integer);
+    procedure UpdateSelection;
     procedure WriteChatMessage(ASender, AMessage: string);
     { Events }
     procedure OnClientHandlingPacket(ABuffer: TEnhancedMemoryStream);
@@ -1587,6 +1588,8 @@ begin
   FCurrentTile := AValue;
   if FCurrentTile <> nil then
     FCurrentTile.OnDestroy.RegisterEvent(@OnTileRemoved);
+
+  UpdateSelection;
 end;
 
 procedure TfrmMain.SetSelectedTile(const AValue: TWorldItem);
@@ -1596,6 +1599,8 @@ begin
   FSelectedTile := AValue;
   if FSelectedTile <> nil then
     FSelectedTile.OnDestroy.RegisterEvent(@OnTileRemoved);
+
+  UpdateSelection;
 end;
 
 procedure TfrmMain.SetNormalLights;
@@ -1657,7 +1662,7 @@ var
   staticItem: TStaticItem;
   staticTileData: TStaticTileData;
   hue: THue;
-  highlight, singleTarget, multiTarget: Boolean;
+  highlight: Boolean;
   ghostTile: TWorldItem;
   tileRect: TRect;
   virtualTile: TVirtualTile;
@@ -1685,9 +1690,28 @@ begin
 
     item := blockInfo^.Item;
 
-    intensity := 1.0;
-    SetNormalLights;
+    //TODO : implement CanBeEdited handling (dmNetwork.CanWrite.....)
+    if acSelect.Checked or item.CanBeEdited then
+    begin
+      editing := True;
+      intensity := 1.0;
+      SetNormalLights;
+    end else
+    begin
+      editing := False;
+      intensity := 0.5;
+      SetDarkLights;
+    end;
+
     glColor4f(intensity, intensity, intensity, 1.0);
+
+    highlight := item.CanBeEdited and blockInfo^.Highlighted;
+
+    if highlight then
+    begin
+      glEnable(GL_COLOR_LOGIC_OP);
+      glLogicOp(GL_COPY_INVERTED);
+    end;
 
     if item is TMapCell then
     begin
@@ -1725,27 +1749,10 @@ begin
       glEnd;
     end;
 
+    if highlight then
+      glDisable(GL_COLOR_LOGIC_OP);
+
     {GetDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
-
-    singleTarget := (CurrentTile <> nil) and
-                    (item.X = CurrentTile.X) and
-                    (item.Y = CurrentTile.Y);
-    multiTarget := (CurrentTile <> nil) and
-                   (SelectedTile <> nil) and
-                   (CurrentTile <> SelectedTile) and
-                   PtInRect(tileRect, Point(item.X, item.Y));
-
-    if acSelect.Checked or item.CanBeEdited then
-    begin
-      editing := True;
-      intensity := 1.0;
-      SetNormalLights;
-    end else
-    begin
-      editing := False;
-      intensity := 0.5;
-      SetDarkLights;
-    end;
 
     {if editing and acDraw.Checked and (singleTarget or multiTarget) then
     begin
@@ -1906,10 +1913,8 @@ begin
 
       if TObject(draw[i]) <> ghostTile then
         FScreenBuffer.Store(Bounds(Trunc(drawX - east), Trunc(drawY + 44 - south - z * 4), mat.RealWidth, Trunc(south)), staticItem, mat);
-    end;
+    end;}
 
-    if highlight then
-      glDisable(GL_COLOR_LOGIC_OP);}
   end;
 
   FOverlayUI.Draw(oglGameWindow);
@@ -2198,6 +2203,39 @@ begin
         end else
           FGhostTile.Z := frmDrawSettings.seForceAltitude.Value;
       end;
+    end;
+  end;
+end;
+
+procedure TfrmMain.UpdateSelection;
+var
+  selectedRect: TRect;
+  blockInfo: PBlockInfo;
+begin
+  if acSelect.Checked then
+  begin
+    //no highlighted tiles in "selection" mode
+    blockInfo := nil;
+    while FScreenBuffer.Iterate(blockInfo) do
+      if blockInfo^.State = ssNormal then
+        blockInfo^.Highlighted := False;
+    Exit;
+  end;
+
+  if CurrentTile <> nil then
+  begin
+    blockInfo := nil;
+    if (SelectedTile <> nil) and (CurrentTile <> SelectedTile) then
+    begin
+      selectedRect := GetSelectedRect;
+      while FScreenBuffer.Iterate(blockInfo) do
+        if blockInfo^.State = ssNormal then
+          blockInfo^.Highlighted := PtInRect(selectedRect, Point(blockInfo^.Item.X, blockInfo^.Item.Y));
+    end else
+    begin
+      while FScreenBuffer.Iterate(blockInfo) do
+        if blockInfo^.State = ssNormal then
+          blockInfo^.Highlighted := (blockInfo^.Item = CurrentTile);
     end;
   end;
 end;
