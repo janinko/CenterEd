@@ -2133,10 +2133,10 @@ begin
         hue := nil;
 
       blockInfo^.LowRes := FTextureManager.GetArtMaterial($4000 + staticItem.TileID, hue, (staticTileData.Flags and tdfPartialHue) = tdfPartialHue);
-      blockInfo^.ScreenRect := Bounds(Trunc(drawX - blockInfo^.LowRes.RealWidth div 2),
+      blockInfo^.ScreenRect := Bounds(Trunc(drawX - blockInfo^.LowRes.RealWidth / 2),
         Trunc(drawY + 44 - blockInfo^.LowRes.RealHeight - z * 4),
         blockInfo^.LowRes.RealWidth,
-        Trunc(blockInfo^.LowRes.RealHeight));
+        blockInfo^.LowRes.RealHeight);
 
       south := blockInfo^.LowRes.RealHeight;
       east := blockInfo^.LowRes.RealWidth div 2;

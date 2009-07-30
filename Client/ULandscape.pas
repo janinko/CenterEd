@@ -1066,7 +1066,7 @@ var
 begin
   Result := nil;
   current := FShortCuts[0];
-  while (current <> nil) and (Result = nil) do
+  while current <> nil do //search the last matching tile
   begin
     if (current^.State = ssNormal) and
        PtInRect(current^.ScreenRect, AScreenPosition) and

@@ -116,17 +116,17 @@ object frmMain: TfrmMain
     TabOrder = 1
     object tsTiles: TTabSheet
       Caption = 'Tiles'
-      ClientHeight = 500
-      ClientWidth = 222
+      ClientHeight = 492
+      ClientWidth = 218
       object pnlTileListSettings: TPanel
         Left = 0
         Height = 56
         Top = 0
-        Width = 222
+        Width = 218
         Align = alTop
         BevelOuter = bvNone
         ClientHeight = 56
-        ClientWidth = 222
+        ClientWidth = 218
         TabOrder = 0
         object lblFilter: TLabel
           Left = 84
@@ -138,9 +138,9 @@ object frmMain: TfrmMain
         end
         object cbTerrain: TCheckBox
           Left = 4
-          Height = 18
+          Height = 22
           Top = 8
-          Width = 57
+          Width = 61
           Caption = 'Terrain'
           Checked = True
           OnChange = cbTerrainChange
@@ -149,9 +149,9 @@ object frmMain: TfrmMain
         end
         object cbStatics: TCheckBox
           Left = 4
-          Height = 18
+          Height = 22
           Top = 32
-          Width = 56
+          Width = 60
           Caption = 'Statics'
           Checked = True
           OnChange = cbStaticsChange
@@ -170,9 +170,9 @@ object frmMain: TfrmMain
       object vdtTiles: TVirtualDrawTree
         Tag = 1
         Left = 0
-        Height = 246
+        Height = 238
         Top = 56
-        Width = 222
+        Width = 218
         Align = alClient
         DefaultNodeHeight = 44
         DragMode = dmAutomatic
@@ -216,12 +216,12 @@ object frmMain: TfrmMain
       object gbRandom: TGroupBox
         Left = 0
         Height = 193
-        Top = 307
-        Width = 222
+        Top = 299
+        Width = 218
         Align = alBottom
         Caption = 'Random pool'
         ClientHeight = 179
-        ClientWidth = 220
+        ClientWidth = 216
         TabOrder = 2
         object vdtRandom: TVirtualDrawTree
           Tag = 1
@@ -229,7 +229,7 @@ object frmMain: TfrmMain
           Left = 0
           Height = 127
           Top = 22
-          Width = 220
+          Width = 216
           Align = alClient
           DefaultNodeHeight = 44
           DragType = dtVCL
@@ -267,11 +267,11 @@ object frmMain: TfrmMain
           Left = 0
           Height = 22
           Top = 0
-          Width = 220
+          Width = 216
           Align = alTop
           BevelOuter = bvNone
           ClientHeight = 22
-          ClientWidth = 220
+          ClientWidth = 216
           TabOrder = 1
           object btnAddRandom: TSpeedButton
             Left = 2
@@ -422,12 +422,12 @@ object frmMain: TfrmMain
           Left = 4
           Height = 22
           Top = 153
-          Width = 212
+          Width = 208
           Align = alBottom
           BorderSpacing.Around = 4
           BevelOuter = bvNone
           ClientHeight = 22
-          ClientWidth = 212
+          ClientWidth = 208
           TabOrder = 2
           object btnRandomPresetSave: TSpeedButton
             Left = 158
@@ -529,7 +529,7 @@ object frmMain: TfrmMain
           end
           object cbRandomPreset: TComboBox
             Left = 0
-            Height = 25
+            Height = 29
             Top = 0
             Width = 152
             ItemHeight = 0
@@ -543,8 +543,8 @@ object frmMain: TfrmMain
         Cursor = crVSplit
         Left = 0
         Height = 5
-        Top = 302
-        Width = 222
+        Top = 294
+        Width = 218
         Align = alBottom
         ResizeAnchor = akBottom
       end
@@ -565,13 +565,13 @@ object frmMain: TfrmMain
     end
     object tsClients: TTabSheet
       Caption = 'Clients'
-      ClientHeight = 500
-      ClientWidth = 222
+      ClientHeight = 492
+      ClientWidth = 218
       object lbClients: TListBox
         Left = 0
-        Height = 500
+        Height = 492
         Top = 0
-        Width = 222
+        Width = 218
         Align = alClient
         ItemHeight = 0
         OnDblClick = mnuGoToClientClick
@@ -583,14 +583,14 @@ object frmMain: TfrmMain
     end
     object tsLocations: TTabSheet
       Caption = 'Locations'
-      ClientHeight = 500
-      ClientWidth = 222
+      ClientHeight = 492
+      ClientWidth = 218
       object vstLocations: TVirtualStringTree
         Cursor = 63
         Left = 4
-        Height = 464
+        Height = 456
         Top = 4
-        Width = 214
+        Width = 210
         Align = alClient
         BorderSpacing.Around = 4
         BorderStyle = bsSingle
@@ -605,7 +605,7 @@ object frmMain: TfrmMain
           item
             Position = 1
             Text = 'Name'
-            Width = 135
+            Width = 131
           end>
         Header.DefaultHeight = 17
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
@@ -625,13 +625,13 @@ object frmMain: TfrmMain
       object pnlLocationControls: TPanel
         Left = 4
         Height = 24
-        Top = 472
-        Width = 214
+        Top = 464
+        Width = 210
         Align = alBottom
         BorderSpacing.Around = 4
         BevelOuter = bvNone
         ClientHeight = 24
-        ClientWidth = 214
+        ClientWidth = 210
         TabOrder = 1
         object btnClearLocations: TSpeedButton
           Left = 112
@@ -987,7 +987,7 @@ object frmMain: TfrmMain
         Left = 10
         Height = 20
         Top = 2
-        Width = 95
+        Width = 104
         Align = alLeft
         BorderSpacing.Left = 8
         Caption = 'Chat and Messages'
