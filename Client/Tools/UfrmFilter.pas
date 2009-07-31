@@ -111,8 +111,9 @@ procedure TfrmFilter.FormShow(Sender: TObject);
 var
   upperLeft, lowerLeft: TPoint;
 begin
-  upperLeft := frmMain.pnlMain.ClientToScreen(Point(0, 0));
-  lowerLeft := frmMain.pnlMain.ClientToScreen(Point(0, frmMain.pnlMain.Height));
+  upperLeft := frmMain.pcLeft.ClientToScreen(Point(frmMain.pcLeft.Width, 0));
+  lowerLeft := frmMain.pcLeft.ClientToScreen(Point(frmMain.pcLeft.Width,
+    frmMain.pcLeft.Height));
   Left := upperLeft.x;
   Top := upperLeft.y;
   Height := lowerLeft.y - upperLeft.y;

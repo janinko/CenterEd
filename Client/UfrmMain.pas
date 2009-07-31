@@ -60,30 +60,35 @@ type
     ActionList1: TActionList;
     ApplicationProperties1: TApplicationProperties;
     btnAddLocation: TSpeedButton;
+    btnAddRandom: TSpeedButton;
     btnClearLocations: TSpeedButton;
+    btnClearRandom: TSpeedButton;
     btnDeleteLocation: TSpeedButton;
+    btnDeleteRandom: TSpeedButton;
     btnGoTo: TButton;
+    btnRandomPresetDelete: TSpeedButton;
+    btnRandomPresetSave: TSpeedButton;
     cbRandomPreset: TComboBox;
-    cbTerrain: TCheckBox;
     cbStatics: TCheckBox;
-    edFilter: TEdit;
+    cbTerrain: TCheckBox;
     edChat: TEdit;
+    edFilter: TEdit;
     edSearchID: TEdit;
     gbRandom: TGroupBox;
     ImageList1: TImageList;
     lblChatHeaderCaption: TLabel;
+    lblFilter: TLabel;
     lblTipC: TLabel;
     lblTip: TLabel;
     lblTileInfo: TLabel;
-    lblFilter: TLabel;
     lblX: TLabel;
     lblY: TLabel;
     lbClients: TListBox;
     MainMenu1: TMainMenu;
+    mnuGrabHue: TMenuItem;
+    mnuGrabTileID: TMenuItem;
     mnuRegionControl: TMenuItem;
     mnuVirtualLayer: TMenuItem;
-    mnuGrabTileID: TMenuItem;
-    mnuGrabHue: TMenuItem;
     mnuLargeScaleCommands: TMenuItem;
     mnuSetHue: TMenuItem;
     mnuGoToClient: TMenuItem;
@@ -107,27 +112,17 @@ type
     mnuDisconnect: TMenuItem;
     mnuCentrED: TMenuItem;
     oglGameWindow: TOpenGLControl;
-    pnlRandomPreset: TPanel;
-    pnlLocationControls: TPanel;
-    pnlChat: TPanel;
-    pnlChatHeader: TPanel;
-    pnlMain: TPanel;
-    pnlRandomControl: TPanel;
-    pnlTileListSettings: TPanel;
     pcLeft: TPageControl;
+    pmGrabTileInfo: TPopupMenu;
     pnlBottom: TPanel;
     edX: TSpinEdit;
     edY: TSpinEdit;
     pmTileList: TPopupMenu;
-    btnAddRandom: TSpeedButton;
-    btnDeleteRandom: TSpeedButton;
-    btnClearRandom: TSpeedButton;
     pmTools: TPopupMenu;
     pmClients: TPopupMenu;
-    pmGrabTileInfo: TPopupMenu;
+    pnlChat: TPanel;
+    pnlChatHeader: TPanel;
     spChat: TSplitter;
-    btnRandomPresetSave: TSpeedButton;
-    btnRandomPresetDelete: TSpeedButton;
     spTileList: TSplitter;
     tbFilter: TToolButton;
     tbFlat: TToolButton;
@@ -157,8 +152,8 @@ type
     tsTiles: TTabSheet;
     vdtTiles: TVirtualDrawTree;
     vdtRandom: TVirtualDrawTree;
-    vstLocations: TVirtualStringTree;
     vstChat: TVirtualStringTree;
+    vstLocations: TVirtualStringTree;
     procedure acBoundariesExecute(Sender: TObject);
     procedure acDeleteExecute(Sender: TObject);
     procedure acDrawExecute(Sender: TObject);
@@ -739,6 +734,7 @@ begin
   Randomize;
   
   vstChat.NodeDataSize := SizeOf(TChatInfo);
+  pnlChatHeader.AnchorSide[akBottom].Control := pnlBottom;
   
   FLocationsFile := IncludeTrailingPathDelimiter(ExtractFilePath(
                     Application.ExeName)) + 'Locations.dat';
@@ -1113,12 +1109,13 @@ begin
   begin
     pnlChat.Visible := False;
     spChat.Visible := False;
+    pnlChatHeader.AnchorSide[akBottom].Control := pnlBottom;
   end else
   begin
     spChat.Visible := True;
     pnlChat.Visible := True;
-    spChat.Top := pnlChatHeader.Top + pnlChatHeader.Height;
-    pnlChat.Top := spChat.Top + spChat.Height;
+    spChat.Top := pnlChat.Top - spChat.Height;
+    pnlChatHeader.AnchorSide[akBottom].Control := spChat;
     
     lblChatHeaderCaption.Font.Bold := False;
     lblChatHeaderCaption.Font.Italic := False;
@@ -1368,8 +1365,6 @@ procedure TfrmMain.vdtTilesKeyPress(Sender: TObject; var Key: char);
 begin
   if Key in ['$', '0'..'9'] then
   begin
-    edSearchID.Top := vdtTiles.Top + vdtTiles.Height - edSearchID.Height - 4;
-    edSearchID.Left := vdtTiles.Left + vdtTiles.Width - edSearchID.Width - 4;
     edSearchID.Text := Key;
     edSearchID.Visible := True;
     edSearchID.SetFocus;
