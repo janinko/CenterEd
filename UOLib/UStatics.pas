@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UStatics;
 
@@ -30,51 +30,70 @@ unit UStatics;
 interface
 
 uses
-  SysUtils, Classes, UMulBlock, UGenericIndex, UTiledata, UWorldItem;
+  SysUtils, Classes, UGenericIndex, UWorldItem, UTiledata;
 
 type
+  { TStaticItem }
+
   TStaticItem = class(TWorldItem)
     constructor Create(AOwner: TWorldBlock; AData: TStream; ABlockX, ABlockY: Word); overload;
     constructor Create(AOwner: TWorldBlock; AData: TStream); overload;
-    function Clone: TStaticItem; override;
-    function GetIdentifier: Integer;
-    function GetSize: Integer; override;
-    procedure Write(AData: TStream); override;
   protected
-    FHue, FOrgHue: Word;
-    procedure SetHue(AHue: Word);
+    { Members }
+    FHue: Word;
+    FOrgHue: Word;
+    { Methods }
     function HasChanged: Boolean; override;
+    procedure SetHue(AHue: Word);
   public
-    procedure InitOriginalState; override;
+    { Fields }
     property Hue: Word read FHue write SetHue;
+    { Methods }
+    function Clone: TStaticItem; override;
+    function GetSize: Integer; override;
+    procedure InitOriginalState; override;
+    procedure UpdatePriorities(ASolver: Integer);
+    procedure Write(AData: TStream); override;
   end;
+
+  { TStaticBlock}
+
   TStaticBlock = class(TWorldBlock)
     constructor Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word); overload;
     constructor Create(AData: TStream; AIndex: TGenericIndex); overload;
     destructor Destroy; override;
-    function Clone: TStaticBlock; override;
-    function GetSize: Integer; override;
-    procedure Write(AData: TStream); override;
-    procedure ReverseWrite(AData: TStream);
-    procedure Sort;
   protected
+    { Members }
     FItems: TList;
   public
+    { Fields }
     property Items: TList read FItems write FItems;
+    { Methods }
+    function Clone: TStaticBlock; override;
+    function GetSize: Integer; override;
+    procedure ReverseWrite(AData: TStream);
+    procedure Sort;
+    procedure Write(AData: TStream); override;
   end;
+
+  { TSeperatedStaticBlock }
+
   TSeperatedStaticBlock = class(TStaticBlock)
     constructor Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word); overload;
     constructor Create(AData: TStream; AIndex: TGenericIndex); overload;
     destructor Destroy; override;
-    function Clone: TSeperatedStaticBlock; override;
-    function GetSize: Integer; override;
-  protected
-    procedure RefreshList;
   public
     Cells: array[0..63] of TList;
+    { Methods }
+    function Clone: TSeperatedStaticBlock; override;
+    function GetSize: Integer; override;
+    procedure RebuildList;
   end;
 
 implementation
+
+uses
+  UGameResources; //Used for priority calculation
 
 { TStaticItem }
 
@@ -102,6 +121,17 @@ begin
   Create(AOwner, AData, 0, 0);
 end;
 
+function TStaticItem.HasChanged: Boolean;
+begin
+  Result := (FHue <> FOrgHue) or inherited HasChanged;
+end;
+
+procedure TStaticItem.SetHue(AHue: Word);
+begin
+  FHue := AHue;
+  DoChanged;
+end;
+
 function TStaticItem.Clone: TStaticItem;
 begin
   Result := TStaticItem.Create(nil, nil);
@@ -112,9 +142,29 @@ begin
   Result.FHue := FHue;
 end;
 
-function TStaticItem.GetIdentifier: Integer;
+function TStaticItem.GetSize: Integer;
 begin
-  Result := 0 or (((FX mod 8) shl 28) and $F0000000) or (((FY mod 8) shl 24) and $0F000000) or ((Byte(FZ) shl 16) and $00FF0000) or (Word(FTileID) and $0000FFFF);
+  Result := 7;
+end;
+
+procedure TStaticItem.InitOriginalState;
+begin
+  FOrgHue := FHue;
+  inherited InitOriginalState;
+end;
+
+procedure TStaticItem.UpdatePriorities(ASolver: Integer);
+var
+  staticTileData: TStaticTileData;
+begin
+  staticTileData := ResMan.Tiledata.StaticTiles[FTileID];
+  FPriorityBonus := 0;
+  if not ((staticTileData.Flags and tdfBackground) = tdfBackground) then
+    Inc(FPriorityBonus);
+  if staticTileData.Height > 0 then
+    Inc(FPriorityBonus);
+  FPriority := Z + FPriorityBonus;
+  FPrioritySolver := ASolver;
 end;
 
 procedure TStaticItem.Write(AData: TStream);
@@ -129,28 +179,6 @@ begin
   AData.Write(iY, SizeOf(Byte));
   AData.Write(FZ, SizeOf(ShortInt));
   AData.Write(FHue, SizeOf(SmallInt));
-end;
-
-function TStaticItem.GetSize: Integer;
-begin
-  Result := 7;
-end;
-
-function TStaticItem.HasChanged: Boolean;
-begin
-  Result := (FHue <> FOrgHue) or inherited HasChanged;
-end;
-
-procedure TStaticItem.InitOriginalState;
-begin
-  FOrgHue := FHue;
-  inherited InitOriginalState;
-end;
-
-procedure TStaticItem.SetHue(AHue: Word);
-begin
-  FHue := AHue;
-  DoChanged;
 end;
 
 { TStaticBlock }
@@ -214,14 +242,6 @@ begin
   Result := FItems.Count * 7;
 end;
 
-procedure TStaticBlock.Write(AData: TStream);
-var
-  i: Integer;
-begin
-  for i := 0 to FItems.Count - 1 do
-    TStaticItem(FItems[i]).Write(AData);
-end;
-
 procedure TStaticBlock.ReverseWrite(AData: TStream);
 var
   i: Integer;
@@ -233,49 +253,16 @@ begin
 end;
 
 procedure TStaticBlock.Sort;
-var
-  iMin, iMax: Integer;
-
-  procedure sift;
-  var
-    i, j: integer;
-  begin
-    i := iMin;
-    j := 2 * i;
-    FItems[0] := FItems[i];
-    while j <= iMax do
-    begin
-      if j < iMax then
-        if TStaticItem(FItems[j]).GetIdentifier < TStaticItem(FItems[j + 1]).GetIdentifier then inc(j);
-      if TStaticItem(FItems[0]).GetIdentifier >= TStaticItem(FItems[j]).GetIdentifier then break;
-      FItems[i] := FItems[j];
-      i := j;
-      j := 2 * i;
-    end;
-    FItems[i] := FItems[0];
-  end;
-
 begin
-  if FItems.Count > 0 then
-  begin
-    iMax := FItems.Count;
-    iMin := iMax div 2 + 1;
-    FItems.Insert(0, nil);
-    while iMin > 1 do
-    begin
-      dec(iMin);
-      sift;
-    end;
-    while iMax > 1 do
-    begin
-      FItems[0] := FItems[iMin];
-      FItems[iMin] := FItems[iMax];
-      FItems[iMax] := FItems[0];
-      dec(iMax);
-      sift;
-    end;
-    FItems.Delete(0);
-  end;
+  FItems.Sort(@CompareWorldItems);
+end;
+
+procedure TStaticBlock.Write(AData: TStream);
+var
+  i: Integer;
+begin
+  for i := 0 to FItems.Count - 1 do
+    TStaticItem(FItems[i]).Write(AData);
 end;
 
 { TSeperatedStaticBlock }
@@ -339,6 +326,27 @@ begin
   inherited Destroy;
 end;
 
+procedure TSeperatedStaticBlock.RebuildList;
+var
+  i, j, solver: Integer;
+begin
+  FItems.Clear;
+  solver := 0;
+  for i := 0 to 63 do
+  begin
+    if Cells[i] <> nil then
+    begin
+      for j := 0 to Cells[i].Count - 1 do
+      begin
+        FItems.Add(Cells[i].Items[j]);
+        TStaticItem(Cells[i].Items[j]).UpdatePriorities(solver);
+        Inc(solver);
+      end;
+    end;
+  end;
+  Sort;
+end;
+
 function TSeperatedStaticBlock.Clone: TSeperatedStaticBlock;
 var
   i, j: Integer;
@@ -352,25 +360,8 @@ end;
 
 function TSeperatedStaticBlock.GetSize: Integer;
 begin
-  RefreshList;
+  RebuildList;
   Result := inherited GetSize;
-end;
-
-procedure TSeperatedStaticBlock.RefreshList;
-var
-  i, j: Integer;
-begin
-  FItems.Clear;
-  for i := 0 to 63 do
-  begin
-    if Cells[i] <> nil then
-    begin
-      for j := 0 to Cells[i].Count - 1 do
-        if Cells[i].Items[j] <> nil then
-          FItems.Add(Cells[i].Items[j]);
-    end;
-  end;
-  Sort;
 end;
 
 end.

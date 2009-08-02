@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UCacheManager;
 
@@ -48,18 +48,22 @@ type
     constructor Create(ASize: Integer);
     destructor Destroy; override;
   protected
+    { Members }
     FSize: Integer;
     FFirst: PCacheEntry;
     FLast: PCacheEntry;
     FOnRemoveObject: TRemoveObjectEvent;
   public
+    { Fields }
+    property OnRemoveObject: TRemoveObjectEvent read FOnRemoveObject write FOnRemoveObject;
+    { Methods }
     function QueryID(const AID: Integer; out AObj: TObject): Boolean;
     procedure StoreID(AID: Integer; AObj: TObject);
     procedure DiscardID(AID: Integer);
     procedure DiscardObj(AObj: TObject);
     procedure RemoveID(AID: Integer);
     procedure Clear;
-    property OnRemoveObject: TRemoveObjectEvent read FOnRemoveObject write FOnRemoveObject;
+    function Iterate(var ACacheEntry: PCacheEntry): Boolean;
   end;
 
 implementation
@@ -180,6 +184,15 @@ begin
     end;
     current := current^.Next;
   end;
+end;
+
+function TCacheManager.Iterate(var ACacheEntry: PCacheEntry): Boolean;
+begin
+  if ACacheEntry = nil then
+    ACacheEntry := FFirst
+  else
+    ACacheEntry := ACacheEntry^.Next;
+  Result := ACacheEntry <> nil;
 end;
 
 function TCacheManager.QueryID(const AID: Integer;

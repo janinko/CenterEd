@@ -3,6 +3,7 @@ object frmMain: TfrmMain
   Height = 603
   Top = 126
   Width = 766
+  ActiveControl = oglGameWindow
   Caption = 'UO CentrED'
   ClientHeight = 580
   ClientWidth = 766
@@ -540,7 +541,7 @@ object frmMain: TfrmMain
         Top = 306
         Width = 218
         Align = alNone
-        Anchors = [akTop, akLeft, akRight]
+        Anchors = [akLeft, akRight, akBottom]
         ResizeAnchor = akBottom
       end
       object edSearchID: TEdit
@@ -1110,7 +1111,7 @@ object frmMain: TfrmMain
     Top = 435
     Width = 542
     Align = alNone
-    Anchors = [akLeft, akRight]
+    Anchors = [akLeft, akRight, akBottom]
     AutoSnap = False
     ResizeAnchor = akBottom
     Visible = False

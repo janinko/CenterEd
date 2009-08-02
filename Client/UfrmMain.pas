@@ -1662,7 +1662,6 @@ var
   tileRect: TRect;
   virtualTile: TVirtualTile;
   staticsFilter: TStaticFilter;
-  editing: Boolean;
   intensity: GLfloat;
   blockInfo: PBlockInfo;
   item: TWorldItem;
@@ -1688,19 +1687,17 @@ begin
     //TODO : implement CanBeEdited handling (dmNetwork.CanWrite.....)
     if acSelect.Checked or item.CanBeEdited then
     begin
-      editing := True;
       intensity := 1.0;
       SetNormalLights;
     end else
     begin
-      editing := False;
       intensity := 0.5;
       SetDarkLights;
     end;
 
     glColor4f(intensity, intensity, intensity, 1.0);
 
-    highlight := item.CanBeEdited and blockInfo^.Highlighted;
+    highlight := blockInfo^.Highlighted and item.CanBeEdited;
 
     if highlight then
     begin
@@ -2357,7 +2354,8 @@ begin
     $07: //access changed
       begin
         accessLevel := TAccessLevel(ABuffer.ReadByte);
-        dmNetwork.UpdateWriteMap(ABuffer);
+        dmNetwork.UpdateWriteMap(ABuffer); //TODO : movie writemap to landscape
+        FLandscape.UpdateBlockAccess; //TODO : could be handled by updatewritemap
 
         if accessLevel <> dmNetwork.AccessLevel then
         begin

@@ -88,11 +88,15 @@ type
     constructor Create(AMap: TMapBlock; AStatics: TStaticBlock);
     destructor Destroy; override;
   protected
+    { Fields }
     FMapBlock: TMapBlock;
     FStaticBlock: TStaticBlock;
   public
+    { Fields }
     property Map: TMapBlock read FMapBlock;
     property Static: TStaticBlock read FStaticBlock;
+    { Methods }
+    procedure UpdateBlockAcess;
   end;
   
   TLandscapeChangeEvent = procedure of object;
@@ -148,8 +152,7 @@ type
     procedure GetNormals(AX, AY: Word; var ANormals: TNormals);
     procedure MoveStatic(AStatic: TStaticItem; AX, AY: Word);
     procedure PrepareBlocks(AX1, AY1, AX2, AY2: Word);
-    procedure UpdateStaticsPriority(AStaticItem: TStaticItem;
-      APrioritySolver: Integer);
+    procedure UpdateBlockAccess;
   end;
 
   TScreenState = (ssNormal, ssFiltered, ssGhost);
@@ -185,8 +188,8 @@ type
     procedure Delete(AItem: TWorldItem);
     function Find(AScreenPosition: TPoint): PBlockInfo;
     function GetSerial: Cardinal;
-    function Iterate(var ABlockInfo: PBlockInfo): Boolean;
     function Insert(AItem: TWorldItem): PBlockInfo;
+    function Iterate(var ABlockInfo: PBlockInfo): Boolean;
     procedure Sort;
     procedure UpdateShortcuts;
     { Events }
@@ -213,30 +216,6 @@ const
 function GetID(AX, AY: Word): Integer;
 begin
   Result := ((AX and $7FFF) shl 15) or (AY and $7FFF);
-end;
-
-function CompareWorldItems(AItem1, AItem2: Pointer): Integer;
-begin
-  if TWorldItem(AItem1).X <> TWorldItem(AItem2).X then
-    Exit(TWorldItem(AItem1).X - TWorldItem(AItem2).X);
-
-  if TWorldItem(AItem1).Y <> TWorldItem(AItem2).Y then
-    Exit(TWorldItem(AItem1).Y - TWorldItem(AItem2).Y);
-
-  Result := TWorldItem(AItem1).Priority - TWorldItem(AItem2).Priority;
-  if Result = 0 then
-  begin
-    if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TStaticItem) then
-      Result := -1
-    else if (TObject(AItem1) is TStaticItem) and (TObject(AItem2) is TMapCell) then
-      Result := 1;
-  end;
-
-  if Result = 0 then
-    Result := TWorldItem(AItem1).PriorityBonus - TWorldItem(AItem2).PriorityBonus;
-
-  if Result = 0 then
-    Result := TWorldItem(AItem1).PrioritySolver - TWorldItem(AItem2).PrioritySolver;
 end;
 
 { TLandTextureManager }
@@ -342,6 +321,7 @@ begin
   inherited Create;
   FMapBlock := AMap;
   FStaticBlock := AStatics;
+  UpdateBlockAcess;
 end;
 
 destructor TBlock.Destroy;
@@ -349,6 +329,28 @@ begin
   if FMapBlock <> nil then FreeAndNil(FMapBlock);
   if FStaticBlock <> nil then FreeAndNil(FStaticBlock);
   inherited Destroy;
+end;
+
+procedure TBlock.UpdateBlockAcess;
+var
+  staticItem: TStaticItem;
+  i: Integer;
+begin
+  for i := Low(FMapBlock.Cells) to High(FMapBlock.Cells) do
+  begin
+    FMapBlock.Cells[i].CanBeEdited := dmNetwork.CanWrite(
+      FMapBlock.Cells[i].X, FMapBlock.Cells[i].Y);
+  end;
+
+  if FStaticBlock is TSeperatedStaticBlock then
+    TSeperatedStaticBlock(FStaticBlock).RebuildList; //fill items
+
+  for i := 0 to FStaticBlock.Items.Count - 1 do
+  begin
+    staticItem := TStaticItem(FStaticBlock.Items[i]);
+    staticItem.CanBeEdited := dmNetwork.CanWrite(
+      staticItem.X, staticItem.Y);
+  end;
 end;
 
 { TLandscape }
@@ -533,7 +535,7 @@ begin
     targetStaticList := block.Cells[(y mod 8) * 8 + x mod 8];
     targetStaticList.Add(staticItem);
     for i := 0 to targetStaticList.Count - 1 do
-      UpdateStaticsPriority(TStaticItem(targetStaticList.Items[i]), i);
+      TStaticItem(targetStaticList.Items[i]).UpdatePriorities(i);
     targetStaticList.Sort(@CompareWorldItems);
     staticItem.Owner := block;
     if Assigned(FOnChange) then FOnChange;
@@ -591,7 +593,7 @@ begin
       begin
         staticItem.Z := ABuffer.ReadShortInt;
         for j := 0 to statics.Count - 1 do
-          UpdateStaticsPriority(TStaticItem(statics.Items[j]), j);
+          TStaticItem(statics.Items[j]).UpdatePriorities(j);
         statics.Sort(@CompareWorldItems);
         if Assigned(FOnChange) then FOnChange;
         Break;
@@ -650,7 +652,7 @@ begin
     statics := targetBlock.Cells[(newY mod 8) * 8 + newX mod 8];
     statics.Add(staticItem);
     for i := 0 to statics.Count - 1 do
-      UpdateStaticsPriority(TStaticItem(statics.Items[i]), i);
+      TStaticItem(statics.Items[i]).UpdatePriorities(i);
     statics.Sort(@CompareWorldItems);
     staticItem.Owner := targetBlock;
   end;
@@ -724,7 +726,7 @@ begin
                (TStaticItem(drawStatics[i]).Z <= AMaxZ) and
                ((AStaticsFilter = nil) or AStaticsFilter(TStaticItem(drawStatics[i]))) then
             begin
-              UpdateStaticsPriority(TStaticItem(drawStatics[i]), ADrawList.GetSerial);
+              TStaticItem(drawStatics[i]).UpdatePriorities(ADrawList.GetSerial);
               ADrawList.Add(TWorldItem(drawStatics[i]));
             end;
       end;
@@ -857,7 +859,7 @@ begin
       targetStaticList := targetBlock.Cells[(AY mod 8) * 8 + AX mod 8];
       targetStaticList.Add(AStatic);
       for i := 0 to targetStaticList.Count - 1 do
-        UpdateStaticsPriority(TStaticItem(targetStaticList.Items[i]), i);
+        TStaticItem(targetStaticList.Items[i]).UpdatePriorities(i);
       targetStaticList.Sort(@CompareWorldItems);
       AStatic.UpdatePos(AX, AY, AStatic.Z);
       AStatic.Owner := targetBlock;
@@ -896,19 +898,13 @@ begin
     dmNetwork.Send(TRequestBlocksPacket.Create(coords));
 end;
 
-procedure TLandscape.UpdateStaticsPriority(AStaticItem: TStaticItem;
-  APrioritySolver: Integer);
+procedure TLandscape.UpdateBlockAccess;
 var
-  staticTileData: TStaticTileData;
+  cacheEntry: PCacheEntry;
 begin
-  staticTileData := ResMan.Tiledata.StaticTiles[AStaticItem.TileID];
-  AStaticItem.PriorityBonus := 0;
-  if not ((staticTileData.Flags and tdfBackground) = tdfBackground) then
-    AStaticItem.PriorityBonus := AStaticItem.PriorityBonus + 1;
-  if staticTileData.Height > 0 then
-    AStaticItem.PriorityBonus := AStaticItem.PriorityBonus + 1;
-  AStaticItem.Priority := AStaticItem.Z + AStaticItem.PriorityBonus;
-  AStaticItem.PrioritySolver := APrioritySolver;
+  cacheEntry := nil;
+  while FBlockCache.Iterate(cacheEntry) do
+    TBlock(cacheEntry^.Obj).UpdateBlockAcess;
 end;
 
 { TMaterial }
@@ -1087,15 +1083,6 @@ begin
   Inc(FSerial);
 end;
 
-function TScreenBuffer.Iterate(var ABlockInfo: PBlockInfo): Boolean;
-begin
-  if ABlockInfo = nil then
-    ABlockInfo := FShortCuts[0]
-  else
-    ABlockInfo := ABlockInfo^.Next;
-  Result := ABlockInfo <> nil;
-end;
-
 function TScreenBuffer.Insert(AItem: TWorldItem): PBlockInfo;
 var
   current: PBlockInfo;
@@ -1143,6 +1130,15 @@ begin
   end;
 
   Inc(FCount);
+end;
+
+function TScreenBuffer.Iterate(var ABlockInfo: PBlockInfo): Boolean;
+begin
+  if ABlockInfo = nil then
+    ABlockInfo := FShortCuts[0]
+  else
+    ABlockInfo := ABlockInfo^.Next;
+  Result := ABlockInfo <> nil;
 end;
 
 //Mergesort

@@ -34,6 +34,9 @@ uses
 
 type
   TWorldBlock = class;
+
+  { TWorldItem }
+
   TWorldItem = class(TMulBlock)
     constructor Create(AOwner: TWorldBlock);
   protected
@@ -75,6 +78,9 @@ type
     property PriorityBonus: ShortInt read FPriorityBonus write FPriorityBonus;
     property PrioritySolver: Integer read FPrioritySolver write FPrioritySolver;
   end;
+
+  { TWorldBlock }
+
   TWorldBlock = class(TMulBlock)
     constructor Create;
   protected
@@ -95,7 +101,36 @@ type
     procedure CleanUp;
   end;
 
+function CompareWorldItems(AItem1, AItem2: Pointer): Integer;
+
 implementation
+
+uses
+  UMap, UStatics;
+
+function CompareWorldItems(AItem1, AItem2: Pointer): Integer;
+begin
+  if TWorldItem(AItem1).X <> TWorldItem(AItem2).X then
+    Exit(TWorldItem(AItem1).X - TWorldItem(AItem2).X);
+
+  if TWorldItem(AItem1).Y <> TWorldItem(AItem2).Y then
+    Exit(TWorldItem(AItem1).Y - TWorldItem(AItem2).Y);
+
+  Result := TWorldItem(AItem1).Priority - TWorldItem(AItem2).Priority;
+  if Result = 0 then
+  begin
+    if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TStaticItem) then
+      Result := -1
+    else if (TObject(AItem1) is TStaticItem) and (TObject(AItem2) is TMapCell) then
+      Result := 1;
+  end;
+
+  if Result = 0 then
+    Result := TWorldItem(AItem1).PriorityBonus - TWorldItem(AItem2).PriorityBonus;
+
+  if Result = 0 then
+    Result := TWorldItem(AItem1).PrioritySolver - TWorldItem(AItem2).PrioritySolver;
+end;
 
 { TWorldItem }
 

@@ -345,14 +345,16 @@ var
   i: Integer;
   pt: TPoint;
 begin
-  if FWriteMap.Count = 0 then Exit(True); //TODO : still too slow
+  if FWriteMap.Count > 0 then
+  begin
+    pt := Point(AX, AY);
+    for i := 0 to FWriteMap.Count - 1 do
+      if PtInRect(FWriteMap.Rects[i], pt) then
+        Exit(True);
 
-  pt := Point(AX, AY);
-  for i := 0 to FWriteMap.Count - 1 do
-    if PtInRect(FWriteMap.Rects[i], pt) then
-      Exit(True);
-
-  Result := False;
+    Result := False;
+  end else
+    Result := True;
 end;
 
 procedure TdmNetwork.Send(APacket: TPacket);
