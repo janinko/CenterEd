@@ -497,6 +497,7 @@ begin
   FBlockCache.OnRemoveObject := @OnRemoveCachedObject;
 
   FOnChange := nil;
+  FOnNewBlock := nil;
   FOnStaticDeleted := nil;
   FOnStaticElevated := nil;
   FOnStaticHued := nil;
@@ -606,6 +607,7 @@ var
   coords: TBlockCoords;
   count: Word;
   id: Integer;
+  block: TBlock;
 begin
   index := TGenericIndex.Create(nil);
   while ABuffer.Position < ABuffer.Size do
@@ -623,12 +625,14 @@ begin
     statics := TSeperatedStaticBlock.Create(ABuffer, index, coords.X, coords.Y);
 
     FBlockCache.RemoveID(id);
-    FBlockCache.StoreID(id, TBlock.Create(map, statics));
+    block := TBlock.Create(map, statics);
+    FBlockCache.StoreID(id, block);
 
     FOpenRequests[coords.Y * FWidth + coords.X] := False;
+
+    if Assigned(FOnNewBlock) then FOnNewBlock(block);
   end;
   index.Free;
-  if Assigned(FOnChange) then FOnChange;
 end;
 
 procedure TLandscape.OnDrawMapPacket(ABuffer: TEnhancedMemoryStream);

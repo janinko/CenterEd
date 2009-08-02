@@ -316,6 +316,7 @@ type
     { Events }
     procedure OnClientHandlingPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnLandscapeChanged;
+    procedure OnNewBlock(ABlock: TBlock);
     procedure OnStaticDeleted(AStaticItem: TStaticItem);
     procedure OnStaticElevated(AStaticItem: TStaticItem);
     procedure OnStaticInserted(AStaticItem: TStaticItem);
@@ -722,6 +723,7 @@ var
 begin
   FLandscape := ResMan.Landscape;
   FLandscape.OnChange := @OnLandscapeChanged;
+  FLandscape.OnNewBlock := @OnNewBlock;
   FLandscape.OnStaticDeleted := @OnStaticDeleted;
   FLandscape.OnStaticElevated := @OnStaticElevated;
   FLandscape.OnStaticInserted := @OnStaticInserted;
@@ -1790,7 +1792,6 @@ begin
 
     item := blockInfo^.Item;
 
-    //TODO : implement CanBeEdited handling (dmNetwork.CanWrite.....)
     if acSelect.Checked or item.CanBeEdited then
     begin
       intensity := 1.0;
@@ -2025,9 +2026,15 @@ begin
   UpdateCurrentTile;
 end;
 
+procedure TfrmMain.OnNewBlock(ABlock: TBlock);
+begin
+  InvalidateScreenBuffer;
+end;
+
 procedure TfrmMain.OnStaticDeleted(AStaticItem: TStaticItem);
 begin
   FScreenBuffer.Delete(AStaticItem);
+  UpdateCurrentTile;
 end;
 
 procedure TfrmMain.OnStaticElevated(AStaticItem: TStaticItem);
@@ -2042,6 +2049,7 @@ begin
   begin
     AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
     PrepareScreenBlock(FScreenBuffer.Insert(AStaticItem));
+    UpdateCurrentTile;
   end;
 end;
 
