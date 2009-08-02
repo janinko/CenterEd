@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UGameResources;
 
@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, UArtProvider, UTileDataProvider, UTexmapProvider,
-  ULandscape, {URadarProvider,} UHueProvider;
+  ULandscape, UHueProvider;
   
 type
 
@@ -41,24 +41,24 @@ type
     constructor Create(ADataDir: string);
     destructor Destroy; override;
   protected
+    { Members }
     FDataDir: string;
     FArtProvider: TArtProvider;
     FTiledataProvider: TTiledataProvider;
     FTexmapProvider: TTexmapProvider;
-    //FRadarProvider: TRadarProvider;
     FHueProvider: THueProvider;
-    
     FLandscape: TLandscape;
   public
-    procedure InitLandscape(AWidth, AHeight: Word);
-    function GetFile(AFileName: string): string;
-    
+    { Fields }
     property Art: TArtProvider read FArtProvider;
-    property Tiledata: TTiledataProvider read FTiledataProvider;
-    property Texmaps: TTexmapProvider read FTexmapProvider;
-    //property Radar: TRadarProvider read FRadarProvider;
     property Hue: THueProvider read FHueProvider;
     property Landscape: TLandscape read FLandscape;
+    property Tiledata: TTiledataProvider read FTiledataProvider;
+    property Texmaps: TTexmapProvider read FTexmapProvider;
+
+    { Methods }
+    function GetFile(AFileName: string): string;
+    procedure InitLandscape(AWidth, AHeight: Word);
   end;
   
 var
@@ -71,7 +71,7 @@ implementation
 
 procedure InitGameResourceManager(ADataDir: string);
 begin
-  if GameResourceManager <> nil then FreeAndNil(GameResourceManager);
+  FreeAndNil(GameResourceManager);
   GameResourceManager := TGameResourceManager.Create(ADataDir);
 end;
 
@@ -85,18 +85,16 @@ begin
   FArtProvider := TArtProvider.Create(GetFile('art.mul'), GetFile('artidx.mul'), True);
   FTiledataProvider := TTiledataProvider.Create(GetFile('tiledata.mul'), True);
   FTexmapProvider := TTexmapProvider.Create(GetFile('texmaps.mul'), GetFile('texidx.mul'), True);
-  //FRadarProvider := TRadarProvider.Create(GetFile('radarcol.mul'));
   FHueProvider := THueProvider.Create(GetFile('hues.mul'), True);
 end;
 
 destructor TGameResourceManager.Destroy;
 begin
-  if FArtProvider <> nil then FreeAndNil(FArtProvider);
-  if FTiledataProvider <> nil then FreeAndNil(FTiledataProvider);
-  if FTexmapProvider <> nil then FreeAndNil(FTexmapProvider);
-  //if FRadarProvider <> nil then FreeAndNil(FRadarProvider);
-  if FHueProvider <> nil then FreeAndNil(FHueProvider);
-  if FLandscape <> nil then FreeAndNil(FLandscape);
+  FreeAndNil(FArtProvider);
+  FreeAndNil(FTiledataProvider);
+  FreeAndNil(FTexmapProvider);
+  FreeAndNil(FHueProvider);
+  FreeAndNil(FLandscape);
   inherited Destroy;
 end;
 
@@ -107,14 +105,12 @@ end;
 
 procedure TGameResourceManager.InitLandscape(AWidth, AHeight: Word);
 begin
-  if FLandscape <> nil then FreeAndNil(FLandscape);
+  FreeAndNil(FLandscape);
   FLandscape := TLandscape.Create(AWidth, AHeight);
 end;
 
 finalization
-begin
-  if GameResourceManager <> nil then FreeAndNil(GameResourceManager);
-end;
+  FreeAndNil(GameResourceManager);
 
 end.
 

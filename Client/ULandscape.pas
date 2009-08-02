@@ -81,6 +81,20 @@ type
     FFlatLandArtCache: TCacheManager;
     FTexCache: TCacheManager;
   end;
+
+ { TSeperatedStaticBlock }
+
+  TSeperatedStaticBlock = class(TStaticBlock)
+    constructor Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word); overload;
+    constructor Create(AData: TStream; AIndex: TGenericIndex); overload;
+    destructor Destroy; override;
+  public
+    Cells: array[0..63] of TList;
+    { Methods }
+    function Clone: TSeperatedStaticBlock; override;
+    function GetSize: Integer; override;
+    procedure RebuildList;
+  end;
   
   { TBlock }
 
@@ -314,6 +328,104 @@ begin
   end;
 end;
 
+{ TSeperatedStaticBlock }
+
+constructor TSeperatedStaticBlock.Create(AData: TStream; AIndex: TGenericIndex;
+  AX, AY: Word);
+var
+  i: Integer;
+  item: TStaticItem;
+  block: TMemoryStream;
+begin
+  inherited Create;
+  FItems := TList.Create;
+
+  FX := AX;
+  FY := AY;
+
+  for i := 0 to 63 do
+    Cells[i] := TList.Create;
+
+  if (AData <> nil) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
+  begin
+    AData.Position := AIndex.Lookup;
+    block := TMemoryStream.Create;
+    block.CopyFrom(AData, AIndex.Size);
+    block.Position := 0;
+    for i := 1 to (AIndex.Size div 7) do
+    begin
+      item := TStaticItem.Create(Self, block, AX, AY);
+      Cells[(item.Y mod 8) * 8 + (item.X mod 8)].Add(item);
+    end;
+    block.Free;
+  end;
+end;
+
+constructor TSeperatedStaticBlock.Create(AData: TStream; AIndex: TGenericIndex);
+begin
+  Create(AData, AIndex, 0, 0);
+end;
+
+destructor TSeperatedStaticBlock.Destroy;
+var
+  i, j: Integer;
+begin
+  FreeAndNil(FItems);
+
+  for i := 0 to 63 do
+  begin
+    if Cells[i] <> nil then
+    begin
+      for j := 0 to Cells[i].Count - 1 do
+      begin
+        if Cells[i][j] <> nil then
+        begin
+          TStaticItem(Cells[i][j]).Free;
+          Cells[i][j] := nil;
+        end;
+      end;
+      Cells[i].Free;
+      Cells[i] := nil;
+    end;
+  end;
+
+  inherited Destroy;
+end;
+
+function TSeperatedStaticBlock.Clone: TSeperatedStaticBlock;
+begin
+  raise Exception.Create('TSeperatedStaticBlock.Clone is not implemented (yet).');
+end;
+
+function TSeperatedStaticBlock.GetSize: Integer;
+begin
+  RebuildList;
+  Result := inherited GetSize;
+end;
+
+procedure TSeperatedStaticBlock.RebuildList;
+var
+  i, j, solver: Integer;
+begin
+  FItems.Clear;
+  solver := 0;
+  for i := 0 to 63 do
+  begin
+    if Cells[i] <> nil then
+    begin
+      for j := 0 to Cells[i].Count - 1 do
+      begin
+        FItems.Add(Cells[i].Items[j]);
+        TStaticItem(Cells[i].Items[j]).UpdatePriorities(
+          ResMan.Tiledata.StaticTiles[TStaticItem(Cells[i].Items[j]).TileID],
+          solver);
+        Inc(solver);
+      end;
+    end;
+  end;
+  Sort;
+end;
+
 { TBlock }
 
 constructor TBlock.Create(AMap: TMapBlock; AStatics: TStaticBlock);
@@ -367,7 +479,7 @@ begin
   FBlockCache := TCacheManager.Create(256);
   FBlockCache.OnRemoveObject := @OnRemoveCachedObject;
   
-  SetLength(FOpenRequests, FWidth * FHeight);
+  SetLength(FOpenRequests, FWidth * FHeight); //TODO : TBits?
   for blockID := 0 to Length(FOpenRequests) - 1 do
     FOpenRequests[blockID] := False;
 
@@ -535,9 +647,12 @@ begin
     targetStaticList := block.Cells[(y mod 8) * 8 + x mod 8];
     targetStaticList.Add(staticItem);
     for i := 0 to targetStaticList.Count - 1 do
-      TStaticItem(targetStaticList.Items[i]).UpdatePriorities(i);
+      TStaticItem(targetStaticList.Items[i]).UpdatePriorities(
+        ResMan.Tiledata.StaticTiles[TStaticItem(targetStaticList.Items[i]).TileID],
+        i);
     targetStaticList.Sort(@CompareWorldItems);
     staticItem.Owner := block;
+    staticItem.CanBeEdited := dmNetwork.CanWrite(x, y);
     if Assigned(FOnChange) then FOnChange;
   end;
 end;
@@ -593,7 +708,9 @@ begin
       begin
         staticItem.Z := ABuffer.ReadShortInt;
         for j := 0 to statics.Count - 1 do
-          TStaticItem(statics.Items[j]).UpdatePriorities(j);
+          TStaticItem(statics.Items[j]).UpdatePriorities(
+            ResMan.Tiledata.StaticTiles[TStaticItem(statics.Items[j]).TileID],
+            j);
         statics.Sort(@CompareWorldItems);
         if Assigned(FOnChange) then FOnChange;
         Break;
@@ -652,7 +769,9 @@ begin
     statics := targetBlock.Cells[(newY mod 8) * 8 + newX mod 8];
     statics.Add(staticItem);
     for i := 0 to statics.Count - 1 do
-      TStaticItem(statics.Items[i]).UpdatePriorities(i);
+      TStaticItem(statics.Items[i]).UpdatePriorities(
+        ResMan.Tiledata.StaticTiles[TStaticItem(statics.Items[i]).TileID],
+        i);
     statics.Sort(@CompareWorldItems);
     staticItem.Owner := targetBlock;
   end;
@@ -726,7 +845,9 @@ begin
                (TStaticItem(drawStatics[i]).Z <= AMaxZ) and
                ((AStaticsFilter = nil) or AStaticsFilter(TStaticItem(drawStatics[i]))) then
             begin
-              TStaticItem(drawStatics[i]).UpdatePriorities(ADrawList.GetSerial);
+              TStaticItem(drawStatics[i]).UpdatePriorities(
+                ResMan.Tiledata.StaticTiles[TStaticItem(drawStatics[i]).TileID],
+                ADrawList.GetSerial);
               ADrawList.Add(TWorldItem(drawStatics[i]));
             end;
       end;
@@ -859,7 +980,9 @@ begin
       targetStaticList := targetBlock.Cells[(AY mod 8) * 8 + AX mod 8];
       targetStaticList.Add(AStatic);
       for i := 0 to targetStaticList.Count - 1 do
-        TStaticItem(targetStaticList.Items[i]).UpdatePriorities(i);
+        TStaticItem(targetStaticList.Items[i]).UpdatePriorities(
+          ResMan.Tiledata.StaticTiles[TStaticItem(targetStaticList.Items[i]).TileID],
+          i);
       targetStaticList.Sort(@CompareWorldItems);
       AStatic.UpdatePos(AX, AY, AStatic.Z);
       AStatic.Owner := targetBlock;

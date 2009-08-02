@@ -42,17 +42,19 @@ type
     { Members }
     FHue: Word;
     FOrgHue: Word;
+
     { Methods }
     function HasChanged: Boolean; override;
     procedure SetHue(AHue: Word);
   public
     { Fields }
     property Hue: Word read FHue write SetHue;
+
     { Methods }
     function Clone: TStaticItem; override;
     function GetSize: Integer; override;
     procedure InitOriginalState; override;
-    procedure UpdatePriorities(ASolver: Integer);
+    procedure UpdatePriorities(ATileData: TStaticTiledata; ASolver: Integer);
     procedure Write(AData: TStream); override;
   end;
 
@@ -68,6 +70,7 @@ type
   public
     { Fields }
     property Items: TList read FItems write FItems;
+
     { Methods }
     function Clone: TStaticBlock; override;
     function GetSize: Integer; override;
@@ -76,24 +79,7 @@ type
     procedure Write(AData: TStream); override;
   end;
 
-  { TSeperatedStaticBlock }
-
-  TSeperatedStaticBlock = class(TStaticBlock)
-    constructor Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word); overload;
-    constructor Create(AData: TStream; AIndex: TGenericIndex); overload;
-    destructor Destroy; override;
-  public
-    Cells: array[0..63] of TList;
-    { Methods }
-    function Clone: TSeperatedStaticBlock; override;
-    function GetSize: Integer; override;
-    procedure RebuildList;
-  end;
-
 implementation
-
-uses
-  UGameResources; //Used for priority calculation
 
 { TStaticItem }
 
@@ -153,15 +139,13 @@ begin
   inherited InitOriginalState;
 end;
 
-procedure TStaticItem.UpdatePriorities(ASolver: Integer);
-var
-  staticTileData: TStaticTileData;
+procedure TStaticItem.UpdatePriorities(ATileData: TStaticTiledata;
+  ASolver: Integer);
 begin
-  staticTileData := ResMan.Tiledata.StaticTiles[FTileID];
   FPriorityBonus := 0;
-  if not ((staticTileData.Flags and tdfBackground) = tdfBackground) then
+  if not ((ATileData.Flags and tdfBackground) = tdfBackground) then
     Inc(FPriorityBonus);
-  if staticTileData.Height > 0 then
+  if ATileData.Height > 0 then
     Inc(FPriorityBonus);
   FPriority := Z + FPriorityBonus;
   FPrioritySolver := ASolver;
@@ -263,105 +247,6 @@ var
 begin
   for i := 0 to FItems.Count - 1 do
     TStaticItem(FItems[i]).Write(AData);
-end;
-
-{ TSeperatedStaticBlock }
-
-constructor TSeperatedStaticBlock.Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word);
-var
-  i: Integer;
-  item: TStaticItem;
-  block: TMemoryStream;
-begin
-  inherited Create;
-  FItems := TList.Create;
-
-  FX := AX;
-  FY := AY;
-
-  for i := 0 to 63 do
-    Cells[i] := TList.Create;
-
-  if (AData <> nil) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
-  begin
-    AData.Position := AIndex.Lookup;
-    block := TMemoryStream.Create;
-    block.CopyFrom(AData, AIndex.Size);
-    block.Position := 0;
-    for i := 1 to (AIndex.Size div 7) do
-    begin
-      item := TStaticItem.Create(Self, block, AX, AY);
-      Cells[(item.Y mod 8) * 8 + (item.X mod 8)].Add(item);
-    end;
-    block.Free;
-  end;
-end;
-
-constructor TSeperatedStaticBlock.Create(AData: TStream; AIndex: TGenericIndex);
-begin
-  Create(AData, AIndex, 0, 0);
-end;
-
-destructor TSeperatedStaticBlock.Destroy;
-var
-  i, j: Integer;
-begin
-  if Assigned(FItems) then FreeAndNil(FItems);
-  for i := 0 to 63 do
-  begin
-    if Cells[i] <> nil then
-    begin
-      for j := 0 to Cells[i].Count - 1 do
-      begin
-        if Cells[i][j] <> nil then
-        begin
-          TStaticItem(Cells[i][j]).Free;
-          Cells[i][j] := nil;
-        end;
-      end;
-      Cells[i].Free;
-      Cells[i] := nil;
-    end;
-  end;
-  inherited Destroy;
-end;
-
-procedure TSeperatedStaticBlock.RebuildList;
-var
-  i, j, solver: Integer;
-begin
-  FItems.Clear;
-  solver := 0;
-  for i := 0 to 63 do
-  begin
-    if Cells[i] <> nil then
-    begin
-      for j := 0 to Cells[i].Count - 1 do
-      begin
-        FItems.Add(Cells[i].Items[j]);
-        TStaticItem(Cells[i].Items[j]).UpdatePriorities(solver);
-        Inc(solver);
-      end;
-    end;
-  end;
-  Sort;
-end;
-
-function TSeperatedStaticBlock.Clone: TSeperatedStaticBlock;
-var
-  i, j: Integer;
-begin
-  Result := TSeperatedStaticBlock.Create(nil, nil, FX, FY);
-
-  for i := 0 to 63 do
-    for j := 0 to Cells[i].Count - 1 do
-      Result.Cells[i].Add(TSeperatedStaticBlock(Cells[i].Items[j]).Clone);
-end;
-
-function TSeperatedStaticBlock.GetSize: Integer;
-begin
-  RebuildList;
-  Result := inherited GetSize;
 end;
 
 end.

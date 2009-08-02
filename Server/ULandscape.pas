@@ -33,25 +33,44 @@ uses
   SysUtils, Classes, math, UGenericIndex, UMap, UStatics, UTiledata,
   UWorldItem, UMulBlock,
   UTileDataProvider, URadarMap,
-  UListSort, UCacheManager, ULinkedList, UBufferedStreams,
+  UCacheManager, ULinkedList, UBufferedStreams,
   UEnhancedMemoryStream, UPacketHandlers, UPackets, UNetState, UEnums;
 
 type
   PRadarBlock = ^TRadarBlock;
   TRadarBlock = array[0..7, 0..7] of Word;
   TBlockSubscriptions = array of TLinkedList;
+
+  { TSeperatedStaticBlock }
+
+  TSeperatedStaticBlock = class(TStaticBlock)
+    constructor Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word); overload;
+    constructor Create(AData: TStream; AIndex: TGenericIndex); overload;
+    destructor Destroy; override;
+  protected
+    FTiledataProvider: TTiledataProvider;
+  public
+    { Fields }
+    Cells: array[0..63] of TList;
+    property TiledataProvider: TTiledataProvider read FTiledataProvider write FTiledataProvider;
+
+    { Methods }
+    function Clone: TSeperatedStaticBlock; override;
+    function GetSize: Integer; override;
+    procedure RebuildList;
+  end;
   
   { TBlock }
 
   TBlock = class(TObject)
-    constructor Create(AMap: TMapBlock; AStatics: TStaticBlock);
+    constructor Create(AMap: TMapBlock; AStatics: TSeperatedStaticBlock);
     destructor Destroy; override;
   protected
     FMapBlock: TMapBlock;
-    FStaticBlock: TStaticBlock;
+    FStaticBlock: TSeperatedStaticBlock;
   public
     property Map: TMapBlock read FMapBlock;
-    property Static: TStaticBlock read FStaticBlock;
+    property Static: TSeperatedStaticBlock read FStaticBlock;
   end;
 
   { TLandscape }
@@ -76,14 +95,11 @@ type
     FRadarMap: TRadarMap;
     FBlockCache: TCacheManager;
     FBlockSubscriptions: TBlockSubscriptions;
-    function Compare(left, right: TObject): Integer;
     procedure OnBlockChanged(ABlock: TMulBlock);
     procedure OnRemoveCachedObject(AObject: TObject);
     function GetMapCell(AX, AY: Word): TMapCell;
     function GetStaticList(AX, AY: Word): TList;
     function GetBlockSubscriptions(AX, AY: Word): TLinkedList;
-    procedure UpdateStaticsPriority(AStaticItem: TStaticItem;
-      APrioritySolver: Integer);
 
     procedure OnDrawMapPacket(ABuffer: TEnhancedMemoryStream;
       ANetState: TNetState);
@@ -159,9 +175,107 @@ begin
             InRange(AY, AArea.Top, AArea.Bottom);
 end;
 
+{ TSeperatedStaticBlock }
+
+constructor TSeperatedStaticBlock.Create(AData: TStream; AIndex: TGenericIndex;
+  AX, AY: Word);
+var
+  i: Integer;
+  item: TStaticItem;
+  block: TMemoryStream;
+begin
+  inherited Create;
+  FItems := TList.Create;
+
+  FX := AX;
+  FY := AY;
+
+  for i := 0 to 63 do
+    Cells[i] := TList.Create;
+
+  if (AData <> nil) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
+  begin
+    AData.Position := AIndex.Lookup;
+    block := TMemoryStream.Create;
+    block.CopyFrom(AData, AIndex.Size);
+    block.Position := 0;
+    for i := 1 to (AIndex.Size div 7) do
+    begin
+      item := TStaticItem.Create(Self, block, AX, AY);
+      Cells[(item.Y mod 8) * 8 + (item.X mod 8)].Add(item);
+    end;
+    block.Free;
+  end;
+end;
+
+constructor TSeperatedStaticBlock.Create(AData: TStream; AIndex: TGenericIndex);
+begin
+  Create(AData, AIndex, 0, 0);
+end;
+
+destructor TSeperatedStaticBlock.Destroy;
+var
+  i, j: Integer;
+begin
+  FreeAndNil(FItems);
+
+  for i := 0 to 63 do
+  begin
+    if Cells[i] <> nil then
+    begin
+      for j := 0 to Cells[i].Count - 1 do
+      begin
+        if Cells[i][j] <> nil then
+        begin
+          TStaticItem(Cells[i][j]).Free;
+          Cells[i][j] := nil;
+        end;
+      end;
+      Cells[i].Free;
+      Cells[i] := nil;
+    end;
+  end;
+
+  inherited Destroy;
+end;
+
+function TSeperatedStaticBlock.Clone: TSeperatedStaticBlock;
+begin
+  raise Exception.Create('TSeperatedStaticBlock.Clone is not implemented (yet).');
+end;
+
+function TSeperatedStaticBlock.GetSize: Integer;
+begin
+  RebuildList;
+  Result := inherited GetSize;
+end;
+
+procedure TSeperatedStaticBlock.RebuildList;
+var
+  i, j, solver: Integer;
+begin
+  FItems.Clear;
+  solver := 0;
+  for i := 0 to 63 do
+  begin
+    if Cells[i] <> nil then
+    begin
+      for j := 0 to Cells[i].Count - 1 do
+      begin
+        FItems.Add(Cells[i].Items[j]);
+        TStaticItem(Cells[i].Items[j]).UpdatePriorities(
+          FTiledataProvider.StaticTiles[TStaticItem(Cells[i].Items[j]).TileID],
+          solver);
+        Inc(solver);
+      end;
+    end;
+  end;
+  Sort;
+end;
+
 { TBlock }
 
-constructor TBlock.Create(AMap: TMapBlock; AStatics: TStaticBlock);
+constructor TBlock.Create(AMap: TMapBlock; AStatics: TSeperatedStaticBlock);
 begin
   inherited Create;
   FMapBlock := AMap;
@@ -170,8 +284,8 @@ end;
 
 destructor TBlock.Destroy;
 begin
-  if FMapBlock <> nil then FreeAndNil(FMapBlock);
-  if FStaticBlock <> nil then FreeAndNil(FStaticBlock);
+  FreeAndNil(FMapBlock);
+  FreeAndNil(FStaticBlock);
   inherited Destroy;
 end;
 
@@ -306,24 +420,6 @@ begin
   end;
 end;
 
-function TLandscape.Compare(left, right: TObject): Integer;
-begin
-  Result := TWorldItem(right).Priority - TWorldItem(left).Priority;
-  if Result = 0 then
-  begin
-    if (left is TMapCell) and (right is TStaticItem) then
-      Result := 1
-    else if (left is TStaticItem) and (right is TMapCell) then
-      Result := -1;
-  end;
-
-  if Result = 0 then
-    Result := TWorldItem(right).PriorityBonus - TWorldItem(left).PriorityBonus;
-
-  if Result = 0 then
-    Result := TWorldItem(right).PrioritySolver - TWorldItem(left).PrioritySolver;
-end;
-
 procedure TLandscape.UpdateRadar(AX, AY: Word);
 var
   mapTile: TMapCell;
@@ -347,10 +443,12 @@ begin
       end;
       for i := 0 to staticItems.Count - 1 do
       begin
-        UpdateStaticsPriority(TStaticItem(staticItems.Items[i]), i + 1);
+        TStaticItem(staticItems.Items[i]).UpdatePriorities(
+          FTiledataProvider.StaticTiles[TStaticItem(staticItems.Items[i]).TileID],
+          i + 1);
         tiles.Add(staticItems.Items[i]);
       end;
-      ListSort(tiles, @Compare);
+      tiles.Sort(@CompareWorldItems);
 
       if tiles.Count > 0 then
       begin
@@ -371,8 +469,10 @@ var
   i: Integer;
 begin
   for i := 0 to AStatics.Count - 1 do
-    UpdateStaticsPriority(TStaticItem(AStatics.Items[i]), i + 1);
-  ListSort(AStatics, @Compare);
+    TStaticItem(AStatics.Items[i]).UpdatePriorities(
+      FTiledataProvider.StaticTiles[TStaticItem(AStatics.Items[i]).TileID],
+      i + 1);
+  AStatics.Sort(@CompareWorldItems);
 end;
 
 function TLandscape.GetEffectiveAltitude(ATile: TMapCell): ShortInt;
@@ -438,7 +538,7 @@ end;
 function TLandscape.LoadBlock(AX, AY: Word): TBlock;
 var
   map: TMapBlock;
-  statics: TStaticBlock;
+  statics: TSeperatedStaticBlock;
   index: TGenericIndex;
 begin
   FMap.Position := ((AX * FHeight) + AY) * 196;
@@ -449,6 +549,7 @@ begin
   index := TGenericIndex.Create(FStaIdx);
   statics := TSeperatedStaticBlock.Create(FStatics, index, AX, AY);
   statics.OnChanged := @OnBlockChanged;
+  statics.TiledataProvider := FTiledataProvider;
   index.Free;
   
   Result := TBlock.Create(map, statics);
@@ -509,21 +610,6 @@ begin
   blocks := FWidth * FHeight;
   FStaIdx.Seek(0, soFromEnd); //workaround for TBufferedStream
   Result := (FMap.Size = (blocks * 196)) and (FStaIdx.Position = (blocks * 12));
-end;
-
-procedure TLandscape.UpdateStaticsPriority(AStaticItem: TStaticItem;
-  APrioritySolver: Integer);
-var
-  staticTileData: TStaticTileData;
-begin
-  staticTileData := FTiledataProvider.StaticTiles[AStaticItem.TileID];
-  AStaticItem.PriorityBonus := 0;
-  if not ((staticTileData.Flags and tdfBackground) = tdfBackground) then
-    AStaticItem.PriorityBonus := AStaticItem.PriorityBonus + 1;
-  if staticTileData.Height > 0 then
-    AStaticItem.PriorityBonus := AStaticItem.PriorityBonus + 1;
-  AStaticItem.Priority := AStaticItem.Z + AStaticItem.PriorityBonus;
-  AStaticItem.PrioritySolver := APrioritySolver;
 end;
 
 procedure TLandscape.OnDrawMapPacket(ABuffer: TEnhancedMemoryStream;
