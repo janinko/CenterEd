@@ -73,7 +73,8 @@ type
     constructor Create;
     destructor Destroy; override;
     function GetArtMaterial(ATileID: Word): TMaterial; overload;
-    function GetArtMaterial(ATileID: Word; AHue: THue; APartialHue: Boolean): TMaterial; overload;
+    function GetArtMaterial(ATileID: Word; AHue: THue;
+      APartialHue: Boolean): TMaterial; overload;
     function GetFlatLandMaterial(ATileID: Word): TMaterial;
     function GetTexMaterial(ATileID: Word): TMaterial;
   protected
@@ -114,6 +115,8 @@ type
   end;
   
   TLandscapeChangeEvent = procedure of object;
+  TNewBlockEvent = procedure(ABlock: TBlock) of object;
+  TStaticChangedEvent = procedure(AStaticItem: TStaticItem) of object;
   TStaticFilter = function(AStatic: TStaticItem): Boolean of object;
 
   TScreenBuffer = class;
@@ -131,6 +134,11 @@ type
     FCellHeight: Word;
     FBlockCache: TCacheManager;
     FOnChange: TLandscapeChangeEvent;
+    FOnNewBlock: TNewBlockEvent;
+    FOnStaticInserted: TStaticChangedEvent;
+    FOnStaticDeleted: TStaticChangedEvent;
+    FOnStaticElevated: TStaticChangedEvent;
+    FOnStaticHued: TStaticChangedEvent;
     FOpenRequests: array of Boolean;
     { Methods }
     function GetMapBlock(AX, AY: Word): TMapBlock;
@@ -157,6 +165,15 @@ type
     property StaticList[X, Y: Word]: TList read GetStaticList;
     property Normals[X, Y: Word]: TNormals read GetNormals;
     property OnChange: TLandscapeChangeEvent read FOnChange write FOnChange;
+    property OnNewBlock: TNewBlockEvent read FOnNewBlock write FOnNewBlock;
+    property OnStaticInserted: TStaticChangedEvent read FOnStaticInserted
+      write FOnStaticInserted;
+    property OnStaticDeleted: TStaticChangedEvent read FOnStaticDeleted
+      write FOnStaticDeleted;
+    property OnStaticElevated: TStaticChangedEvent read FOnStaticElevated
+      write FOnStaticElevated;
+    property OnStaticHued: TStaticChangedEvent read FOnStaticHued
+      write FOnStaticHued;
     { Methods }
     procedure FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
       AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
@@ -478,6 +495,12 @@ begin
   FCellHeight := FHeight * 8;
   FBlockCache := TCacheManager.Create(256);
   FBlockCache.OnRemoveObject := @OnRemoveCachedObject;
+
+  FOnChange := nil;
+  FOnStaticDeleted := nil;
+  FOnStaticElevated := nil;
+  FOnStaticHued := nil;
+  FOnStaticInserted := nil;
   
   SetLength(FOpenRequests, FWidth * FHeight); //TODO : TBits?
   for blockID := 0 to Length(FOpenRequests) - 1 do
@@ -653,7 +676,8 @@ begin
     targetStaticList.Sort(@CompareWorldItems);
     staticItem.Owner := block;
     staticItem.CanBeEdited := dmNetwork.CanWrite(x, y);
-    if Assigned(FOnChange) then FOnChange;
+
+    if Assigned(FOnStaticInserted) then FOnStaticInserted(staticItem);
   end;
 end;
 
@@ -677,9 +701,10 @@ begin
          (staticItem.TileID = staticInfo.TileID) and
          (staticItem.Hue = staticInfo.Hue) then
       begin
+        if Assigned(FOnStaticDeleted) then FOnStaticDeleted(staticItem);
         statics.Delete(i);
         staticItem.Delete;
-        if Assigned(FOnChange) then FOnChange;
+
         Break;
       end;
     end;
@@ -712,7 +737,9 @@ begin
             ResMan.Tiledata.StaticTiles[TStaticItem(statics.Items[j]).TileID],
             j);
         statics.Sort(@CompareWorldItems);
-        if Assigned(FOnChange) then FOnChange;
+
+        if Assigned(FOnStaticElevated) then FOnStaticElevated(staticItem);
+
         Break;
       end;
     end;
@@ -753,6 +780,7 @@ begin
 
     if staticItem <> nil then
     begin
+      if Assigned(FOnStaticDeleted) then FOnStaticDeleted(staticItem);
       statics.Remove(staticItem);
       staticItem.Delete;
     end;
@@ -774,9 +802,10 @@ begin
         i);
     statics.Sort(@CompareWorldItems);
     staticItem.Owner := targetBlock;
-  end;
+    staticItem.CanBeEdited := dmNetwork.CanWrite(newX, newY);
 
-  if Assigned(FOnChange) then FOnChange;
+    if Assigned(FOnStaticInserted) then FOnStaticInserted(staticItem);
+  end;
 end;
 
 procedure TLandscape.OnHueStaticPacket(ABuffer: TEnhancedMemoryStream);
@@ -800,7 +829,7 @@ begin
          (staticItem.Hue = staticInfo.Hue) then
       begin
         staticItem.Hue := ABuffer.ReadWord;
-        if Assigned(FOnChange) then FOnChange;
+        if Assigned(FOnStaticHued) then FOnStaticHued(staticItem);
         Break;
       end;
     end;
@@ -1224,7 +1253,7 @@ begin
   Result^.State := ssNormal;
   Result^.Highlighted := False;
 
-  if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]) > 0) then
+  if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]) < 0) then
   begin
     //TODO : update last element if necessary
     Result^.Next := FShortCuts[0];
@@ -1234,7 +1263,7 @@ begin
     //find best entry point
     shortcut := 0;
     while (shortcut <= 10) and (FShortCuts[shortcut] <> nil) and
-      (CompareWorldItems(AItem, FShortCuts[shortcut]) <= 0) do
+      (CompareWorldItems(AItem, FShortCuts[shortcut]) >= 0) do
     begin
       current := FShortCuts[shortcut];
       Inc(shortcut);

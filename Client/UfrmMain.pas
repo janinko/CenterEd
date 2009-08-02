@@ -275,6 +275,7 @@ type
     FTextureManager: TLandTextureManager;
     FScreenBuffer: TScreenBuffer;
     FScreenBufferValid: Boolean;
+    FScreenBufferSorted: Boolean;
     FCurrentTile: TWorldItem;
     FSelectedTile: TWorldItem;
     FGhostTile: TWorldItem;
@@ -296,6 +297,7 @@ type
     procedure InitRender;
     procedure InitSize;
     procedure InvalidateScreenBuffer;
+    procedure PrepareScreenBlock(ABlockInfo: PBlockInfo);
     procedure PrepareVirtualLayer(AWidth, AHeight: Word);
     procedure ProcessToolState;
     procedure ProcessAccessLevel;
@@ -314,6 +316,9 @@ type
     { Events }
     procedure OnClientHandlingPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnLandscapeChanged;
+    procedure OnStaticDeleted(AStaticItem: TStaticItem);
+    procedure OnStaticElevated(AStaticItem: TStaticItem);
+    procedure OnStaticInserted(AStaticItem: TStaticItem);
     procedure OnTileRemoved(ATile: TMulBlock);
   public
     { Fields }
@@ -717,6 +722,10 @@ var
 begin
   FLandscape := ResMan.Landscape;
   FLandscape.OnChange := @OnLandscapeChanged;
+  FLandscape.OnStaticDeleted := @OnStaticDeleted;
+  FLandscape.OnStaticElevated := @OnStaticElevated;
+  FLandscape.OnStaticInserted := @OnStaticInserted;
+
   FTextureManager := TLandTextureManager.Create;
   FScreenBuffer := TScreenBuffer.Create;
   FScreenBufferValid := False;
@@ -1650,6 +1659,97 @@ begin
   FScreenBufferValid := False;
 end;
 
+procedure TfrmMain.PrepareScreenBlock(ABlockInfo: PBlockInfo);
+var
+  item: TWorldItem;
+  drawX, drawY: Single;
+  west, south, east: Single;
+  z: SmallInt;
+  staticItem: TStaticItem;
+  hue: THue;
+  staticTiledata: TStaticTiledata;
+begin
+  //add normals to map tiles and materials where possible
+
+  item := ABlockInfo^.Item;
+
+  GetDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
+
+  if acFlat.Checked then
+    z := 0
+  else
+    z := item.Z;
+
+  if item is TMapCell then
+  begin
+    if not acFlat.Checked then
+    begin
+      west := FLandscape.GetLandAlt(item.X, item.Y + 1, z);
+      south := FLandscape.GetLandAlt(item.X + 1, item.Y + 1, z);
+      east := FLandscape.GetLandAlt(item.X + 1, item.Y, z);
+
+      if  (west <> z) or (south <> z) or (east <> z) then
+      begin
+        ABlockInfo^.HighRes := FTextureManager.GetTexMaterial(item.TileID);
+      end;
+    end;
+
+    ABlockInfo^.LowRes := FTextureManager.GetArtMaterial(item.TileID);
+    ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44);
+
+    if ABlockInfo^.HighRes <> nil then
+    begin
+      New(ABlockInfo^.Normals);
+      FLandscape.GetNormals(item.X, item.Y, ABlockInfo^.Normals^);
+      ABlockInfo^.DrawQuad[0][0] := drawX;
+      ABlockInfo^.DrawQuad[0][1] := drawY - z * 4;
+      ABlockInfo^.DrawQuad[1][0] := drawX + 22;
+      ABlockInfo^.DrawQuad[1][1] := drawY + 22 - east * 4;
+      ABlockInfo^.DrawQuad[2][0] := drawX;
+      ABlockInfo^.DrawQuad[2][1] := drawY + 44 - south * 4;
+      ABlockInfo^.DrawQuad[3][0] := drawX - 22;
+      ABlockInfo^.DrawQuad[3][1] := drawY + 22 - west * 4;
+    end else
+    begin
+      ABlockInfo^.DrawQuad[0][0] := drawX - 22;
+      ABlockInfo^.DrawQuad[0][1] := drawY - z * 4;
+      ABlockInfo^.DrawQuad[1][0] := drawX - 22 + ABlockInfo^.LowRes.Width;
+      ABlockInfo^.DrawQuad[1][1] := drawY - z * 4;
+      ABlockInfo^.DrawQuad[2][0] := drawX - 22 + ABlockInfo^.LowRes.Width;
+      ABlockInfo^.DrawQuad[2][1] := drawY + ABlockInfo^.LowRes.Height - z * 4;
+      ABlockInfo^.DrawQuad[3][0] := drawX - 22;
+      ABlockInfo^.DrawQuad[3][1] := drawY + ABlockInfo^.LowRes.Height - z * 4;
+    end;
+  end else
+  begin
+    staticItem := TStaticItem(item);
+
+    staticTiledata := ResMan.Tiledata.StaticTiles[staticItem.TileID];
+    if staticItem.Hue > 0 then
+      hue := ResMan.Hue.Hues[staticItem.Hue - 1]
+    else
+      hue := nil;
+
+    ABlockInfo^.LowRes := FTextureManager.GetArtMaterial($4000 + staticItem.TileID, hue, (staticTileData.Flags and tdfPartialHue) = tdfPartialHue);
+    ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - ABlockInfo^.LowRes.RealWidth / 2),
+      Trunc(drawY + 44 - ABlockInfo^.LowRes.RealHeight - z * 4),
+      ABlockInfo^.LowRes.RealWidth,
+      ABlockInfo^.LowRes.RealHeight);
+
+    south := ABlockInfo^.LowRes.RealHeight;
+    east := ABlockInfo^.LowRes.RealWidth div 2;
+
+    ABlockInfo^.DrawQuad[0][0] := drawX - east;
+    ABlockInfo^.DrawQuad[0][1] := drawY + 44 - south - z * 4;
+    ABlockInfo^.DrawQuad[1][0] := drawX - east + ABlockInfo^.LowRes.Width;
+    ABlockInfo^.DrawQuad[1][1] := drawY + 44 - south - z * 4;
+    ABlockInfo^.DrawQuad[2][0] := drawX - east + ABlockInfo^.LowRes.Width;
+    ABlockInfo^.DrawQuad[2][1] := drawY + 44 - south + ABlockInfo^.LowRes.Height - z * 4;
+    ABlockInfo^.DrawQuad[3][0] := drawX - east;
+    ABlockInfo^.DrawQuad[3][1] := drawY + 44 - south + ABlockInfo^.LowRes.Height - z * 4;
+  end;
+end;
+
 procedure TfrmMain.Render;
 var
   z: ShortInt;
@@ -1670,6 +1770,12 @@ begin
 
   if not FScreenBufferValid then
     RebuildScreenBuffer;
+
+  if not FScreenBufferSorted then
+  begin
+    FScreenBuffer.Sort;
+    FScreenBufferSorted := True;
+  end;
   
   {if acFilter.Checked then
     staticsFilter := @frmFilter.Filter
@@ -1919,6 +2025,26 @@ begin
   UpdateCurrentTile;
 end;
 
+procedure TfrmMain.OnStaticDeleted(AStaticItem: TStaticItem);
+begin
+  FScreenBuffer.Delete(AStaticItem);
+end;
+
+procedure TfrmMain.OnStaticElevated(AStaticItem: TStaticItem);
+begin
+  FScreenBufferSorted := False;
+end;
+
+procedure TfrmMain.OnStaticInserted(AStaticItem: TStaticItem);
+begin
+  if (AStaticItem.X >= FX + FLowOffsetX) and (AStaticItem.X <= FX + FHighOffsetX) and
+     (AStaticItem.Y >= FY + FLowOffsetY) and (AStaticItem.Y <= FY + FHighOffsetY) then
+  begin
+    AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
+    PrepareScreenBlock(FScreenBuffer.Insert(AStaticItem));
+  end;
+end;
+
 procedure TfrmMain.BuildTileList;
 var
   minID, maxID, i, lastID: Integer;
@@ -2035,13 +2161,6 @@ end;
 procedure TfrmMain.RebuildScreenBuffer;
 var
   blockInfo: PBlockInfo;
-  item: TWorldItem;
-  drawX, drawY: Single;
-  west, south, east: Single;
-  z: SmallInt;
-  staticItem: TStaticItem;
-  hue: THue;
-  staticTiledata: TStaticTiledata;
 begin
   FDrawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width + oglGamewindow.Height * oglGamewindow.Height) / 44);
 
@@ -2066,91 +2185,14 @@ begin
     acNoDraw.Checked, nil); //TODO : statics filter
   //TODO : ghost tile
 
-  //Pre-process the buffer - add normals to map tiles and materials where possible
+  //Pre-process the buffer
   blockInfo := nil;
   while FScreenBuffer.Iterate(blockInfo) do
-  begin
-    item := blockInfo^.Item;
-
-    GetDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
-
-    if acFlat.Checked then
-      z := 0
-    else
-      z := item.Z;
-
-    if item is TMapCell then
-    begin
-      if not acFlat.Checked then
-      begin
-        west := FLandscape.GetLandAlt(item.X, item.Y + 1, z);
-        south := FLandscape.GetLandAlt(item.X + 1, item.Y + 1, z);
-        east := FLandscape.GetLandAlt(item.X + 1, item.Y, z);
-
-        if  (west <> z) or (south <> z) or (east <> z) then
-        begin
-          blockInfo^.HighRes := FTextureManager.GetTexMaterial(item.TileID);
-        end;
-      end;
-
-      blockInfo^.LowRes := FTextureManager.GetArtMaterial(item.TileID);
-      blockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44);
-
-      if blockInfo^.HighRes <> nil then
-      begin
-        New(blockInfo^.Normals);
-        FLandscape.GetNormals(item.X, item.Y, blockInfo^.Normals^);
-        blockInfo^.DrawQuad[0][0] := drawX;
-        blockInfo^.DrawQuad[0][1] := drawY - z * 4;
-        blockInfo^.DrawQuad[1][0] := drawX + 22;
-        blockInfo^.DrawQuad[1][1] := drawY + 22 - east * 4;
-        blockInfo^.DrawQuad[2][0] := drawX;
-        blockInfo^.DrawQuad[2][1] := drawY + 44 - south * 4;
-        blockInfo^.DrawQuad[3][0] := drawX - 22;
-        blockInfo^.DrawQuad[3][1] := drawY + 22 - west * 4;
-      end else
-      begin
-        blockInfo^.DrawQuad[0][0] := drawX - 22;
-        blockInfo^.DrawQuad[0][1] := drawY - z * 4;
-        blockInfo^.DrawQuad[1][0] := drawX - 22 + blockInfo^.LowRes.Width;
-        blockInfo^.DrawQuad[1][1] := drawY - z * 4;
-        blockInfo^.DrawQuad[2][0] := drawX - 22 + blockInfo^.LowRes.Width;
-        blockInfo^.DrawQuad[2][1] := drawY + blockInfo^.LowRes.Height - z * 4;
-        blockInfo^.DrawQuad[3][0] := drawX - 22;
-        blockInfo^.DrawQuad[3][1] := drawY + blockInfo^.LowRes.Height - z * 4;
-      end;
-    end else
-    begin
-      staticItem := TStaticItem(item);
-
-      staticTiledata := ResMan.Tiledata.StaticTiles[staticItem.TileID];
-      if staticItem.Hue > 0 then
-        hue := ResMan.Hue.Hues[staticItem.Hue - 1]
-      else
-        hue := nil;
-
-      blockInfo^.LowRes := FTextureManager.GetArtMaterial($4000 + staticItem.TileID, hue, (staticTileData.Flags and tdfPartialHue) = tdfPartialHue);
-      blockInfo^.ScreenRect := Bounds(Trunc(drawX - blockInfo^.LowRes.RealWidth / 2),
-        Trunc(drawY + 44 - blockInfo^.LowRes.RealHeight - z * 4),
-        blockInfo^.LowRes.RealWidth,
-        blockInfo^.LowRes.RealHeight);
-
-      south := blockInfo^.LowRes.RealHeight;
-      east := blockInfo^.LowRes.RealWidth div 2;
-
-      blockInfo^.DrawQuad[0][0] := drawX - east;
-      blockInfo^.DrawQuad[0][1] := drawY + 44 - south - z * 4;
-      blockInfo^.DrawQuad[1][0] := drawX - east + blockInfo^.LowRes.Width;
-      blockInfo^.DrawQuad[1][1] := drawY + 44 - south - z * 4;
-      blockInfo^.DrawQuad[2][0] := drawX - east + blockInfo^.LowRes.Width;
-      blockInfo^.DrawQuad[2][1] := drawY + 44 - south + blockInfo^.LowRes.Height - z * 4;
-      blockInfo^.DrawQuad[3][0] := drawX - east;
-      blockInfo^.DrawQuad[3][1] := drawY + 44 - south + blockInfo^.LowRes.Height - z * 4;
-    end;
-  end;
+    PrepareScreenBlock(blockInfo);
 
   FScreenBuffer.UpdateShortcuts;
   FScreenBufferValid := True;
+  FScreenBufferSorted := True;
 end;
 
 procedure TfrmMain.UpdateCurrentTile;
