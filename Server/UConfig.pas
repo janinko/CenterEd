@@ -256,13 +256,13 @@ begin
   Writeln('Configuring Paths');
   Writeln('=================');
   Write  ('map [map0.mul]: ');
-  Readln (FMap.MapFile);
+  Readln (FMap.FMapFile);
   if FMap.MapFile = '' then FMap.MapFile := 'map0.mul';
   Write  ('statics [statics0.mul]: ');
-  Readln (FMap.StaticsFile);
+  Readln (FMap.FStaticsFile);
   if FMap.StaticsFile = '' then FMap.StaticsFile := 'statics0.mul';
   Write  ('staidx [staidx0.mul]: ');
-  Readln (FMap.StaIdxFile);
+  Readln (FMap.FStaIdxFile);
   if FMap.StaIdxFile = '' then FMap.StaIdxFile := 'staidx0.mul';
   Write  ('tiledata [tiledata.mul]: ');
   Readln (FTiledata);

@@ -29,7 +29,7 @@
         <PackageName Value="lnetbase"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="14">
+    <Units Count="15">
       <Unit0>
         <Filename Value="cedserver.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -100,6 +100,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UClientHandling"/>
       </Unit13>
+      <Unit14>
+        <Filename Value="../UOLib/UStatics.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UStatics"/>
+      </Unit14>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
