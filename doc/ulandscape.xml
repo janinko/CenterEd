@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<fpdoc-descriptions>
+  <package name="CentrED">
+    <module name="ULandscape">
+      <element name="TScreenBuffer.UpdateSortOrder">
+        <short>Moves the BlockInfo up or down depending on the new sort order</short>
+        <descr>The function iterates through the list of blocks to find the new position where the item should be stored and to find the item's block.
+Afterwards it moves this block to its new position and returns the block for further usage.</descr>
+      </element>
+      <element name="TScreenBuffer">
+        <short>Stores all items that are (visible) on the screen.</short>
+        <descr>TScreenBuffer contains a linked list of all items that should be visible on the screen, stored in <link id="TBlockInfo"/>.</descr>
+      </element>
+      <element name="TBlockInfo">
+        <short>Contains the necessary information to identify and draw items on the screen.</short>
+      </element>
+      <element name="TBlockInfo.ScreenRect">
+        <short>The coordinates on the screen. (as rectangle)</short>
+      </element>
+      <element name="TBlockInfo.DrawQuad">
+        <short>The coordinates for the OpenGL drawing function.</short>
+      </element>
+      <element name="TBlockInfo.Item">
+        <short>A reference to the item to be drawn.</short>
+      </element>
+      <element name="TBlockInfo.HighRes">
+        <short>Contains the high resolution (TexMap) texture if available and necessary.</short>
+      </element>
+      <element name="TBlockInfo.LowRes">
+        <short>Contains the default "normal" resolution graphic (Art).</short>
+      </element>
+      <element name="TBlockInfo.Normals">
+        <short>The normals used for lighting on map tiles.</short>
+      </element>
+      <element name="TBlockInfo.State">
+        <short>Holds the current state of the tile. This can be used for filtering.</short>
+      </element>
+      <element name="TBlockInfo.Highlighted">
+        <short>If enabled, the tile is drawn as highlighted.</short>
+      </element>
+      <element name="TBlockInfo.Next">
+        <short>A reference to the next block (linked list).</short>
+      </element>
+      <element name="TScreenState">
+        <short>Defines the state for screen blocks (see <link id="TBlockInfo.State"/>).</short>
+      </element>
+      <element name="TScreenState.ssNormal">
+        <short>The normal state of an item.</short>
+      </element>
+      <element name="TScreenState.ssFiltered">
+        <short>Specifies that the item should be "hidden". A fast way to remove it from the screen while keeping the sort order.</short>
+      </element>
+      <element name="TScreenState.ssGhost">
+        <short>Defines the item as being a ghost item.</short>
+        <descr>A ghost item is ignored in the hit test but still drawn as a normal (highlighted) tile.
+They are used to visualize an insert/map draw operation to the user.</descr>
+      </element>
+      <element name="PBlockInfo">
+        <short>A reference to TBlockInfo.</short>
+      </element>
+    </module>
+  </package>
+</fpdoc-descriptions>

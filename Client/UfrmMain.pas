@@ -275,7 +275,7 @@ type
     FTextureManager: TLandTextureManager;
     FScreenBuffer: TScreenBuffer;
     FScreenBufferValid: Boolean;
-    FScreenBufferSorted: Boolean;
+    FScreenBufferIndexed: Boolean;
     FCurrentTile: TWorldItem;
     FSelectedTile: TWorldItem;
     FGhostTile: TWorldItem;
@@ -1773,10 +1773,10 @@ begin
   if not FScreenBufferValid then
     RebuildScreenBuffer;
 
-  if not FScreenBufferSorted then
+  if not FScreenBufferIndexed then
   begin
-    FScreenBuffer.Sort;
-    FScreenBufferSorted := True;
+    FScreenBuffer.UpdateShortcuts;
+    FScreenBufferIndexed := True;
   end;
   
   {if acFilter.Checked then
@@ -2039,7 +2039,9 @@ end;
 
 procedure TfrmMain.OnStaticElevated(AStaticItem: TStaticItem);
 begin
-  FScreenBufferSorted := False;
+  AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
+  PrepareScreenBlock(FScreenBuffer.UpdateSortOrder(AStaticItem));
+  FScreenBufferIndexed := False;
 end;
 
 procedure TfrmMain.OnStaticInserted(AStaticItem: TStaticItem);
@@ -2200,7 +2202,7 @@ begin
 
   FScreenBuffer.UpdateShortcuts;
   FScreenBufferValid := True;
-  FScreenBufferSorted := True;
+  FScreenBufferIndexed := True;
 end;
 
 procedure TfrmMain.UpdateCurrentTile;

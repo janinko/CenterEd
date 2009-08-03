@@ -223,6 +223,7 @@ type
     function Iterate(var ABlockInfo: PBlockInfo): Boolean;
     procedure Sort;
     procedure UpdateShortcuts;
+    function UpdateSortOrder(AItem: TWorldItem): PBlockInfo;
     { Events }
     procedure OnTileRemoved(ATile: TMulBlock);
   end;
@@ -1378,6 +1379,55 @@ begin
     until (blockInfo = nil);
   end;
   FShortCutsValid := True;
+end;
+
+function TScreenBuffer.UpdateSortOrder(AItem: TWorldItem): PBlockInfo;
+var
+  newNodePosition, oldNode, oldNodePrev, current: PBlockInfo;
+begin
+  newNodePosition := nil;
+  oldNode := nil;
+  oldNodePrev := nil;
+  current := FShortCuts[0];
+
+  while (current <> nil) and ((oldNode = nil) or (newNodePosition = nil)) do
+  begin
+    if current^.Item = AItem then
+      oldNode := current
+    else if oldNode = nil then
+      oldNodePrev := current;
+
+    if newNodePosition = nil then
+    begin
+      if (current^.Next = nil) or (CompareWorldItems(AItem, current^.Next^.Item) < 0) then
+        newNodePosition := current;
+    end;
+
+    current := current^.Next;
+  end;
+
+  if oldNode <> newNodePosition then
+  begin
+    if oldNodePrev <> oldNode then
+    begin
+      if oldNodePrev = nil then
+        FShortCuts[0] := oldNode^.Next
+      else
+        oldNodePrev^.Next := oldNode^.Next;
+    end;
+
+    if (newNodePosition = FShortCuts[0]) and (CompareWorldItems(AItem, FShortCuts[0]^.Item) < 0) then
+    begin
+      oldNode^.Next := FShortCuts[0];
+      FShortCuts[0] := oldNode;
+    end else
+    begin
+      oldNode^.Next := newNodePosition^.Next;
+      newNodePosition^.Next := oldNode;
+    end;
+  end;
+
+  Result := oldNode;
 end;
 
 procedure TScreenBuffer.OnTileRemoved(ATile: TMulBlock);
