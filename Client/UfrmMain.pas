@@ -34,7 +34,7 @@ uses
   ComCtrls, OpenGLContext, GL, GLU, UGameResources, ULandscape, ExtCtrls,
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
-  ImagingClasses, dateutils, UPlatformTypes, UVector;
+  ImagingClasses, dateutils, UPlatformTypes, UVector, UMap;
 
 type
 
@@ -217,6 +217,8 @@ type
     procedure tbFilterMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure tbRadarMapClick(Sender: TObject);
+    procedure tbStaticsClick(Sender: TObject);
+    procedure tbTerrainClick(Sender: TObject);
     procedure tmGrabTileInfoTimer(Sender: TObject);
     procedure tmMovementTimer(Sender: TObject);
     procedure tmTileHintTimer(Sender: TObject);
@@ -288,7 +290,6 @@ type
     FAccessChangedListeners: array of TAccessChangedListener;
     { Methods }
     procedure BuildTileList;
-    function  CanBeModified(ATile: TWorldItem): Boolean;
     function  ConfirmAction: Boolean;
     procedure GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
       DrawY: Single); inline;
@@ -316,6 +317,7 @@ type
     { Events }
     procedure OnClientHandlingPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnLandscapeChanged;
+    procedure OnMapChanged(AMapCell: TMapCell);
     procedure OnNewBlock(ABlock: TBlock);
     procedure OnStaticDeleted(AStaticItem: TStaticItem);
     procedure OnStaticElevated(AStaticItem: TStaticItem);
@@ -341,7 +343,7 @@ var
 implementation
 
 uses
-  UdmNetwork, UMap, UArt, UTiledata, UHue, UAdminHandling, UPackets,
+  UdmNetwork, UArt, UTiledata, UHue, UAdminHandling, UPackets,
   UfrmAccountControl, UGraphicHelper, ImagingComponents, UfrmDrawSettings,
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
@@ -590,7 +592,7 @@ begin
             end;
           end;
         end;
-      end else if (SelectedTile <> targetTile) or CanBeModified(targetTile) then
+      end else if (SelectedTile <> targetTile) or targetTile.CanBeEdited then
       begin
         if (not acMove.Checked) or (SelectedTile <> targetTile) or
            (not frmMoveSettings.cbAsk.Checked) or ConfirmAction then
@@ -604,9 +606,12 @@ begin
             blockInfo := nil;
             while FScreenBuffer.Iterate(blockInfo) do
             begin
-              if PtInRect(targetRect, Point(blockInfo^.Item.X, blockInfo^.Item.Y)) and
-                CanBeModified(blockInfo^.Item) then
-                targetTiles.Insert(0, blockInfo^.Item);
+              if (blockInfo^.State = ssNormal) and
+                blockInfo^.Item.CanBeEdited and
+                PtInRect(targetRect, Point(blockInfo^.Item.X, blockInfo^.Item.Y)) then
+              begin
+                targetTiles.Add(blockInfo^.Item);
+              end;
             end;
           end;
 
@@ -724,6 +729,7 @@ var
 begin
   FLandscape := ResMan.Landscape;
   FLandscape.OnChange := @OnLandscapeChanged;
+  FLandscape.OnMapChanged := @OnMapChanged;
   FLandscape.OnNewBlock := @OnNewBlock;
   FLandscape.OnStaticDeleted := @OnStaticDeleted;
   FLandscape.OnStaticElevated := @OnStaticElevated;
@@ -931,6 +937,7 @@ end;
 procedure TfrmMain.acFlatExecute(Sender: TObject);
 begin
   acFlat.Checked := not acFlat.Checked;
+  RebuildScreenBuffer;
 end;
 
 procedure TfrmMain.acHueExecute(Sender: TObject);
@@ -958,6 +965,7 @@ end;
 procedure TfrmMain.acNoDrawExecute(Sender: TObject);
 begin
   acNoDraw.Checked := not acNoDraw.Checked;
+  RebuildScreenBuffer;
 end;
 
 procedure TfrmMain.btnClearRandomClick(Sender: TObject);
@@ -1200,6 +1208,16 @@ procedure TfrmMain.tbRadarMapClick(Sender: TObject);
 begin
   frmRadarMap.Show;
   frmRadarMap.BringToFront;
+end;
+
+procedure TfrmMain.tbStaticsClick(Sender: TObject);
+begin
+  RebuildScreenBuffer;
+end;
+
+procedure TfrmMain.tbTerrainClick(Sender: TObject);
+begin
+  RebuildScreenBuffer;
 end;
 
 procedure TfrmMain.tmGrabTileInfoTimer(Sender: TObject);
@@ -1685,6 +1703,7 @@ begin
 
   if item is TMapCell then
   begin
+    ABlockInfo^.HighRes := nil;
     if not acFlat.Checked then
     begin
       west := FLandscape.GetLandAlt(item.X, item.Y + 1, z);
@@ -2025,6 +2044,39 @@ begin
   InvalidateScreenBuffer;
   oglGameWindow.Repaint;
   UpdateCurrentTile;
+end;
+
+procedure TfrmMain.OnMapChanged(AMapCell: TMapCell);
+var
+  current, north, east, west: PBlockInfo;
+  cell: TMapCell;
+begin
+  PrepareScreenBlock(FScreenBuffer.UpdateSortOrder(AMapCell));
+  FScreenBufferIndexed := False;
+
+  //Find surrounding cells
+  current := nil;
+  north := nil;
+  east := nil;
+  west := nil;
+  while ((north = nil) or (east = nil) or (west = nil)) and
+    FScreenBuffer.Iterate(current) do
+  begin
+    if current^.Item is TMapCell then
+    begin
+      cell := TMapCell(current^.Item);
+      if (cell.X = AMapCell.X - 1) and (cell.Y = AMapCell.Y - 1) then
+        north := current
+      else if (cell.X = AMapCell.X) and (cell.Y = AMapCell.Y - 1) then
+        east := current
+      else if (cell.X = AMapCell.X - 1) and (cell.Y = AMapCell.Y) then
+        west := current;
+    end;
+  end;
+
+  if north <> nil then PrepareScreenBlock(north);
+  if east <> nil then PrepareScreenBlock(east);
+  if west <> nil then PrepareScreenBlock(west);
 end;
 
 procedure TfrmMain.OnNewBlock(ABlock: TBlock);
@@ -2494,12 +2546,6 @@ procedure TfrmMain.GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
 begin
   DrawX := (oglGameWindow.Width div 2) + (ARelativeX - ARelativeY) * 22;
   DrawY := (oglGamewindow.Height div 2) + (ARelativeX + ARelativeY) * 22;
-end;
-
-function TfrmMain.CanBeModified(ATile: TWorldItem): Boolean;
-begin
-  Result := (not (ATile is TVirtualTile)) and
-    dmNetwork.CanWrite(ATile.X, ATile.Y);
 end;
 
 initialization

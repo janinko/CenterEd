@@ -115,6 +115,7 @@ type
   end;
   
   TLandscapeChangeEvent = procedure of object;
+  TMapChangedEvent = procedure(AMapCell: TMapCell) of object;
   TNewBlockEvent = procedure(ABlock: TBlock) of object;
   TStaticChangedEvent = procedure(AStaticItem: TStaticItem) of object;
   TStaticFilter = function(AStatic: TStaticItem): Boolean of object;
@@ -134,6 +135,7 @@ type
     FCellHeight: Word;
     FBlockCache: TCacheManager;
     FOnChange: TLandscapeChangeEvent;
+    FOnMapChanged: TMapChangedEvent;
     FOnNewBlock: TNewBlockEvent;
     FOnStaticInserted: TStaticChangedEvent;
     FOnStaticDeleted: TStaticChangedEvent;
@@ -165,6 +167,7 @@ type
     property StaticList[X, Y: Word]: TList read GetStaticList;
     property Normals[X, Y: Word]: TNormals read GetNormals;
     property OnChange: TLandscapeChangeEvent read FOnChange write FOnChange;
+    property OnMapChanged: TMapChangedEvent read FOnMapChanged write FOnMapChanged;
     property OnNewBlock: TNewBlockEvent read FOnNewBlock write FOnNewBlock;
     property OnStaticInserted: TStaticChangedEvent read FOnStaticInserted
       write FOnStaticInserted;
@@ -648,7 +651,7 @@ begin
   begin
     cell.Altitude := ABuffer.ReadShortInt;
     cell.TileID := ABuffer.ReadWord;
-    if Assigned(FOnChange) then FOnChange;
+    if Assigned(FOnMapChanged) then FOnMapChanged(cell);
   end;
   //TODO : update surrounding normals
 end;

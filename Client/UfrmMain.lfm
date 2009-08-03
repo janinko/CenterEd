@@ -946,6 +946,7 @@ object frmMain: TfrmMain
       ParentShowHint = False
       ShowHint = True
       Style = tbsCheck
+      OnClick = tbTerrainClick
     end
     object tbStatics: TToolButton
       Left = 300
@@ -957,6 +958,7 @@ object frmMain: TfrmMain
       ParentShowHint = False
       ShowHint = True
       Style = tbsCheck
+      OnClick = tbStaticsClick
     end
     object tbSeparator4: TToolButton
       Left = 369
