@@ -319,6 +319,7 @@ type
     procedure OnNewBlock(ABlock: TBlock);
     procedure OnStaticDeleted(AStaticItem: TStaticItem);
     procedure OnStaticElevated(AStaticItem: TStaticItem);
+    procedure OnStaticHued(AStaticItem: TStaticItem);
     procedure OnStaticInserted(AStaticItem: TStaticItem);
     procedure OnTileRemoved(ATile: TMulBlock);
   public
@@ -726,6 +727,7 @@ begin
   FLandscape.OnNewBlock := @OnNewBlock;
   FLandscape.OnStaticDeleted := @OnStaticDeleted;
   FLandscape.OnStaticElevated := @OnStaticElevated;
+  FLandscape.OnStaticHued := @OnStaticHued;
   FLandscape.OnStaticInserted := @OnStaticInserted;
 
   FTextureManager := TLandTextureManager.Create;
@@ -1650,7 +1652,6 @@ begin
   glViewport(0, 0, oglGameWindow.Width, oglGameWindow.Height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity;
-  //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   gluOrtho2D(0, oglGameWindow.Width, oglGameWindow.Height, 0);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity;
@@ -2042,6 +2043,21 @@ begin
   AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
   PrepareScreenBlock(FScreenBuffer.UpdateSortOrder(AStaticItem));
   FScreenBufferIndexed := False;
+end;
+
+procedure TfrmMain.OnStaticHued(AStaticItem: TStaticItem);
+var
+  blockInfo: PBlockInfo;
+begin
+  blockInfo := nil;
+  while FScreenBuffer.Iterate(blockInfo) do
+  begin
+    if blockInfo^.Item = AStaticItem then
+    begin
+      PrepareScreenBlock(blockInfo);
+      Break;
+    end;
+  end;
 end;
 
 procedure TfrmMain.OnStaticInserted(AStaticItem: TStaticItem);
