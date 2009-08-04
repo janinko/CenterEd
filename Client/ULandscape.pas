@@ -224,7 +224,6 @@ type
     function GetSerial: Cardinal;
     function Insert(AItem: TWorldItem): PBlockInfo;
     function Iterate(var ABlockInfo: PBlockInfo): Boolean;
-    procedure Sort;
     procedure UpdateShortcuts;
     function UpdateSortOrder(AItem: TWorldItem): PBlockInfo;
     { Events }
@@ -852,7 +851,10 @@ var
   drawMapCell: TMapCell;
   drawStatics: TList;
   i, x, y: Integer;
+  tempDrawList: TList;
 begin
+  ADrawList.Clear;
+  tempDrawList := TList.Create;
   for x := AX to AX + AWidth do
   begin
     for y := AY to AY + AWidth do
@@ -868,7 +870,7 @@ begin
             drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
             drawMapCell.PriorityBonus := 0;
             drawMapCell.PrioritySolver := 0;
-            ADrawList.Add(drawMapCell);
+            tempDrawList.Add(drawMapCell);
           end;
         end;
       end;
@@ -885,12 +887,16 @@ begin
               TStaticItem(drawStatics[i]).UpdatePriorities(
                 ResMan.Tiledata.StaticTiles[TStaticItem(drawStatics[i]).TileID],
                 ADrawList.GetSerial);
-              ADrawList.Add(TWorldItem(drawStatics[i]));
+              tempDrawList.Add(drawStatics[i]);
             end;
       end;
     end;
   end;
-  ADrawList.Sort;
+
+  tempDrawList.Sort(@CompareWorldItems);
+  for i := 0 to tempDrawList.Count - 1 do
+    ADrawList.Add(TWorldItem(tempDrawList[i]));
+  tempDrawList.Free;
 end;
 
 function TLandscape.GetEffectiveAltitude(ATile: TMapCell): ShortInt;
@@ -1299,55 +1305,6 @@ begin
   else
     ABlockInfo := ABlockInfo^.Next;
   Result := ABlockInfo <> nil;
-end;
-
-//Mergesort
-procedure TScreenBuffer.Sort;
-
-  function Merge(AHead1, AHead2: PBlockInfo): PBlockInfo;
-  begin
-    if AHead1 = nil then
-      Exit(AHead2);
-
-    if AHead2 = nil then
-      Exit(AHead1);
-
-    if CompareWorldItems(AHead1^.Item, AHead2^.Item) < 0 then
-    begin
-      Result := AHead1;
-      Result^.Next := Merge(Result^.Next, AHead2);
-    end else
-    begin
-      Result := AHead2;
-      Result^.Next := Merge(AHead1, Result^.Next);
-    end;
-  end;
-
-  function MergeSort(AHead: PBlockInfo): PBlockInfo;
-  var
-    head1, head2: PBlockInfo;
-  begin
-    if (AHead <> nil) and (AHead^.Next <> nil) then
-    begin
-      head1 := AHead;
-      head2 := AHead^.Next;
-      while (head2 <> nil) and (head2^.Next <> nil) do
-      begin
-        AHead := AHead^.Next;
-        head2 := AHead^.Next^.Next;
-      end;
-      head2 := AHead^.Next;
-      AHead^.Next := nil;
-
-      Result := Merge(MergeSort(head1), MergeSort(head2));
-    end else
-      Result := AHead;
-  end;
-
-begin
-  if FShortCuts[0] <> nil then
-    FShortCuts[0] := MergeSort(FShortCuts[0]);
-  UpdateShortcuts;
 end;
 
 procedure TScreenBuffer.UpdateShortcuts;

@@ -2255,7 +2255,7 @@ begin
   FLandscape.PrepareBlocks((FX + FLowOffsetX) div 8, (FY + FLowOffsetY) div 8, (FX + FHighOffsetX) div 8 + 1, (FY + FHighOffsetY) div 8 + 1);
   PrepareVirtualLayer(FDrawDistance * 2 + 1, FDrawDistance * 2 + 1);
 
-  FScreenBuffer.Clear;
+  //FScreenBuffer.Clear;
   //TODO : Virtual Layer
   FLandscape.FillDrawList(FScreenBuffer, FX + FLowOffsetX, FY + FLowOffsetY,
     FRangeX, FRangeY, frmBoundaries.tbMinZ.Position,
