@@ -39,6 +39,7 @@ object frmFilter: TfrmFilter
       'Exclusive'
       'Inclusive'
     )
+    OnClick = rgFilterTypeClick
     TabOrder = 0
   end
   object GroupBox1: TGroupBox
@@ -230,6 +231,7 @@ object frmFilter: TfrmFilter
       Width = 85
       BorderSpacing.Around = 4
       Caption = 'Filter active'
+      OnChange = cbTileFilterChange
       TabOrder = 1
     end
   end
@@ -252,6 +254,7 @@ object frmFilter: TfrmFilter
       Align = alTop
       BorderSpacing.Around = 4
       Caption = 'Filter active'
+      OnChange = cbHueFilterChange
       TabOrder = 0
     end
     object vdtHues: TVirtualDrawTree

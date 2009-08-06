@@ -42,6 +42,8 @@ type
   TVirtualTileArray = array of TVirtualTile;
 
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
+  TScreenBufferState = (sbsValid, sbsIndexed, sbsFiltered);
+  TScreenBufferStates = set of TScreenBufferState;
 
   { TfrmMain }
 
@@ -276,8 +278,7 @@ type
     FLandscape: TLandscape;
     FTextureManager: TLandTextureManager;
     FScreenBuffer: TScreenBuffer;
-    FScreenBufferValid: Boolean;
-    FScreenBufferIndexed: Boolean;
+    FScreenBufferState: TScreenBufferStates;
     FCurrentTile: TWorldItem;
     FSelectedTile: TWorldItem;
     FGhostTile: TWorldItem;
@@ -312,6 +313,7 @@ type
     procedure SetY(const AValue: Integer);
     procedure UpdateCurrentTile;
     procedure UpdateCurrentTile(AX, AY: Integer);
+    procedure UpdateFilter;
     procedure UpdateSelection;
     procedure WriteChatMessage(ASender, AMessage: string);
     { Events }
@@ -332,6 +334,7 @@ type
     property CurrentTile: TWorldItem read FCurrentTile write SetCurrentTile;
     property SelectedTile: TWorldItem read FSelectedTile write SetSelectedTile;
     { Methods }
+    procedure InvalidateFilter;
     procedure RegisterAccessChangedListener(AListener: TAccessChangedListener);
     procedure SetPos(AX, AY: Word);
     procedure UnregisterAccessChangedListener(AListener: TAccessChangedListener);
@@ -738,7 +741,7 @@ begin
 
   FTextureManager := TLandTextureManager.Create;
   FScreenBuffer := TScreenBuffer.Create;
-  FScreenBufferValid := False;
+  FScreenBufferState := [];
   X := 0;
   Y := 0;
   edX.MaxValue := FLandscape.CellWidth;
@@ -854,6 +857,7 @@ begin
     oglGameWindow.Repaint;
     FLastDraw := Now;
   end;
+  Sleep(1);
   Done := False;
 end;
 
@@ -932,6 +936,7 @@ begin
     frmFilter.Locked := False;
   end else
     frmFilter.Hide;
+  InvalidateFilter;
 end;
 
 procedure TfrmMain.acFlatExecute(Sender: TObject);
@@ -1675,9 +1680,14 @@ begin
   glLoadIdentity;
 end;
 
+procedure TfrmMain.InvalidateFilter;
+begin
+  Exclude(FScreenBufferState, sbsFiltered);
+end;
+
 procedure TfrmMain.InvalidateScreenBuffer;
 begin
-  FScreenBufferValid := False;
+  Exclude(FScreenBufferState, sbsValid);
 end;
 
 procedure TfrmMain.PrepareScreenBlock(ABlockInfo: PBlockInfo);
@@ -1791,14 +1801,17 @@ var
 begin
   tileRect := GetSelectedRect;
 
-  if not FScreenBufferValid then
+  if not (sbsValid in FScreenBufferState) then
     RebuildScreenBuffer;
 
-  if not FScreenBufferIndexed then
+  if not (sbsIndexed in FScreenBufferState) then
   begin
     FScreenBuffer.UpdateShortcuts;
-    FScreenBufferIndexed := True;
+    Include(FScreenBufferState, sbsIndexed);
   end;
+
+  if not (sbsFiltered in FScreenBufferState) then
+    UpdateFilter;
   
   {if acFilter.Checked then
     staticsFilter := @frmFilter.Filter
@@ -2060,7 +2073,7 @@ var
   cell: TMapCell;
 begin
   PrepareScreenBlock(FScreenBuffer.UpdateSortOrder(AMapCell));
-  FScreenBufferIndexed := False;
+  Exclude(FScreenBufferState, sbsIndexed);
 
   //Find surrounding cells
   current := nil;
@@ -2102,7 +2115,7 @@ procedure TfrmMain.OnStaticElevated(AStaticItem: TStaticItem);
 begin
   AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
   PrepareScreenBlock(FScreenBuffer.UpdateSortOrder(AStaticItem));
-  FScreenBufferIndexed := False;
+  Exclude(FScreenBufferState, sbsIndexed);
 end;
 
 procedure TfrmMain.OnStaticHued(AStaticItem: TStaticItem);
@@ -2277,8 +2290,7 @@ begin
     PrepareScreenBlock(blockInfo);
 
   FScreenBuffer.UpdateShortcuts;
-  FScreenBufferValid := True;
-  FScreenBufferIndexed := True;
+  FScreenBufferState := [sbsValid, sbsIndexed];
 end;
 
 procedure TfrmMain.UpdateCurrentTile;
@@ -2325,6 +2337,31 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TfrmMain.UpdateFilter;
+var
+  blockInfo: PBlockInfo;
+begin
+  blockInfo := nil;
+  while FScreenBuffer.Iterate(blockInfo) do
+  begin
+    if blockInfo^.State in [ssNormal, ssFiltered] then
+    begin
+      blockInfo^.State := ssNormal;
+      if (blockInfo^.Item.Z < frmBoundaries.tbMinZ.Position) or
+        (blockInfo^.Item.Z > frmBoundaries.tbMaxZ.Position) then
+      begin
+        blockInfo^.State := ssFiltered;
+      end else
+      if tbFilter.Down and (blockInfo^.Item is TStaticItem) and
+        (not frmFilter.Filter(TStaticItem(blockInfo^.Item))) then
+      begin
+        blockInfo^.State := ssFiltered;
+      end;
+    end;
+  end;
+  Include(FScreenBufferState, sbsFiltered);
 end;
 
 procedure TfrmMain.UpdateSelection;

@@ -59,11 +59,14 @@ type
     vdtHues: TVirtualDrawTree;
     procedure btnClearClick(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
+    procedure cbHueFilterChange(Sender: TObject);
+    procedure cbTileFilterChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure mnuUncheckHuesClick(Sender: TObject);
     procedure mnuCheckHuesClick(Sender: TObject);
+    procedure rgFilterTypeClick(Sender: TObject);
     procedure vdtFilterDragDrop(Sender: TBaseVirtualTree; Source: TObject;
       DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState;
       Pt: TPoint; var Effect: Integer; Mode: TDropMode);
@@ -137,6 +140,11 @@ begin
   end;
 end;
 
+procedure TfrmFilter.rgFilterTypeClick(Sender: TObject);
+begin
+  frmMain.InvalidateFilter;
+end;
+
 procedure TfrmFilter.vdtFilterDragDrop(Sender: TBaseVirtualTree;
   Source: TObject; DataObject: IDataObject; Formats: TFormatArray;
   Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
@@ -160,6 +168,7 @@ begin
         targetTileInfo := Sender.GetNodeData(node);
         targetTileInfo^.ID := sourceTileInfo^.ID;
         cbTileFilter.Checked := True;
+        frmMain.InvalidateFilter;
       end;
       selected := sourceTree.GetNextSelected(selected);
     end;
@@ -191,6 +200,7 @@ begin
   hueInfo := Sender.GetNodeData(Node);
   FCheckedHues.Bits[hueInfo^.ID] := (Sender.CheckState[node] = csCheckedNormal);
   cbHueFilter.Checked := True;
+  frmMain.InvalidateFilter;
 end;
 
 procedure TfrmFilter.vdtHuesDrawNode(Sender: TBaseVirtualTree;
@@ -319,6 +329,16 @@ end;
 procedure TfrmFilter.btnDeleteClick(Sender: TObject);
 begin
   vdtFilter.DeleteSelectedNodes;
+end;
+
+procedure TfrmFilter.cbHueFilterChange(Sender: TObject);
+begin
+  frmMain.InvalidateFilter;
+end;
+
+procedure TfrmFilter.cbTileFilterChange(Sender: TObject);
+begin
+  frmMain.InvalidateFilter;
 end;
 
 procedure TfrmFilter.btnClearClick(Sender: TObject);

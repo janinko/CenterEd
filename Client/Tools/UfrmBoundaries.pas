@@ -92,11 +92,13 @@ end;
 procedure TfrmBoundaries.tbMaxZChange(Sender: TObject);
 begin
   seMaxZ.Value := tbMaxZ.Position;
+  frmMain.InvalidateFilter;
 end;
 
 procedure TfrmBoundaries.tbMinZChange(Sender: TObject);
 begin
   seMinZ.Value := tbMinZ.Position;
+  frmMain.InvalidateFilter;
 end;
 
 procedure TfrmBoundaries.MouseLeave(var msg: TLMessage);
