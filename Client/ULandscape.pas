@@ -1269,7 +1269,9 @@ begin
 
   if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]) < 0) then
   begin
-    //TODO : update last element if necessary
+    if FShortCuts[0] = nil then
+      FShortCuts[-1] := Result;  //Update last item
+
     Result^.Next := FShortCuts[0];
     FShortCuts[0] := Result;
   end else
@@ -1289,7 +1291,9 @@ begin
     begin
       current := current^.Next;
     end;
-    //TODO : update last element if necessary
+
+    if FShortCuts[-1] = current^.Next then
+      FShortCuts[-1] := Result;  //Update last item
 
     Result^.Next := current^.Next;
     current^.Next := Result;

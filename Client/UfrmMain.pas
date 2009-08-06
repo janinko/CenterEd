@@ -1721,8 +1721,9 @@ begin
 
     if ABlockInfo^.HighRes <> nil then
     begin
-      New(ABlockInfo^.Normals);
-      FLandscape.GetNormals(item.X, item.Y, ABlockInfo^.Normals^);
+      {if ABlockInfo^.Normals = nil then
+        New(ABlockInfo^.Normals);
+      FLandscape.GetNormals(item.X, item.Y, ABlockInfo^.Normals^);} //Unused so far
       ABlockInfo^.DrawQuad[0][0] := drawX;
       ABlockInfo^.DrawQuad[0][1] := drawY - z * 4;
       ABlockInfo^.DrawQuad[1][0] := drawX + 22;
@@ -1837,16 +1838,23 @@ begin
       if blockInfo^.HighRes <> nil then
       begin
         glBindTexture(GL_TEXTURE_2D, blockInfo^.HighRes.Texture);
+
+        if not highlight then
+          glEnable(GL_LIGHTING);
+
         glBegin(GL_QUADS);
-          glNormal3fv(@blockInfo^.Normals^[0]);
+          //glNormal3fv(@blockInfo^.Normals^[0]);
           glTexCoord2f(0, 0); glVertex2fv(@blockInfo^.DrawQuad[0]);
-          glNormal3fv(@blockInfo^.Normals^[3]);
+          //glNormal3fv(@blockInfo^.Normals^[3]);
           glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
-          glNormal3fv(@blockInfo^.Normals^[2]);
+          //glNormal3fv(@blockInfo^.Normals^[2]);
           glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
-          glNormal3fv(@blockInfo^.Normals^[1]);
+          //glNormal3fv(@blockInfo^.Normals^[1]);
           glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
         glEnd;
+
+        if not highlight then
+          glDisable(GL_LIGHTING);
       end else
       begin
         glBindTexture(GL_TEXTURE_2D, blockInfo^.LowRes.Texture);
