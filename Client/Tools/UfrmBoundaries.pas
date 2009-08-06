@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmBoundaries;
 
@@ -62,6 +62,9 @@ var
   frmBoundaries: TfrmBoundaries;
 
 implementation
+
+uses
+  UfrmMain;
 
 { TfrmBoundaries }
 

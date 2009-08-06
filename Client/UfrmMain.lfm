@@ -148,6 +148,7 @@ object frmMain: TfrmMain
         BorderSpacing.Right = 4
         DefaultNodeHeight = 44
         DragMode = dmAutomatic
+        DragOperations = []
         DragType = dtVCL
         Header.AutoSizeIndex = 2
         Header.Columns = <        
@@ -175,7 +176,7 @@ object frmMain: TfrmMain
         TreeOptions.AutoOptions = [toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
         TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
         TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages, toStaticBackground]
-        TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect, toCenterScrollIntoView]
+        TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
         OnClick = vdtTilesClick
         OnDrawNode = vdtTilesDrawNode
         OnEnter = vdtTilesEnter

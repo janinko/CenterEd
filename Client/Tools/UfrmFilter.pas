@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmFilter;
 
@@ -51,7 +51,6 @@ type
     Label1: TLabel;
     mnuUncheckHues: TMenuItem;
     mnuCheckHues: TMenuItem;
-    pnlControls: TPanel;
     pnlRandomPreset: TPanel;
     pmHues: TPopupMenu;
     rgFilterType: TRadioGroup;
@@ -114,8 +113,8 @@ begin
   upperLeft := frmMain.pcLeft.ClientToScreen(Point(frmMain.pcLeft.Width, 0));
   lowerLeft := frmMain.pcLeft.ClientToScreen(Point(frmMain.pcLeft.Width,
     frmMain.pcLeft.Height));
-  Left := upperLeft.x;
-  Top := upperLeft.y;
+  Left := upperLeft.x - 4;
+  Top := upperLeft.y - 4;
   Height := lowerLeft.y - upperLeft.y;
 
   SetWindowParent(Handle, frmMain.Handle);
@@ -160,6 +159,7 @@ begin
         node := Sender.AddChild(nil);
         targetTileInfo := Sender.GetNodeData(node);
         targetTileInfo^.ID := sourceTileInfo^.ID;
+        cbTileFilter.Checked := True;
       end;
       selected := sourceTree.GetNextSelected(selected);
     end;
@@ -190,6 +190,7 @@ var
 begin
   hueInfo := Sender.GetNodeData(Node);
   FCheckedHues.Bits[hueInfo^.ID] := (Sender.CheckState[node] = csCheckedNormal);
+  cbHueFilter.Checked := True;
 end;
 
 procedure TfrmFilter.vdtHuesDrawNode(Sender: TBaseVirtualTree;
