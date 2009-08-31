@@ -1,0 +1,27 @@
+1 VERSIONINFO
+FILEVERSION 0,4,2,87
+PRODUCTVERSION 0,4,2,85
+{
+ BLOCK "StringFileInfo"
+ {
+  BLOCK "040904E4"
+  {
+   VALUE "Comments", "\000"
+   VALUE "CompanyName", "AKS DataBasis\000"
+   VALUE "FileDescription", "UO CentrED\000"
+   VALUE "FileVersion", "0.4.2.87\000"
+   VALUE "InternalName", "\000"
+   VALUE "LegalCopyright", "Andreas Schneider\000"
+   VALUE "LegalTrademarks", "\000"
+   VALUE "OriginalFilename", "CentrED.exe\000"
+   VALUE "ProductName", "CentrED\000"
+   VALUE "ProductVersion", "0.4.2.85\000"
+  }
+ }
+ BLOCK "VarFileInfo"
+ {
+  VALUE "Translation", 0x0409, 0x04E4
+ }
+}
+
+MAINICON ICON "CentrED.ico"

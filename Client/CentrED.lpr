@@ -32,7 +32,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, lnetvisual, LazOpenGLContext,
+  Forms, LResources, lnetvisual, LazOpenGLContext,
   UdmNetwork, UfrmMain, UfrmLogin, UfrmInitialize, UfrmAccountControl,
   virtualtreeview_package, UfrmEditAccount, UfrmDrawSettings, UfrmBoundaries,
   UfrmElevateSettings, UOverlayUI, UResourceManager, UfrmConfirmation,
@@ -41,11 +41,10 @@ uses
   UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
   UPacketHandlers, UAdminHandling, UGameResources, ULandscape;
 
-{$IFDEF Windows}
-  {$R *.res}
-{$ENDIF}
+{$IFDEF WINDOWS}{$R CentrED.rc}{$ENDIF}
 
 begin
+  {$I CentrED.lrs}
   Application.Initialize;
   Application.CreateForm(TdmNetwork, dmNetwork);
   Application.Run;

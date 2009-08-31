@@ -9,10 +9,22 @@
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
+      <Title Value="CentrED"/>
+      <Icon Value="0"/>
     </General>
     <LazDoc Paths="../doc"/>
     <VersionInfo>
-      <ProjectVersion Value=""/>
+      <UseVersionInfo Value="True"/>
+      <AutoIncrementBuild Value="True"/>
+      <CurrentMajorRevNr Value="4"/>
+      <CurrentMinorRevNr Value="2"/>
+      <CurrentBuildNr Value="87"/>
+      <ProjectVersion Value="0.4.2.85"/>
+      <CompanyName Value="AKS DataBasis"/>
+      <FileDescription Value="UO CentrED"/>
+      <LegalCopyright Value="Andreas Schneider"/>
+      <OriginalFilename Value="CentrED.exe"/>
+      <ProductName Value="CentrED"/>
     </VersionInfo>
     <PublishOptions>
       <Version Value="2"/>
@@ -263,8 +275,7 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-FE..\bin\
-"/>
+      <CustomOptions Value="-FE../bin/"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
