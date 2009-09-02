@@ -1,61 +1,56 @@
-object frmVirtualLayer: TfrmVirtualLayer
+inherited frmVirtualLayer: TfrmVirtualLayer
   Left = 290
-  Height = 80
+  Height = 82
   Top = 171
-  Width = 212
-  BorderIcons = []
-  BorderStyle = bsToolWindow
+  Width = 210
   Caption = 'Virtual Layer'
-  ClientHeight = 80
-  ClientWidth = 212
-  Font.Height = -11
-  OnClose = FormClose
-  OnDeactivate = FormDeactivate
-  LCLVersion = '0.9.25'
-  object tbZ: TTrackBar
+  ClientHeight = 82
+  ClientWidth = 210
+  object tbZ: TTrackBar[0]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = seZ
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
     Left = 8
     Height = 33
-    Top = 39
-    Width = 196
+    Top = 41
+    Width = 194
     Frequency = 10
     Max = 127
     Min = -128
     OnChange = tbZChange
     PageSize = 1
-    ScalePos = trTop
-    Align = alTop
+    Position = 0
+    Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Around = 8
     TabOrder = 0
   end
-  object Panel1: TPanel
+  object cbShowLayer: TCheckBox[1]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = seZ
+    AnchorSideTop.Side = asrCenter
     Left = 8
-    Height = 23
-    Top = 8
-    Width = 196
-    Align = alTop
-    BorderSpacing.Around = 8
-    BevelOuter = bvNone
-    ClientHeight = 23
-    ClientWidth = 196
-    ParentFont = True
+    Height = 19
+    Top = 11
+    Width = 106
+    BorderSpacing.Left = 8
+    Caption = 'Show Layer at Z:'
     TabOrder = 1
-    object seZ: TSpinEdit
-      Left = 146
-      Height = 23
-      Width = 50
-      Align = alRight
-      MaxValue = 127
-      MinValue = -128
-      ParentFont = True
-      TabOrder = 0
-    end
-    object cbShowLayer: TCheckBox
-      Height = 23
-      Width = 146
-      Align = alClient
-      Caption = 'Show Layer at Z:'
-      ParentFont = True
-      TabOrder = 1
-    end
+  end
+  object seZ: TSpinEdit[2]
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 152
+    Height = 25
+    Top = 8
+    Width = 50
+    Anchors = [akTop, akRight]
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    MaxValue = 127
+    MinValue = -128
+    TabOrder = 2
   end
 end

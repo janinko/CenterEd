@@ -1,114 +1,109 @@
-object frmBoundaries: TfrmBoundaries
+inherited frmBoundaries: TfrmBoundaries
   Left = 290
-  Height = 154
+  Height = 164
   Top = 171
-  Width = 212
-  ActiveControl = Panel1
-  BorderIcons = []
-  BorderStyle = bsToolWindow
+  Width = 205
   Caption = 'Boundaries'
-  ClientHeight = 154
-  ClientWidth = 212
-  Font.Height = -11
-  OnClose = FormClose
-  OnDeactivate = FormDeactivate
-  LCLVersion = '0.9.27'
-  object tbMinZ: TTrackBar
+  ClientHeight = 164
+  ClientWidth = 205
+  object lblMaxZ: TLabel[0]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = seMaxZ
+    AnchorSideTop.Side = asrCenter
+    Left = 8
+    Height = 16
+    Top = 89
+    Width = 68
+    BorderSpacing.Left = 8
+    Caption = 'Maximum Z:'
+    Layout = tlCenter
+    ParentColor = False
+  end
+  object lblMinZ: TLabel[1]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = seMinZ
+    AnchorSideTop.Side = asrCenter
+    Left = 8
+    Height = 16
+    Top = 12
+    Width = 67
+    BorderSpacing.Left = 8
+    Caption = 'Minimum Z:'
+    Layout = tlCenter
+    ParentColor = False
+  end
+  object tbMinZ: TTrackBar[2]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = seMinZ
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
     Left = 8
     Height = 36
-    Top = 39
-    Width = 196
+    Top = 41
+    Width = 189
     Frequency = 10
     Max = 127
     Min = -128
     OnChange = tbMinZChange
     PageSize = 1
     Position = -128
-    Align = alTop
+    Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Around = 8
     TabOrder = 0
   end
-  object tbMaxZ: TTrackBar
+  object tbMaxZ: TTrackBar[3]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = seMaxZ
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
     Left = 8
     Height = 36
-    Top = 114
-    Width = 196
+    Top = 118
+    Width = 189
     Frequency = 10
     Max = 127
     Min = -128
     OnChange = tbMaxZChange
     PageSize = 1
     Position = 127
-    Align = alTop
+    Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Around = 8
     TabOrder = 1
   end
-  object Panel1: TPanel
-    Left = 8
-    Height = 23
-    Top = 8
-    Width = 196
-    Align = alTop
-    BorderSpacing.Around = 8
-    BevelOuter = bvNone
-    ClientHeight = 23
-    ClientWidth = 196
+  object seMaxZ: TSpinEdit[4]
+    AnchorSideTop.Control = tbMinZ
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 149
+    Height = 25
+    Top = 85
+    Width = 48
+    Anchors = [akTop, akRight]
+    BorderSpacing.Right = 8
+    MaxValue = 127
+    MinValue = -128
+    OnChange = seMaxZChange
     TabOrder = 2
-    object lblMinZ: TLabel
-      Left = 0
-      Height = 23
-      Top = 0
-      Width = 148
-      Align = alClient
-      Caption = 'Minimum Z:'
-      Layout = tlCenter
-      ParentColor = False
-    end
-    object seMinZ: TSpinEdit
-      Left = 148
-      Height = 23
-      Top = 0
-      Width = 48
-      Align = alRight
-      MaxValue = 127
-      MinValue = -128
-      OnChange = seMinZChange
-      TabOrder = 0
-      Value = -128
-    end
+    Value = 127
   end
-  object Panel2: TPanel
-    Left = 8
-    Height = 23
-    Top = 83
-    Width = 196
-    Align = alTop
-    BorderSpacing.Around = 8
-    BevelOuter = bvNone
-    ClientHeight = 23
-    ClientWidth = 196
+  object seMinZ: TSpinEdit[5]
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 149
+    Height = 25
+    Top = 8
+    Width = 48
+    Anchors = [akTop, akRight]
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    MaxValue = 127
+    MinValue = -128
+    OnChange = seMinZChange
     TabOrder = 3
-    object lblMaxZ: TLabel
-      Left = 0
-      Height = 23
-      Top = 0
-      Width = 148
-      Align = alClient
-      Caption = 'Maximum Z:'
-      Layout = tlCenter
-      ParentColor = False
-    end
-    object seMaxZ: TSpinEdit
-      Left = 148
-      Height = 23
-      Top = 0
-      Width = 48
-      Align = alRight
-      MaxValue = 127
-      MinValue = -128
-      OnChange = seMaxZChange
-      TabOrder = 0
-      Value = 127
-    end
+    Value = -128
   end
 end

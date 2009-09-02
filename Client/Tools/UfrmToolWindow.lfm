@@ -1,0 +1,21 @@
+object frmToolWindow: TfrmToolWindow
+  Left = 282
+  Height = 300
+  Top = 157
+  Width = 400
+  BorderIcons = []
+  BorderStyle = bsToolWindow
+  Caption = 'ToolWindow'
+  FormStyle = fsStayOnTop
+  OnClose = FormClose
+  OnDeactivate = FormDeactivate
+  OnShow = FormShow
+  ShowInTaskBar = stNever
+  LCLVersion = '0.9.29'
+  object tmClose: TTimer
+    Enabled = False
+    OnTimer = tmCloseTimer
+    left = 8
+    top = 8
+  end
+end

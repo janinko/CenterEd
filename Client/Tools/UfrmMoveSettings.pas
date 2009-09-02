@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmMoveSettings;
 
@@ -31,13 +31,13 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Buttons, Spin, LMessages, LCLIntf, math;
+  Buttons, Spin, ExtCtrls, Math, UfrmToolWindow;
 
 type
 
   { TfrmMoveSettings }
 
-  TfrmMoveSettings = class(TForm)
+  TfrmMoveSettings = class(TfrmToolWindow)
     btnCancel: TButton;
     cbAsk: TCheckBox;
     gbDirection: TGroupBox;
@@ -51,11 +51,10 @@ type
     btnLeft: TSpeedButton;
     seOffset: TSpinEdit;
     procedure btnTopLeftClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormDeactivate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
+    procedure FormDeactivate(Sender: TObject); override;
+    procedure FormShow(Sender: TObject); override;
   protected
-    procedure MouseLeave(var msg: TLMessage); message CM_MouseLeave;
+    function CanClose: Boolean; override;
   public
     function GetOffsetX: Integer;
     function GetOffsetY: Integer;
@@ -71,15 +70,10 @@ uses
 
 { TfrmMoveSettings }
 
-procedure TfrmMoveSettings.FormClose(Sender: TObject; var CloseAction: TCloseAction);
-begin
-  CloseAction := caHide;
-end;
-
 procedure TfrmMoveSettings.FormDeactivate(Sender: TObject);
 begin
   if not (fsModal in FormState) then
-    Close;
+    inherited FormDeactivate(Sender);
 end;
 
 procedure TfrmMoveSettings.FormShow(Sender: TObject);
@@ -87,13 +81,14 @@ begin
   btnCancel.Visible := (fsModal in FormState);
   if dmNetwork.AccessLevel = alAdministrator then
     seOffset.MaxValue := Max(frmMain.Landscape.CellWidth, frmMain.Landscape.CellHeight);
+
+  inherited FormShow(Sender);
 end;
 
-procedure TfrmMoveSettings.MouseLeave(var msg: TLMessage);
+function TfrmMoveSettings.CanClose: Boolean;
 begin
-  if Visible and (not (fsModal in FormState)) and
-    (not PtInRect(ClientRect, ScreenToClient(Mouse.CursorPos))) then
-    Close;
+  Result := Visible and (not (fsModal in FormState)) and
+    inherited CanClose;
 end;
 
 function TfrmMoveSettings.GetOffsetX: Integer;

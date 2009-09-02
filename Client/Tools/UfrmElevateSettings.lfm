@@ -1,120 +1,92 @@
-object frmElevateSettings: TfrmElevateSettings
+inherited frmElevateSettings: TfrmElevateSettings
   Left = 290
-  Height = 115
+  Height = 114
   Top = 171
-  Width = 231
-  HorzScrollBar.Page = 230
-  HorzScrollBar.Range = 122
-  VertScrollBar.Page = 114
-  VertScrollBar.Range = 59
-  ActiveControl = rbRaise
-  AutoScroll = False
-  BorderIcons = []
-  BorderStyle = bsToolWindow
+  Width = 250
   Caption = 'Elevate'
-  ClientHeight = 115
-  ClientWidth = 231
-  Font.Height = -11
-  OnClose = FormClose
-  OnDeactivate = FormDeactivate
-  LCLVersion = '0.9.25'
-  object Panel1: TPanel
+  ClientHeight = 114
+  ClientWidth = 250
+  object rbRaise: TRadioButton[0]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
     Left = 8
-    Height = 67
+    Height = 19
     Top = 8
-    Width = 215
-    Align = alTop
-    BorderSpacing.Around = 8
-    BevelOuter = bvNone
-    ClientHeight = 67
-    ClientWidth = 215
-    TabOrder = 0
-    object Panel2: TPanel
-      Height = 67
-      Width = 162
-      Align = alClient
-      BevelOuter = bvNone
-      ClientHeight = 67
-      ClientWidth = 162
-      ParentFont = True
-      TabOrder = 0
-      object rbRaise: TRadioButton
-        Height = 21
-        Width = 162
-        Align = alTop
-        Caption = 'Raise'
-        Checked = True
-        State = cbChecked
-        TabOrder = 2
-      end
-      object rbLower: TRadioButton
-        Height = 21
-        Top = 21
-        Width = 162
-        Align = alTop
-        Caption = 'Lower'
-        ParentFont = True
-        TabOrder = 0
-      end
-      object rbSet: TRadioButton
-        Height = 21
-        Top = 42
-        Width = 162
-        Align = alTop
-        Caption = 'Set'
-        ParentFont = True
-        TabOrder = 1
-      end
-    end
-    object Panel3: TPanel
-      Left = 162
-      Height = 67
-      Width = 53
-      Align = alRight
-      BevelOuter = bvNone
-      ClientHeight = 67
-      ClientWidth = 53
-      TabOrder = 1
-      object seZ: TSpinEdit
-        Left = 7
-        Height = 23
-        Top = 20
-        Width = 47
-        MaxValue = 127
-        MinValue = -128
-        ParentFont = True
-        TabOrder = 0
-        Value = 1
-      end
-    end
+    Width = 47
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    Caption = 'Raise'
+    Checked = True
+    State = cbChecked
+    TabOrder = 2
   end
-  object Panel4: TPanel
+  object rbLower: TRadioButton[1]
+    AnchorSideLeft.Control = rbRaise
+    AnchorSideTop.Control = rbRaise
+    AnchorSideTop.Side = asrBottom
     Left = 8
-    Height = 23
-    Top = 83
-    Width = 215
-    Align = alTop
-    BorderSpacing.Around = 8
-    BevelOuter = bvNone
-    ClientHeight = 23
-    ClientWidth = 215
+    Height = 19
+    Top = 27
+    Width = 52
+    Caption = 'Lower'
+    TabOrder = 0
+    TabStop = False
+  end
+  object rbSet: TRadioButton[2]
+    AnchorSideLeft.Control = rbLower
+    AnchorSideTop.Control = rbLower
+    AnchorSideTop.Side = asrBottom
+    Left = 8
+    Height = 19
+    Top = 46
+    Width = 36
+    Caption = 'Set'
     TabOrder = 1
-    object cbRandomHeight: TCheckBox
-      Height = 23
-      Width = 168
-      Align = alClient
-      Caption = 'Add Random Altitude'
-      ParentFont = True
-      TabOrder = 0
-    end
-    object seRandomHeight: TSpinEdit
-      Left = 168
-      Height = 23
-      Width = 47
-      Align = alRight
-      OnChange = seRandomHeightChange
-      ParentFont = True
-      TabOrder = 1
-    end
+    TabStop = False
+  end
+  object cbRandomHeight: TCheckBox[3]
+    AnchorSideLeft.Control = rbSet
+    AnchorSideTop.Control = rbSet
+    AnchorSideTop.Side = asrBottom
+    Left = 8
+    Height = 19
+    Top = 81
+    Width = 135
+    BorderSpacing.Top = 16
+    Caption = 'Add Random Altitude'
+    TabOrder = 3
+  end
+  object seRandomHeight: TSpinEdit[4]
+    AnchorSideLeft.Control = seZ
+    AnchorSideTop.Control = cbRandomHeight
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 197
+    Height = 25
+    Top = 78
+    Width = 45
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 8
+    OnChange = seRandomHeightChange
+    TabOrder = 4
+  end
+  object seZ: TSpinEdit[5]
+    AnchorSideLeft.Control = rbSet
+    AnchorSideTop.Control = rbLower
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 197
+    Height = 25
+    Top = 24
+    Width = 45
+    Anchors = [akTop, akRight]
+    BorderSpacing.Right = 8
+    MaxValue = 127
+    MinValue = -128
+    TabOrder = 5
+    Value = 1
   end
 end

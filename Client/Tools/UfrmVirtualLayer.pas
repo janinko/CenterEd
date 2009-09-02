@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmVirtualLayer;
 
@@ -30,24 +30,19 @@ unit UfrmVirtualLayer;
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LCLIntf,
-  LMessages, StdCtrls, Spin, ComCtrls, ExtCtrls;
+  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  Spin, ComCtrls, ExtCtrls, UfrmToolWindow;
 
 type
 
   { TfrmVirtualLayer }
 
-  TfrmVirtualLayer = class(TForm)
+  TfrmVirtualLayer = class(TfrmToolWindow)
     cbShowLayer: TCheckBox;
-    Panel1: TPanel;
     seZ: TSpinEdit;
     tbZ: TTrackBar;
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormDeactivate(Sender: TObject);
     procedure seZChange(Sender: TObject);
     procedure tbZChange(Sender: TObject);
-  protected
-    procedure MouseLeave(var msg: TLMessage); message CM_MouseLeave;
   public
     { public declarations }
   end; 
@@ -59,17 +54,6 @@ implementation
 
 { TfrmVirtualLayer }
 
-procedure TfrmVirtualLayer.FormClose(Sender: TObject;
-  var CloseAction: TCloseAction);
-begin
-  CloseAction := caHide;
-end;
-
-procedure TfrmVirtualLayer.FormDeactivate(Sender: TObject);
-begin
-  Close;
-end;
-
 procedure TfrmVirtualLayer.seZChange(Sender: TObject);
 begin
   tbZ.Position := seZ.Value;
@@ -78,12 +62,6 @@ end;
 procedure TfrmVirtualLayer.tbZChange(Sender: TObject);
 begin
   seZ.Value := tbZ.Position;
-end;
-
-procedure TfrmVirtualLayer.MouseLeave(var msg: TLMessage);
-begin
-  if not PtInRect(ClientRect, ScreenToClient(Mouse.CursorPos)) then
-    Close;
 end;
 
 initialization

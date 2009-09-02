@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmDrawSettings;
 
@@ -31,32 +31,25 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Spin, ExtCtrls, LMessages, LCLIntf;
+  Spin, ExtCtrls, LMessages, UfrmToolWindow;
 
 type
 
   { TfrmDrawSettings }
 
-  TfrmDrawSettings = class(TForm)
+  TfrmDrawSettings = class(TfrmToolWindow)
     cbForceAltitude: TCheckBox;
     cbRandomHeight: TCheckBox;
     gbHue: TGroupBox;
-    Panel1: TPanel;
-    Panel2: TPanel;
     pbHue: TPaintBox;
     rbRandom: TRadioButton;
     rbTileList: TRadioButton;
     seForceAltitude: TSpinEdit;
     seRandomHeight: TSpinEdit;
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormDeactivate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure pbHueClick(Sender: TObject);
     procedure pbHuePaint(Sender: TObject);
     procedure seForceAltitudeChange(Sender: TObject);
     procedure seRandomHeightChange(Sender: TObject);
-  protected
-    procedure MouseLeave(var msg: TLMessage); message CM_MouseLeave;
   public
     { public declarations }
   end; 
@@ -70,24 +63,6 @@ uses
   UGameResources, UHue, UfrmHueSettings;
 
 { TfrmDrawSettings }
-
-procedure TfrmDrawSettings.FormClose(Sender: TObject;
-  var CloseAction: TCloseAction);
-begin
-  CloseAction := caHide;
-end;
-
-procedure TfrmDrawSettings.FormDeactivate(Sender: TObject);
-begin
-  if not frmHueSettings.Visible then
-    Close;
-end;
-
-procedure TfrmDrawSettings.FormShow(Sender: TObject);
-begin
-  Left := Mouse.CursorPos.x - 8;
-  Top := Mouse.CursorPos.y - 8;
-end;
 
 procedure TfrmDrawSettings.pbHueClick(Sender: TObject);
 var
@@ -125,15 +100,7 @@ begin
   cbRandomHeight.Checked := True;
 end;
 
-procedure TfrmDrawSettings.MouseLeave(var msg: TLMessage);
-begin
-  try
-    if (not frmHueSettings.Visible) and (not PtInRect(ClientRect, ScreenToClient(Mouse.CursorPos))) then
-      Close;
-  except
-    Close;
-  end;
-end;
+//TODO : canclose ---> hue settings
 
 initialization
   {$I UfrmDrawSettings.lrs}

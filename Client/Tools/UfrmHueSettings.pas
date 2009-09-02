@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmHueSettings;
 
@@ -31,25 +31,21 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  LMessages, LCLIntf, UHue;
+  UfrmToolWindow, UHue;
 
 type
 
   { TfrmHueSettings }
 
-  TfrmHueSettings = class(TForm)
+  TfrmHueSettings = class(TfrmToolWindow)
     edHue: TEdit;
     lblHue: TLabel;
     lbHue: TListBox;
     procedure edHueEditingDone(Sender: TObject);
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
-    procedure FormDeactivate(Sender: TObject);
     procedure lbHueDrawItem(Control: TWinControl; Index: Integer; ARect: TRect;
       State: TOwnerDrawState);
     procedure lbHueSelectionChange(Sender: TObject; User: boolean);
-  protected
-    procedure MouseLeave(var msg: TLMessage); message CM_MouseLeave;
   public
     class procedure DrawHue(AHue: THue; ACanvas: TCanvas; ARect: TRect;
       ACaption: string);
@@ -64,12 +60,6 @@ uses
   UGameResources, UGraphicHelper;
 
 { TfrmHueSettings }
-
-procedure TfrmHueSettings.FormClose(Sender: TObject;
-  var CloseAction: TCloseAction);
-begin
-  CloseAction := caHide;
-end;
 
 procedure TfrmHueSettings.edHueEditingDone(Sender: TObject);
 var
@@ -98,11 +88,6 @@ begin
   lbHue.ItemIndex := 0;
 end;
 
-procedure TfrmHueSettings.FormDeactivate(Sender: TObject);
-begin
-  Close;
-end;
-
 procedure TfrmHueSettings.lbHueDrawItem(Control: TWinControl; Index: Integer;
   ARect: TRect; State: TOwnerDrawState);
 var
@@ -118,16 +103,6 @@ end;
 procedure TfrmHueSettings.lbHueSelectionChange(Sender: TObject; User: boolean);
 begin
   edHue.Text := Format('$%x', [lbHue.ItemIndex]);
-end;
-
-procedure TfrmHueSettings.MouseLeave(var msg: TLMessage);
-begin
-  try
-    if not PtInRect(ClientRect, ScreenToClient(Mouse.CursorPos)) then
-      Close;
-  except
-    Close;
-  end;
 end;
 
 class procedure TfrmHueSettings.DrawHue(AHue: THue; ACanvas: TCanvas; ARect: TRect;

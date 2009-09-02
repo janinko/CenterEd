@@ -1,48 +1,59 @@
-object frmHueSettings: TfrmHueSettings
+inherited frmHueSettings: TfrmHueSettings
   Left = 290
-  Height = 208
+  Height = 209
   Top = 171
   Width = 217
-  BorderIcons = []
-  BorderStyle = bsToolWindow
   Caption = 'Hue Settings'
-  ClientHeight = 208
+  ClientHeight = 209
   ClientWidth = 217
-  Font.Height = -11
-  FormStyle = fsStayOnTop
-  OnClose = FormClose
   OnCreate = FormCreate
-  OnDeactivate = FormDeactivate
-  LCLVersion = '0.9.25'
-  object lblHue: TLabel
+  object lblHue: TLabel[0]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = edHue
+    AnchorSideTop.Side = asrCenter
     Left = 8
-    Height = 13
-    Top = 16
-    Width = 27
+    Height = 16
+    Top = 12
+    Width = 26
+    BorderSpacing.Left = 8
     Caption = 'Hue:'
     ParentColor = False
-    ParentFont = True
   end
-  object edHue: TEdit
-    Left = 48
-    Height = 23
-    Top = 10
+  object edHue: TEdit[1]
+    AnchorSideLeft.Control = lblHue
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Owner
+    Left = 42
+    Height = 25
+    Top = 8
     Width = 80
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
     OnEditingDone = edHueEditingDone
-    ParentFont = True
     TabOrder = 0
   end
-  object lbHue: TListBox
+  object lbHue: TListBox[2]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = edHue
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
     Left = 8
     Height = 160
-    Top = 40
-    Width = 200
+    Top = 41
+    Width = 201
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Around = 8
     ItemHeight = 16
     OnDrawItem = lbHueDrawItem
     OnSelectionChange = lbHueSelectionChange
-    ParentFont = True
     Style = lbOwnerDrawFixed
     TabOrder = 1
-    TopIndex = -1
+  end
+  inherited tmClose: TTimer[3]
+    left = 152
+    top = 112
   end
 end

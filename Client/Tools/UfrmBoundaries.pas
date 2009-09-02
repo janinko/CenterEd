@@ -30,30 +30,24 @@ unit UfrmBoundaries;
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LMessages,
-  LCLIntf, StdCtrls, ComCtrls, Spin, ExtCtrls;
+  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  ComCtrls, Spin, ExtCtrls, UfrmToolWindow;
 
 type
 
   { TfrmBoundaries }
 
-  TfrmBoundaries = class(TForm)
+  TfrmBoundaries = class(TfrmToolWindow)
     lblMaxZ: TLabel;
     lblMinZ: TLabel;
-    Panel1: TPanel;
-    Panel2: TPanel;
     seMaxZ: TSpinEdit;
     seMinZ: TSpinEdit;
     tbMinZ: TTrackBar;
     tbMaxZ: TTrackBar;
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormDeactivate(Sender: TObject);
     procedure seMaxZChange(Sender: TObject);
     procedure seMinZChange(Sender: TObject);
     procedure tbMaxZChange(Sender: TObject);
     procedure tbMinZChange(Sender: TObject);
-  protected
-    procedure MouseLeave(var msg: TLMessage); message CM_MouseLeave;
   public
     { public declarations }
   end; 
@@ -68,25 +62,16 @@ uses
 
 { TfrmBoundaries }
 
-procedure TfrmBoundaries.FormClose(Sender: TObject;
-  var CloseAction: TCloseAction);
-begin
-  CloseAction := caHide;
-end;
-
-procedure TfrmBoundaries.FormDeactivate(Sender: TObject);
-begin
-  Close;
-end;
-
 procedure TfrmBoundaries.seMaxZChange(Sender: TObject);
 begin
   tbMaxZ.Position := seMaxZ.Value;
+  frmMain.InvalidateFilter;
 end;
 
 procedure TfrmBoundaries.seMinZChange(Sender: TObject);
 begin
   tbMinZ.Position := seMinZ.Value;
+  frmMain.InvalidateFilter;
 end;
 
 procedure TfrmBoundaries.tbMaxZChange(Sender: TObject);
@@ -99,12 +84,6 @@ procedure TfrmBoundaries.tbMinZChange(Sender: TObject);
 begin
   seMinZ.Value := tbMinZ.Position;
   frmMain.InvalidateFilter;
-end;
-
-procedure TfrmBoundaries.MouseLeave(var msg: TLMessage);
-begin
-  if not PtInRect(ClientRect, ScreenToClient(Mouse.CursorPos)) then
-    Close;
 end;
 
 initialization

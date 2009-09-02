@@ -886,8 +886,6 @@ end;
 
 procedure TfrmMain.acVirtualLayerExecute(Sender: TObject);
 begin
-  frmVirtualLayer.Left := Mouse.CursorPos.x - 8;
-  frmVirtualLayer.Top := Mouse.CursorPos.y - 8;
   frmVirtualLayer.Show;
 end;
 
@@ -896,8 +894,6 @@ begin
   acDraw.Checked := True;
   tbDrawTile.Down := True;
   mnuDraw.Checked := True;
-  frmDrawSettings.Left := Mouse.CursorPos.x - 8;
-  frmDrawSettings.Top := Mouse.CursorPos.y - 8;
   frmDrawSettings.ShowModal;
   ProcessToolState;
 end;
@@ -912,8 +908,6 @@ end;
 
 procedure TfrmMain.acBoundariesExecute(Sender: TObject);
 begin
-  frmBoundaries.Left := Mouse.CursorPos.x - 8;
-  frmBoundaries.Top := Mouse.CursorPos.y - 8;
   frmBoundaries.Show;
 end;
 
@@ -923,8 +917,6 @@ begin
   tbElevateTile.Down := True;
   mnuElevate.Checked := True;
   ProcessToolState;
-  frmElevateSettings.Left := Mouse.CursorPos.x - 8;
-  frmElevateSettings.Top := Mouse.CursorPos.y - 8;
   frmElevateSettings.Show;
 end;
 
@@ -951,8 +943,6 @@ begin
   tbSetHue.Down := True;
   mnuSetHue.Checked := True;
   ProcessToolState;
-  frmHueSettings.Left := Mouse.CursorPos.x - 8;
-  frmHueSettings.Top := Mouse.CursorPos.y - 8;
   frmHueSettings.Show;
 end;
 
@@ -962,8 +952,6 @@ begin
   tbMoveTile.Down := True;
   mnuMove.Checked := True;
   ProcessToolState;
-  frmMoveSettings.Left := Mouse.CursorPos.x - 8;
-  frmMoveSettings.Top := Mouse.CursorPos.y - 8;
   frmMoveSettings.Show;
 end;
 
@@ -2573,8 +2561,6 @@ function TfrmMain.ConfirmAction: Boolean;
 begin
   if acMove.Checked and frmMoveSettings.cbAsk.Checked then
   begin
-    frmMoveSettings.Left := Mouse.CursorPos.x - 8;
-    frmMoveSettings.Top := Mouse.CursorPos.y - 8;
     Result := frmMoveSettings.ShowModal = mrYes;
   end else
   begin
@@ -2582,6 +2568,7 @@ begin
     frmConfirmation.Top := Mouse.CursorPos.y - frmConfirmation.btnYes.Top - frmConfirmation.btnYes.Height div 2;
     Result := frmConfirmation.ShowModal = mrYes;
   end;
+
   if not oglGameWindow.MouseEntered then
     oglGameWindowMouseLeave(nil);
 end;
