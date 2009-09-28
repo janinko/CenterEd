@@ -118,7 +118,6 @@ type
   TMapChangedEvent = procedure(AMapCell: TMapCell) of object;
   TNewBlockEvent = procedure(ABlock: TBlock) of object;
   TStaticChangedEvent = procedure(AStaticItem: TStaticItem) of object;
-  TStaticFilter = function(AStatic: TStaticItem): Boolean of object;
 
   TScreenBuffer = class;
 
@@ -180,7 +179,7 @@ type
     { Methods }
     procedure FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
       AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
-      ANoDraw: Boolean; AStaticsFilter: TStaticFilter);
+      ANoDraw: Boolean);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
     procedure GetNormals(AX, AY: Word; var ANormals: TNormals);
@@ -845,7 +844,7 @@ end;
 
 procedure TLandscape.FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
   AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
-  ANoDraw: Boolean; AStaticsFilter: TStaticFilter);
+  ANoDraw: Boolean);
 var
   landAlt: ShortInt;
   drawMapCell: TMapCell;
@@ -881,8 +880,7 @@ begin
         if drawStatics <> nil then
           for i := 0 to drawStatics.Count - 1 do
             if (TStaticItem(drawStatics[i]).Z >= AMinZ) and
-               (TStaticItem(drawStatics[i]).Z <= AMaxZ) and
-               ((AStaticsFilter = nil) or AStaticsFilter(TStaticItem(drawStatics[i]))) then
+               (TStaticItem(drawStatics[i]).Z <= AMaxZ) then
             begin
               TStaticItem(drawStatics[i]).UpdatePriorities(
                 ResMan.Tiledata.StaticTiles[TStaticItem(drawStatics[i]).TileID],

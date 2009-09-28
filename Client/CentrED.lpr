@@ -34,12 +34,13 @@ uses
   Interfaces, // this includes the LCL widgetset
   Forms, LResources, lnetvisual, LazOpenGLContext, UdmNetwork, UfrmMain,
   UfrmLogin, UfrmInitialize, UfrmAccountControl, virtualtreeview_package,
-  UfrmEditAccount, UfrmDrawSettings, UfrmBoundaries, UfrmElevateSettings,
-  UOverlayUI, UResourceManager, UfrmConfirmation, UfrmMoveSettings, UfrmAbout,
-  UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand, UfrmVirtualLayer,
-  UfrmFilter, UfrmTileInfo, UGUIPlatformUtils, UPlatformTypes,
-  UfrmRegionControl, UPackets, UPacketHandlers, UAdminHandling, UGameResources,
-  ULandscape, UfrmToolWindow;
+  multiloglaz, UfrmEditAccount, UfrmDrawSettings, UfrmBoundaries,
+  UfrmElevateSettings, UOverlayUI, UResourceManager, UfrmConfirmation,
+  UfrmMoveSettings, UfrmAbout, UfrmHueSettings, UfrmRadar,
+  UfrmLargeScaleCommand, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
+  UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
+  UPacketHandlers, UAdminHandling, UGameResources, ULandscape, UfrmToolWindow,
+  Logging;
 
 {$IFDEF WINDOWS}{$R CentrED.rc}{$ENDIF}
 

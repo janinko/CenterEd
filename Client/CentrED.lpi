@@ -18,7 +18,7 @@
       <AutoIncrementBuild Value="True"/>
       <CurrentMajorRevNr Value="4"/>
       <CurrentMinorRevNr Value="2"/>
-      <CurrentBuildNr Value="123"/>
+      <CurrentBuildNr Value="127"/>
       <ProjectVersion Value="0.4.2.85"/>
       <CompanyName Value="AKS DataBasis"/>
       <FileDescription Value="UO CentrED"/>
@@ -37,24 +37,27 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="4">
+    <RequiredPackages Count="5">
       <Item1>
-        <PackageName Value="LazOpenGLContext"/>
-        <MinVersion Valid="True"/>
+        <PackageName Value="multiloglaz"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="LazOpenGLContext"/>
+        <MinVersion Valid="True"/>
       </Item2>
       <Item3>
-        <PackageName Value="lnetvisual"/>
-        <MinVersion Minor="5" Release="3" Valid="True"/>
+        <PackageName Value="LCL"/>
       </Item3>
       <Item4>
+        <PackageName Value="lnetvisual"/>
+        <MinVersion Minor="5" Release="3" Valid="True"/>
+      </Item4>
+      <Item5>
         <PackageName Value="virtualtreeview_package"/>
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
-      </Item4>
+      </Item5>
     </RequiredPackages>
-    <Units Count="30">
+    <Units Count="31">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -246,6 +249,11 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="UfrmToolWindow"/>
       </Unit29>
+      <Unit30>
+        <Filename Value="../Logging.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Logging"/>
+      </Unit30>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -275,9 +283,15 @@
       <Debugging>
         <GenerateDebugInfo Value="True"/>
       </Debugging>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-FE../bin/"/>
+      <CustomOptions Value="-FE../bin/
+"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>

@@ -351,7 +351,7 @@ uses
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
   UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
-  UfrmRegionControl;
+  UfrmRegionControl, Logging;
 
 type
   TGLArrayf4 = array[0..3] of GLfloat;
@@ -1782,7 +1782,6 @@ var
   ghostTile: TWorldItem;
   tileRect: TRect;
   virtualTile: TVirtualTile;
-  staticsFilter: TStaticFilter;
   intensity: GLfloat;
   blockInfo: PBlockInfo;
   item: TWorldItem;
@@ -2269,7 +2268,7 @@ begin
   FLandscape.FillDrawList(FScreenBuffer, FX + FLowOffsetX, FY + FLowOffsetY,
     FRangeX, FRangeY, frmBoundaries.tbMinZ.Position,
     frmBoundaries.tbMaxZ.Position, tbTerrain.Down, tbStatics.Down,
-    acNoDraw.Checked, nil); //TODO : statics filter
+    acNoDraw.Checked); //TODO : statics filter
   //TODO : ghost tile
 
   //Pre-process the buffer
