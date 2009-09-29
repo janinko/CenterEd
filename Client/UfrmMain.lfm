@@ -614,11 +614,11 @@ object frmMain: TfrmMain
     end
     object tsClients: TTabSheet
       Caption = 'Clients'
-      ClientHeight = 495
+      ClientHeight = 492
       ClientWidth = 218
       object lbClients: TListBox
         Left = 0
-        Height = 495
+        Height = 492
         Top = 0
         Width = 218
         Align = alClient
@@ -632,7 +632,7 @@ object frmMain: TfrmMain
     end
     object tsLocations: TTabSheet
       Caption = 'Locations'
-      ClientHeight = 495
+      ClientHeight = 492
       ClientWidth = 218
       object btnClearLocations: TSpeedButton
         AnchorSideLeft.Control = btnDeleteLocation
@@ -641,7 +641,7 @@ object frmMain: TfrmMain
         Left = 128
         Height = 22
         Hint = 'Clear'
-        Top = 453
+        Top = 450
         Width = 23
         BorderSpacing.Left = 4
         Color = clBtnFace
@@ -694,7 +694,7 @@ object frmMain: TfrmMain
         Left = 101
         Height = 22
         Hint = 'Delete'
-        Top = 453
+        Top = 450
         Width = 23
         Anchors = [akLeft, akBottom]
         BorderSpacing.Bottom = 4
@@ -746,7 +746,7 @@ object frmMain: TfrmMain
         Left = 74
         Height = 22
         Hint = 'Add'
-        Top = 453
+        Top = 450
         Width = 23
         Anchors = [akTop, akRight]
         BorderSpacing.Right = 4
@@ -800,7 +800,7 @@ object frmMain: TfrmMain
         AnchorSideBottom.Control = btnDeleteLocation
         Cursor = 63
         Left = 4
-        Height = 431
+        Height = 428
         Top = 18
         Width = 210
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -2418,7 +2418,7 @@ object frmMain: TfrmMain
   end
   object pmClients: TPopupMenu
     left = 184
-    top = 168
+    top = 176
     object mnuGoToClient: TMenuItem
       Caption = 'GoTo'
       Default = True
@@ -2431,12 +2431,12 @@ object frmMain: TfrmMain
     OnTimer = tmMovementTimer
     OnStartTimer = tmMovementTimer
     left = 232
-    top = 64
+    top = 80
   end
   object ActionList1: TActionList
     Images = ImageList1
     left = 264
-    top = 64
+    top = 80
     object acSelect: TAction
       Category = 'Tools'
       Caption = 'Select'
@@ -2536,14 +2536,14 @@ object frmMain: TfrmMain
     Enabled = False
     Interval = 250
     OnTimer = tmGrabTileInfoTimer
-    left = 367
-    top = 64
+    left = 368
+    top = 80
   end
   object tmTileHint: TTimer
     Enabled = False
     OnTimer = tmTileHintTimer
-    left = 185
-    top = 200
+    left = 184
+    top = 224
   end
   object pmGrabTileInfo: TPopupMenu
     OnPopup = pmGrabTileInfoPopup

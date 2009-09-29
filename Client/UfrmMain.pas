@@ -38,7 +38,7 @@ uses
 
 type
 
-  TVirtualTile = class(TStaticItem);
+  TVirtualTile = class(TWorldItem);
 
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
   TScreenBufferState = (sbsValid, sbsIndexed, sbsFiltered);
@@ -288,6 +288,7 @@ type
     FRandomPresetLocation: string;
     FLastDraw: TDateTime;
     FAccessChangedListeners: array of TAccessChangedListener;
+    FRepaintNeeded: Boolean;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -369,6 +370,9 @@ type
     Y: Word;
     Name: string;
   end;
+
+const
+  CScreenBufferValid = [sbsValid, sbsIndexed, sbsFiltered];
 
 { TfrmMain }
 
@@ -461,6 +465,8 @@ begin
 
   if acSelect.Checked then                        //***** Selection Mode *****//
     tmGrabTileInfo.Enabled := True;
+
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.oglGameWindowMouseEnter(Sender: TObject);
@@ -476,6 +482,8 @@ begin
     frmFilter.Hide;
     frmFilter.Locked := False;
   end;
+
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.oglGameWindowMouseLeave(Sender: TObject);
@@ -488,6 +496,8 @@ begin
     CurrentTile := nil;
     FOverlayUI.Visible := False;
   end;
+
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.oglGameWindowMouseMove(Sender: TObject; Shift: TShiftState;
@@ -514,6 +524,8 @@ begin
   CurrentTile := nil;
 
   UpdateCurrentTile(X, Y);
+
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.oglGameWindowMouseUp(Sender: TObject; Button: TMouseButton;
@@ -684,6 +696,7 @@ begin
     end;
   end;
   SelectedTile := nil;
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.oglGameWindowMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -721,6 +734,8 @@ begin
     SetCursorPos(Mouse.CursorPos.X, Mouse.CursorPos.Y - 4 * WheelDelta);
     UpdateCurrentTile(MousePos.X, MousePos.Y - 4 * WheelDelta);
   end;
+
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
@@ -852,10 +867,13 @@ end;
 
 procedure TfrmMain.ApplicationProperties1Idle(Sender: TObject; var Done: Boolean);
 begin
-  if MilliSecondsBetween(FLastDraw, Now) > 30 then
+  if (FScreenBufferState <> CScreenBufferValid) or
+     (FRepaintNeeded and (MilliSecondsBetween(Now, FLastDraw) > 50)) then
   begin
+    Logger.Send([lcClient, lcDebug], 'Repainting Game Window');
     oglGameWindow.Repaint;
     FLastDraw := Now;
+    FRepaintNeeded := False;
   end;
   Sleep(1);
   Done := False;
@@ -2291,7 +2309,7 @@ begin
           virtualTile := TVirtualTile(FVirtualTiles[i]);
         end else
         begin
-          virtualTile := TVirtualTile.Create(nil, nil, 0, 0);
+          virtualTile := TVirtualTile.Create(nil);
           FVirtualTiles.Add(virtualTile);
         end;
 
