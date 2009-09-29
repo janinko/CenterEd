@@ -179,7 +179,7 @@ type
     { Methods }
     procedure FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
       AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
-      ANoDraw: Boolean);
+      ANoDraw: Boolean; AAdditionalTiles: TList = nil);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
     procedure GetNormals(AX, AY: Word; var ANormals: TNormals);
@@ -844,7 +844,7 @@ end;
 
 procedure TLandscape.FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
   AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
-  ANoDraw: Boolean);
+  ANoDraw: Boolean; AAdditionalTiles: TList = nil);
 var
   landAlt: ShortInt;
   drawMapCell: TMapCell;
@@ -890,6 +890,9 @@ begin
       end;
     end;
   end;
+
+  if AAdditionalTiles <> nil then
+    tempDrawList.AddList(AAdditionalTiles);
 
   tempDrawList.Sort(@CompareWorldItems);
   for i := 0 to tempDrawList.Count - 1 do

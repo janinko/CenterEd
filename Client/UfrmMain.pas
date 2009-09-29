@@ -34,12 +34,11 @@ uses
   ComCtrls, OpenGLContext, GL, GLU, UGameResources, ULandscape, ExtCtrls,
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
-  ImagingClasses, dateutils, UPlatformTypes, UVector, UMap;
+  ImagingClasses, dateutils, UPlatformTypes, UVector, UMap, contnrs;
 
 type
 
   TVirtualTile = class(TStaticItem);
-  TVirtualTileArray = array of TVirtualTile;
 
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
   TScreenBufferState = (sbsValid, sbsIndexed, sbsFiltered);
@@ -282,7 +281,7 @@ type
     FCurrentTile: TWorldItem;
     FSelectedTile: TWorldItem;
     FGhostTile: TWorldItem;
-    FVirtualLayer: array of TVirtualTileArray;
+    FVirtualTiles: TObjectList;
     FVLayerMaterial: TMaterial;
     FOverlayUI: TOverlayUI;
     FLocationsFile: string;
@@ -298,9 +297,7 @@ type
     function  GetSelectedRect: TRect;
     procedure InitRender;
     procedure InitSize;
-    procedure InvalidateScreenBuffer;
     procedure PrepareScreenBlock(ABlockInfo: PBlockInfo);
-    procedure PrepareVirtualLayer(AWidth, AHeight: Word);
     procedure ProcessToolState;
     procedure ProcessAccessLevel;
     procedure RebuildScreenBuffer;
@@ -335,6 +332,7 @@ type
     property SelectedTile: TWorldItem read FSelectedTile write SetSelectedTile;
     { Methods }
     procedure InvalidateFilter;
+    procedure InvalidateScreenBuffer;
     procedure RegisterAccessChangedListener(AListener: TAccessChangedListener);
     procedure SetPos(AX, AY: Word);
     procedure UnregisterAccessChangedListener(AListener: TAccessChangedListener);
@@ -769,6 +767,8 @@ begin
   FVLayerMaterial := TMaterial.Create(virtualLayerGraphic.Width, virtualLayerGraphic.Height,
     virtualLayerGraphic);
   virtualLayerGraphic.Free;
+
+  FVirtualTiles := TObjectList.Create(True);
   
   FRandomPresetLocation := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + 'RandomPresets' + PathDelim;
   if not DirectoryExists(FRandomPresetLocation) then CreateDir(FRandomPresetLocation);
@@ -1030,12 +1030,12 @@ begin
   
   vstLocations.SaveToFile(FLocationsFile);
 
-  if FTextureManager <> nil then FreeAndNil(FTextureManager);
-  if FScreenBuffer <> nil then FreeAndNil(FScreenBuffer);
-  if FOverlayUI <> nil then FreeAndNil(FOverlayUI);
-  if FGhostTile <> nil then FreeAndNil(FGhostTile);
-  if FVLayerMaterial <> nil then FreeAndNil(FVLayerMaterial);
-  PrepareVirtualLayer(0, 0); //Clear
+  FreeAndNil(FTextureManager);
+  FreeAndNil(FScreenBuffer);
+  FreeAndNil(FOverlayUI);
+  FreeAndNil(FGhostTile);
+  FreeAndNil(FVLayerMaterial);
+  FreeAndNil(FVirtualTiles);
   
   RegisterPacketHandler($0C, nil);
 end;
@@ -1742,6 +1742,19 @@ begin
       ABlockInfo^.DrawQuad[3][1] := drawY + ABlockInfo^.LowRes.Height - z * 4;
     end;
   end else
+  if item is TVirtualTile then
+  begin
+    ABlockInfo^.LowRes := FVLayerMaterial;
+    ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44);
+    ABlockInfo^.DrawQuad[0][0] := drawX - 22;
+    ABlockInfo^.DrawQuad[0][1] := drawY - z * 4;
+    ABlockInfo^.DrawQuad[1][0] := drawX - 22 + ABlockInfo^.LowRes.Width;
+    ABlockInfo^.DrawQuad[1][1] := drawY - z * 4;
+    ABlockInfo^.DrawQuad[2][0] := drawX - 22 + ABlockInfo^.LowRes.Width;
+    ABlockInfo^.DrawQuad[2][1] := drawY + ABlockInfo^.LowRes.Height - z * 4;
+    ABlockInfo^.DrawQuad[3][0] := drawX - 22;
+    ABlockInfo^.DrawQuad[3][1] := drawY + ABlockInfo^.LowRes.Height - z * 4;
+  end else
   begin
     staticItem := TStaticItem(item);
 
@@ -1799,11 +1812,6 @@ begin
 
   if not (sbsFiltered in FScreenBufferState) then
     UpdateFilter;
-  
-  {if acFilter.Checked then
-    staticsFilter := @frmFilter.Filter
-  else
-    staticsFilter := nil;} //TODO : update list on change}
 
   blockInfo := nil;
   while FScreenBuffer.Iterate(blockInfo) do
@@ -1813,7 +1821,7 @@ begin
 
     item := blockInfo^.Item;
 
-    if acSelect.Checked or item.CanBeEdited then
+    if acSelect.Checked or item.CanBeEdited or (item is TVirtualTile) then
     begin
       intensity := 1.0;
       SetNormalLights;
@@ -2247,8 +2255,13 @@ end;
 procedure TfrmMain.RebuildScreenBuffer;
 var
   blockInfo: PBlockInfo;
+  i, tileX, tileY: Integer;
+  virtualTile: TVirtualTile;
 begin
+  Logger.EnterMethod([lcClient], 'RebuildScreenBuffer');
+
   FDrawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width + oglGamewindow.Height * oglGamewindow.Height) / 44);
+  Logger.Send([lcClient], 'DrawDistance', FDrawDistance);
 
   {$HINTS off}{$WARNINGS off}
   if FX - FDrawDistance < 0 then FLowOffsetX := -FX else FLowOffsetX := -FDrawDistance;
@@ -2261,14 +2274,54 @@ begin
   FRangeY := FHighOffsetY - FLowOffsetY;
 
   FLandscape.PrepareBlocks((FX + FLowOffsetX) div 8, (FY + FLowOffsetY) div 8, (FX + FHighOffsetX) div 8 + 1, (FY + FHighOffsetY) div 8 + 1);
-  PrepareVirtualLayer(FDrawDistance * 2 + 1, FDrawDistance * 2 + 1);
 
-  //FScreenBuffer.Clear;
-  //TODO : Virtual Layer
+  if frmVirtualLayer.cbShowLayer.Checked then
+  begin
+    Logger.Send([lcClient, lcDebug], 'Preparing Virtual Layer');
+    i := 0;
+    for tileX := FX + FLowOffsetX to FX + FHighOffsetX do
+    begin
+      for tileY := FY + FLowOffsetY to FY + FHighOffsetY do
+      begin
+        while (i < FVirtualTiles.Count) and (not (FVirtualTiles[i] is TVirtualTile)) do
+          Inc(i);
+
+        if i < FVirtualTiles.Count then
+        begin
+          virtualTile := TVirtualTile(FVirtualTiles[i]);
+        end else
+        begin
+          virtualTile := TVirtualTile.Create(nil, nil, 0, 0);
+          FVirtualTiles.Add(virtualTile);
+        end;
+
+        virtualTile.X := tileX;
+        virtualTile.Y := tileY;
+        virtualTile.Z := frmVirtualLayer.seZ.Value;
+
+        Inc(i);
+      end;
+    end;
+    while i < FVirtualTiles.Count do
+    begin
+      if FVirtualTiles[i] is TVirtualTile then
+        FVirtualTiles.Delete(i)
+      else
+        Inc(i);
+    end;
+  end else
+  begin
+    for i := FVirtualTiles.Count - 1 downto 0 do
+      if FVirtualTiles[i] is TVirtualTile then
+        FVirtualTiles.Delete(i);
+  end;
+
+  Logger.Send([lcClient, lcDebug], 'VirtualTiles', FVirtualTiles.Count);
+
   FLandscape.FillDrawList(FScreenBuffer, FX + FLowOffsetX, FY + FLowOffsetY,
     FRangeX, FRangeY, frmBoundaries.tbMinZ.Position,
     frmBoundaries.tbMaxZ.Position, tbTerrain.Down, tbStatics.Down,
-    acNoDraw.Checked); //TODO : statics filter
+    acNoDraw.Checked, FVirtualTiles);
   //TODO : ghost tile
 
   //Pre-process the buffer
@@ -2278,6 +2331,8 @@ begin
 
   FScreenBuffer.UpdateShortcuts;
   FScreenBufferState := [sbsValid, sbsIndexed];
+
+  Logger.ExitMethod([lcClient], 'RebuildScreenBuffer');
 end;
 
 procedure TfrmMain.UpdateCurrentTile;
@@ -2411,56 +2466,6 @@ begin
     lblChatHeaderCaption.Font.Bold := True;
     lblChatHeaderCaption.Font.Italic := True;
     lblChatHeaderCaption.Font.Color := clRed;
-  end;
-end;
-
-procedure TfrmMain.PrepareVirtualLayer(AWidth, AHeight: Word);
-var
-  oldWidth, oldHeight: Word;
-  i, j: Integer;
-begin
-  for i := Low(FVirtualLayer) to High(FVirtualLayer) do
-  begin
-    if AHeight < Length(FVirtualLayer[i]) then
-    begin
-      for j := AHeight to Length(FVirtualLayer[i]) - 1 do
-        FVirtualLayer[i][j].Free;
-      SetLength(FVirtualLayer[i], AHeight);
-    end else if AHeight > Length(FVirtualLayer[i]) then
-    begin
-      oldHeight := Length(FVirtualLayer[i]);
-      SetLength(FVirtualLayer[i], AHeight);
-      for j := oldHeight to AHeight - 1 do
-      begin
-        FVirtualLayer[i][j] := TVirtualTile.Create(nil, nil, 0, 0);
-        FVirtualLayer[i][j].TileID := 0;
-        FVirtualLayer[i][j].Hue := 0;
-      end;
-    end;
-  end;
-
-  if AWidth < Length(FVirtualLayer) then
-  begin
-    for i := AWidth to Length(FVirtualLayer) - 1 do
-    begin
-      for j := Low(FVirtualLayer[i]) to High(FVirtualLayer[i]) do
-        FVirtualLayer[i][j].Free;
-    end;
-    SetLength(FVirtualLayer, AWidth);
-  end else if AWidth > Length(FVirtualLayer) then
-  begin
-    oldWidth := Length(FVirtualLayer);
-    SetLength(FVirtualLayer, AWidth);
-    for i := oldWidth to AWidth - 1 do
-    begin
-      SetLength(FVirtualLayer[i], AHeight);
-      for j := Low(FVirtualLayer[i]) to High(FVirtualLayer[i]) do
-      begin
-        FVirtualLayer[i][j] := TVirtualTile.Create(nil, nil, 0, 0);
-        FVirtualLayer[i][j].TileID := 0;
-        FVirtualLayer[i][j].Hue := 0;
-      end;
-    end;
   end;
 end;
 

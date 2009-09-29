@@ -41,6 +41,7 @@ type
     cbShowLayer: TCheckBox;
     seZ: TSpinEdit;
     tbZ: TTrackBar;
+    procedure cbShowLayerChange(Sender: TObject);
     procedure seZChange(Sender: TObject);
     procedure tbZChange(Sender: TObject);
   public
@@ -52,16 +53,26 @@ var
 
 implementation
 
+uses
+  UfrmMain;
+
 { TfrmVirtualLayer }
 
 procedure TfrmVirtualLayer.seZChange(Sender: TObject);
 begin
   tbZ.Position := seZ.Value;
+  frmMain.InvalidateScreenBuffer;
+end;
+
+procedure TfrmVirtualLayer.cbShowLayerChange(Sender: TObject);
+begin
+  frmMain.InvalidateScreenBuffer;
 end;
 
 procedure TfrmVirtualLayer.tbZChange(Sender: TObject);
 begin
   seZ.Value := tbZ.Position;
+  frmMain.InvalidateScreenBuffer;
 end;
 
 initialization

@@ -3,6 +3,7 @@ inherited frmVirtualLayer: TfrmVirtualLayer
   Height = 82
   Top = 171
   Width = 210
+  ActiveControl = cbShowLayer
   Caption = 'Virtual Layer'
   ClientHeight = 82
   ClientWidth = 210
@@ -13,8 +14,8 @@ inherited frmVirtualLayer: TfrmVirtualLayer
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Left = 8
-    Height = 33
-    Top = 41
+    Height = 36
+    Top = 37
     Width = 194
     Frequency = 10
     Max = 127
@@ -31,11 +32,12 @@ inherited frmVirtualLayer: TfrmVirtualLayer
     AnchorSideTop.Control = seZ
     AnchorSideTop.Side = asrCenter
     Left = 8
-    Height = 19
-    Top = 11
-    Width = 106
+    Height = 22
+    Top = 7
+    Width = 126
     BorderSpacing.Left = 8
     Caption = 'Show Layer at Z:'
+    OnChange = cbShowLayerChange
     TabOrder = 1
   end
   object seZ: TSpinEdit[2]
@@ -43,7 +45,7 @@ inherited frmVirtualLayer: TfrmVirtualLayer
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Left = 152
-    Height = 25
+    Height = 21
     Top = 8
     Width = 50
     Anchors = [akTop, akRight]
@@ -51,6 +53,7 @@ inherited frmVirtualLayer: TfrmVirtualLayer
     BorderSpacing.Right = 8
     MaxValue = 127
     MinValue = -128
+    OnChange = seZChange
     TabOrder = 2
   end
 end
