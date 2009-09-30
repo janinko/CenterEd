@@ -492,7 +492,6 @@ begin
           (frmMoveSettings.Visible and (fsModal in frmMoveSettings.FormState))
          ) then //during confirmation the mouse would leave ...
   begin
-    lblTileInfo.Caption := '';
     CurrentTile := nil;
     FOverlayUI.Visible := False;
   end;
@@ -519,9 +518,6 @@ begin
         SetPos(FX - offsetX * 4, FY - offsetY * 4);
     end;
   end;
-  
-  lblTileInfo.Caption := '';
-  CurrentTile := nil;
 
   UpdateCurrentTile(X, Y);
 
@@ -1620,17 +1616,49 @@ end;
 
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
 begin
+  if AValue = FSelectedTile then
+    Exit;
+
   if FCurrentTile <> nil then
     FCurrentTile.OnDestroy.UnregisterEvent(@OnTileRemoved);
   FCurrentTile := AValue;
-  if FCurrentTile <> nil then
+
+  if FCurrentTile = nil then
+  begin
+    lblTileInfo.Caption := '';
+  end else
+  begin
     FCurrentTile.OnDestroy.RegisterEvent(@OnTileRemoved);
+    if FCurrentTile is TVirtualTile then
+      lblTileInfo.Caption := Format('Virtual Layer: X: %d, Y: %d, Z: %d', [FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z])
+    else if FCurrentTile is TMapCell then
+      lblTileInfo.Caption := Format('Terrain TileID: $%x, X: %d, Y: %d, Z: %d', [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z])
+    else if FCurrentTile is TStaticItem then
+      lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x', [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z, TStaticItem(FCurrentTile).Hue]);
+
+    if (acDraw.Checked) and (SelectedTile = nil) then
+    begin
+      if FGhostTile <> nil then
+      begin
+        if (FGhostTile is TStaticItem) and (not frmDrawSettings.cbForceAltitude.Checked) then
+        begin
+          FGhostTile.Z := CurrentTile.Z;
+          if FCurrentTile is TStaticItem then
+            FGhostTile.Z := FGhostTile.Z + ResMan.Tiledata.StaticTiles[FCurrentTile.TileID].Height;
+        end else
+          FGhostTile.Z := frmDrawSettings.seForceAltitude.Value;
+      end;
+    end;
+  end;
 
   UpdateSelection;
 end;
 
 procedure TfrmMain.SetSelectedTile(const AValue: TWorldItem);
 begin
+  if AValue = FSelectedTile then
+    Exit;
+
   if FSelectedTile <> nil then
     FSelectedTile.OnDestroy.UnregisterEvent(@OnTileRemoved);
   FSelectedTile := AValue;
@@ -2211,12 +2239,20 @@ var
   node: PVirtualNode;
   tileInfo: PTileInfo;
   i: Integer;
+  blockInfo: PBlockInfo;
 begin
   if acSelect.Checked then
   begin
     //lblTip.Caption := 'Right click shows a menu with all the tools.';
     lblTip.Caption := 'Press and hold the left mouse button to show a list with actions (eg. grab hue).';
     oglGameWindow.Cursor := crDefault;
+
+    //no highlighted tiles in "selection" mode
+    Logger.Send([lcClient, lcDebug], 'Disable highlighting');
+    blockInfo := nil;
+    while FScreenBuffer.Iterate(blockInfo) do
+      if blockInfo^.State = ssNormal then
+        blockInfo^.Highlighted := False;
   end else
   begin
     lblTip.Caption := 'Press and hold the left mouse button to target an area.';
@@ -2369,34 +2405,18 @@ var
   info: PBlockInfo;
 begin
   FOverlayUI.ActiveArrow := FOverlayUI.HitTest(AX, AY);
-  if FOverlayUI.ActiveArrow > -1 then Exit;
+  if FOverlayUI.ActiveArrow > -1 then
+  begin
+    CurrentTile := nil;
+    Exit;
+  end;
 
   info := FScreenBuffer.Find(Point(AX, AY));
   if info <> nil then
   begin
     CurrentTile := info^.Item;
-
-    if CurrentTile is TVirtualTile then
-      lblTileInfo.Caption := Format('Virtual Layer: X: %d, Y: %d, Z: %d', [CurrentTile.X, CurrentTile.Y, CurrentTile.Z])
-    else if CurrentTile is TMapCell then
-      lblTileInfo.Caption := Format('Terrain TileID: $%x, X: %d, Y: %d, Z: %d', [CurrentTile.TileID, CurrentTile.X, CurrentTile.Y, CurrentTile.Z])
-    else
-      lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x', [CurrentTile.TileID, CurrentTile.X, CurrentTile.Y, CurrentTile.Z, TStaticItem(CurrentTile).Hue]);
-      
-    if (acDraw.Checked) and (SelectedTile = nil) then
-    begin
-      if FGhostTile <> nil then
-      begin
-        if (FGhostTile is TStaticItem) and (not frmDrawSettings.cbForceAltitude.Checked) then
-        begin
-          FGhostTile.Z := CurrentTile.Z;
-          if CurrentTile is TStaticItem then
-            FGhostTile.Z := FGhostTile.Z + ResMan.Tiledata.StaticTiles[CurrentTile.TileID].Height;
-        end else
-          FGhostTile.Z := frmDrawSettings.seForceAltitude.Value;
-      end;
-    end;
-  end;
+  end else
+    CurrentTile := nil;
 end;
 
 procedure TfrmMain.UpdateFilter;
@@ -2429,32 +2449,27 @@ var
   selectedRect: TRect;
   blockInfo: PBlockInfo;
 begin
-  if acSelect.Checked then
-  begin
-    //no highlighted tiles in "selection" mode
-    blockInfo := nil;
-    while FScreenBuffer.Iterate(blockInfo) do
-      if blockInfo^.State = ssNormal then
-        blockInfo^.Highlighted := False;
-    Exit;
-  end;
-
-  if CurrentTile <> nil then
+  Logger.EnterMethod([lcClient, lcDebug], 'UpdateSelection');
+  if (CurrentTile <> nil) and (not acSelect.Checked) then
   begin
     blockInfo := nil;
     if (SelectedTile <> nil) and (CurrentTile <> SelectedTile) then
     begin
+      Logger.Send([lcClient, lcDebug], 'Multiple Targets');
       selectedRect := GetSelectedRect;
+      Logger.Send([lcClient, lcDebug], 'SelectedRect', selectedRect);
       while FScreenBuffer.Iterate(blockInfo) do
         if blockInfo^.State = ssNormal then
           blockInfo^.Highlighted := PtInRect(selectedRect, Point(blockInfo^.Item.X, blockInfo^.Item.Y));
     end else
     begin
+      Logger.Send([lcClient, lcDebug], 'Single Target');
       while FScreenBuffer.Iterate(blockInfo) do
         if blockInfo^.State = ssNormal then
           blockInfo^.Highlighted := (blockInfo^.Item = CurrentTile);
     end;
   end;
+  Logger.ExitMethod([lcClient, lcDebug], 'UpdateSelection');
 end;
 
 procedure TfrmMain.OnTileRemoved(ATile: TMulBlock);
