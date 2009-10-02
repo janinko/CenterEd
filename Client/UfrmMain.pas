@@ -2150,6 +2150,7 @@ procedure TfrmMain.OnStaticDeleted(AStaticItem: TStaticItem);
 begin
   FScreenBuffer.Delete(AStaticItem);
   UpdateCurrentTile;
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.OnStaticElevated(AStaticItem: TStaticItem);
@@ -2169,6 +2170,7 @@ begin
     if blockInfo^.Item = AStaticItem then
     begin
       PrepareScreenBlock(blockInfo);
+      FRepaintNeeded := True;
       Break;
     end;
   end;
@@ -2182,6 +2184,7 @@ begin
     AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
     PrepareScreenBlock(FScreenBuffer.Insert(AStaticItem));
     UpdateCurrentTile;
+    FRepaintNeeded := True;
   end;
 end;
 
