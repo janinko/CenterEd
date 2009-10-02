@@ -31,8 +31,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Dialogs, lNetComponents, lNet,
-  UEnhancedMemoryStream, UPacket, UEnums, ExtCtrls, dateutils, URectList,
-  LCLIntf;
+  UEnhancedMemoryStream, UPacket, UEnums, ExtCtrls, dateutils;
 
 type
 
@@ -57,7 +56,6 @@ type
     FAccessLevel: TAccessLevel;
     FDataDir: string;
     FLastPacket: TDateTime;
-    FWriteMap: TRectList;
     procedure OnCanSend(ASocket: TLSocket);
     procedure OnConnectionHandlingPacket(ABuffer: TEnhancedMemoryStream);
     procedure ProcessQueue;
@@ -65,11 +63,9 @@ type
   public
     property Username: string read FUsername;
     property AccessLevel: TAccessLevel read FAccessLevel write FAccessLevel;
-    function CanWrite(AX, AY: Word): Boolean;
     procedure Send(APacket: TPacket);
     procedure Disconnect;
     procedure CheckClose(ASender: TForm);
-    procedure UpdateWriteMap(AStream: TEnhancedMemoryStream);
   end; 
 
 var
@@ -102,7 +98,6 @@ begin
   if FSendQueue <> nil then FreeAndNil(FSendQueue);
   if FReceiveQueue <> nil then FreeAndNil(FReceiveQueue);
   if PacketHandlers[$02] <> nil then FreeAndNil(PacketHandlers[$02]);
-  if FWriteMap <> nil then FreeAndNil(FWriteMap);
 end;
 
 procedure TdmNetwork.TCPClientConnect(aSocket: TLSocket);
@@ -199,11 +194,7 @@ begin
           width := ABuffer.ReadWord;
           height := ABuffer.ReadWord;
           ResMan.InitLandscape(width, height);
-
-          {FWriteMap := TBits.Create(ResMan.Landscape.CellWidth * ResMan.Landscape.CellHeight);
-          FWriteMap.XorBits(FWriteMap); //set all to 1}
-          FWriteMap := TRectList.Create;
-          UpdateWriteMap(ABuffer);
+          ResMan.Landscape.UpdateWriteMap(ABuffer);
 
           frmMain := TfrmMain.Create(dmNetwork);
           frmRadarMap := TfrmRadarMap.Create(frmMain);
@@ -320,7 +311,6 @@ begin
     frmMain.ApplicationProperties1.OnIdle := nil;
     FreeAndNil(frmMain);
   end;
-  if FWriteMap <> nil then FreeAndNil(FWriteMap);
   if GameResourceManager <> nil then FreeAndNil(GameResourceManager);
   frmInitialize.Hide;
   while frmLogin.ShowModal = mrOK do
@@ -338,23 +328,6 @@ begin
   end;
   frmLogin.Close;
   FreeAndNil(frmLogin);
-end;
-
-function TdmNetwork.CanWrite(AX, AY: Word): Boolean;
-var
-  i: Integer;
-  pt: TPoint;
-begin
-  if FWriteMap.Count > 0 then
-  begin
-    pt := Point(AX, AY);
-    for i := 0 to FWriteMap.Count - 1 do
-      if PtInRect(FWriteMap.Rects[i], pt) then
-        Exit(True);
-
-    Result := False;
-  end else
-    Result := True;
 end;
 
 procedure TdmNetwork.Send(APacket: TPacket);
@@ -383,23 +356,6 @@ begin
      ((frmInitialize = nil) or (not frmInitialize.Visible)) then
   begin
     Application.Terminate;
-  end;
-end;
-
-procedure TdmNetwork.UpdateWriteMap(AStream: TEnhancedMemoryStream);
-var
-  x1, y1, x2, y2: Word;
-  i, areaCount: Integer;
-begin
-  FWriteMap.Clear;
-  areaCount := AStream.ReadWord;
-  for i := 0 to areaCount - 1 do
-  begin
-    x1 := AStream.ReadWord;
-    y1 := AStream.ReadWord;
-    x2 := AStream.ReadWord;
-    y2 := AStream.ReadWord;
-    FWriteMap.Add(x1, y1, x2, y2);
   end;
 end;
 

@@ -45,7 +45,7 @@ type
   
   { TMaterial }             //TODO : add ref counting
   
-  TMaterial = class(TObject)
+  TMaterial = class
     constructor Create(AWidth, AHeight: Integer; AGraphic: TSingleImage);
     destructor Destroy; override;
   protected
@@ -69,7 +69,7 @@ type
   
   { TLandTextureManager }
   
-  TLandTextureManager = class(TObject)
+  TLandTextureManager = class
     constructor Create;
     destructor Destroy; override;
     function GetArtMaterial(ATileID: Word): TMaterial; overload;
@@ -96,10 +96,12 @@ type
     function GetSize: Integer; override;
     procedure RebuildList;
   end;
+
+  TLandscape = class;
   
   { TBlock }
 
-  TBlock = class(TObject)
+  TBlock = class
     constructor Create(AMap: TMapBlock; AStatics: TStaticBlock);
     destructor Destroy; override;
   protected
@@ -111,7 +113,7 @@ type
     property Map: TMapBlock read FMapBlock;
     property Static: TStaticBlock read FStaticBlock;
     { Methods }
-    procedure UpdateBlockAcess;
+    procedure UpdateBlockAcess(ALandscape: TLandscape);
   end;
   
   TLandscapeChangeEvent = procedure of object;
@@ -123,7 +125,7 @@ type
 
   { TLandscape }
 
-  TLandscape = class(TObject)
+  TLandscape = class
     constructor Create(AWidth, AHeight: Word);
     destructor Destroy; override;
   protected
@@ -141,6 +143,7 @@ type
     FOnStaticElevated: TStaticChangedEvent;
     FOnStaticHued: TStaticChangedEvent;
     FOpenRequests: TBits;
+    FWriteMap: TBits;
     { Methods }
     function GetMapBlock(AX, AY: Word): TMapBlock;
     function GetMapCell(AX, AY: Word): TMapCell;
@@ -177,6 +180,7 @@ type
     property OnStaticHued: TStaticChangedEvent read FOnStaticHued
       write FOnStaticHued;
     { Methods }
+    function CanWrite(AX, AY: Word): Boolean;
     procedure FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
       AHeight: Word; AMap, AStatics: Boolean; ANoDraw: Boolean;
       AAdditionalTiles: TList = nil);
@@ -186,6 +190,7 @@ type
     procedure MoveStatic(AStatic: TStaticItem; AX, AY: Word);
     procedure PrepareBlocks(AX1, AY1, AX2, AY2: Word);
     procedure UpdateBlockAccess;
+    procedure UpdateWriteMap(AStream: TEnhancedMemoryStream);
   end;
 
   TScreenState = (ssNormal, ssFiltered, ssGhost);
@@ -205,7 +210,7 @@ type
 
   { TScreenBuffer }
 
-  TScreenBuffer = class(TObject)
+  TScreenBuffer = class
     constructor Create; virtual;
     destructor Destroy; override;
   protected
@@ -240,7 +245,7 @@ type
 implementation
 
 uses
-  UGameResources, UdmNetwork, UPackets, UPacketHandlers;
+  UGameResources, UdmNetwork, UPackets, UPacketHandlers, Logging;
 
 const
   mMap = 0;
@@ -452,7 +457,6 @@ begin
   inherited Create;
   FMapBlock := AMap;
   FStaticBlock := AStatics;
-  UpdateBlockAcess;
 end;
 
 destructor TBlock.Destroy;
@@ -462,15 +466,15 @@ begin
   inherited Destroy;
 end;
 
-procedure TBlock.UpdateBlockAcess;
+procedure TBlock.UpdateBlockAcess(ALandscape: TLandscape);
 var
   staticItem: TStaticItem;
   i: Integer;
 begin
   for i := Low(FMapBlock.Cells) to High(FMapBlock.Cells) do
   begin
-    FMapBlock.Cells[i].CanBeEdited := dmNetwork.CanWrite(
-      FMapBlock.Cells[i].X, FMapBlock.Cells[i].Y);
+    FMapBlock.Cells[i].CanBeEdited := ALandscape.CanWrite(FMapBlock.Cells[i].X,
+      FMapBlock.Cells[i].Y);
   end;
 
   if FStaticBlock is TSeperatedStaticBlock then
@@ -479,8 +483,8 @@ begin
   for i := 0 to FStaticBlock.Items.Count - 1 do
   begin
     staticItem := TStaticItem(FStaticBlock.Items[i]);
-    staticItem.CanBeEdited := dmNetwork.CanWrite(
-      staticItem.X, staticItem.Y);
+    staticItem.CanBeEdited := ALandscape.CanWrite(staticItem.X,
+      staticItem.Y);
   end;
 end;
 
@@ -488,7 +492,7 @@ end;
 
 constructor TLandscape.Create(AWidth, AHeight: Word);
 var
-  blockID: Integer;
+  blockID, i: Integer;
 begin
   inherited Create;
   FWidth := AWidth;
@@ -506,7 +510,10 @@ begin
   FOnStaticInserted := nil;
 
   FOpenRequests := TBits.Create(FWidth * FHeight);
-  FOpenRequests.Clearall;
+  FOpenRequests.Clearall; //set all to 0
+  FWriteMap := TBits.Create(FCellWidth * FCellHeight);
+  for i := 0 to FWriteMap.Size - 1 do
+    FWriteMap[i] := True;
 
   RegisterPacketHandler($04, TPacketHandler.Create(0, @OnBlocksPacket));
   RegisterPacketHandler($06, TPacketHandler.Create(8, @OnDrawMapPacket));
@@ -524,6 +531,9 @@ begin
     FBlockCache.OnRemoveObject := nil;
     FreeAndNil(FBlockCache);
   end;
+
+  FreeAndNil(FOpenRequests);
+  FreeAndNil(FWriteMap);
   
   RegisterPacketHandler($04, nil);
   RegisterPacketHandler($06, nil);
@@ -627,6 +637,7 @@ begin
 
     FBlockCache.RemoveID(id);
     block := TBlock.Create(map, statics);
+    block.UpdateBlockAcess(Self);
     FBlockCache.StoreID(id, block);
 
     FOpenRequests[coords.Y * FWidth + coords.X] := False;
@@ -650,7 +661,6 @@ begin
     cell.TileID := ABuffer.ReadWord;
     if Assigned(FOnMapChanged) then FOnMapChanged(cell);
   end;
-  //TODO : update surrounding normals
 end;
 
 procedure TLandscape.OnInsertStaticPacket(ABuffer: TEnhancedMemoryStream);
@@ -680,7 +690,7 @@ begin
         i);
     targetStaticList.Sort(@CompareWorldItems);
     staticItem.Owner := block;
-    staticItem.CanBeEdited := dmNetwork.CanWrite(x, y);
+    staticItem.CanBeEdited := CanWrite(x, y);
 
     if Assigned(FOnStaticInserted) then FOnStaticInserted(staticItem);
   end;
@@ -807,7 +817,7 @@ begin
         i);
     statics.Sort(@CompareWorldItems);
     staticItem.Owner := targetBlock;
-    staticItem.CanBeEdited := dmNetwork.CanWrite(newX, newY);
+    staticItem.CanBeEdited := CanWrite(newX, newY);
 
     if Assigned(FOnStaticInserted) then FOnStaticInserted(staticItem);
   end;
@@ -839,6 +849,11 @@ begin
       end;
     end;
   end;
+end;
+
+function TLandscape.CanWrite(AX, AY: Word): Boolean;
+begin
+  Result := FWriteMap[AX * FCellHeight + AY];
 end;
 
 procedure TLandscape.FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
@@ -1063,7 +1078,41 @@ var
 begin
   cacheEntry := nil;
   while FBlockCache.Iterate(cacheEntry) do
-    TBlock(cacheEntry^.Obj).UpdateBlockAcess;
+    if cacheEntry^.Obj <> nil then
+      TBlock(cacheEntry^.Obj).UpdateBlockAcess(Self);
+end;
+
+procedure TLandscape.UpdateWriteMap(AStream: TEnhancedMemoryStream);
+var
+  x1, y1, x2, y2: Word;
+  i, areaCount, cellX, cellY: Integer;
+begin
+  Logger.EnterMethod([lcLandscape, lcDebug], 'TLandscape.UpdateWriteMap');
+
+  areaCount := AStream.ReadWord;
+  Logger.Send([lcLandscape, lcDebug], 'AreaCount', areaCount);
+
+  if areaCount > 0 then
+  begin
+    FWriteMap.Clearall;
+    for i := 0 to areaCount - 1 do
+    begin
+      x1 := AStream.ReadWord;
+      y1 := AStream.ReadWord;
+      x2 := AStream.ReadWord;
+      y2 := AStream.ReadWord;
+      for cellX := x1 to x2 do
+        for cellY := y1 to y2 do
+          FWriteMap[cellX * FCellHeight + cellY] := True;
+    end;
+  end else
+    for i := 0 to FWriteMap.Size - 1 do
+      FWriteMap[i] := True;
+
+  Logger.Send([lcLandscape, lcDebug], 'WriteMap @ 0,0', FWriteMap[0]);
+
+  UpdateBlockAccess;
+  Logger.ExitMethod([lcLandscape, lcDebug], 'TLandscape.UpdateWriteMap');
 end;
 
 { TMaterial }

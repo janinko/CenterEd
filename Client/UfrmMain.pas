@@ -2296,6 +2296,8 @@ begin
       end;
     end;
   end;
+
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.ProcessAccessLevel;
@@ -2546,8 +2548,8 @@ begin
     $07: //access changed
       begin
         accessLevel := TAccessLevel(ABuffer.ReadByte);
-        dmNetwork.UpdateWriteMap(ABuffer); //TODO : movie writemap to landscape
-        FLandscape.UpdateBlockAccess; //TODO : could be handled by updatewritemap
+        FLandscape.UpdateWriteMap(ABuffer);
+        FRepaintNeeded := True;
 
         if accessLevel <> dmNetwork.AccessLevel then
         begin
