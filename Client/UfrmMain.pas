@@ -2373,9 +2373,8 @@ begin
   Logger.Send([lcClient, lcDebug], 'VirtualTiles', FVirtualTiles.Count);
 
   FLandscape.FillDrawList(FScreenBuffer, FX + FLowOffsetX, FY + FLowOffsetY,
-    FRangeX, FRangeY, frmBoundaries.tbMinZ.Position,
-    frmBoundaries.tbMaxZ.Position, tbTerrain.Down, tbStatics.Down,
-    acNoDraw.Checked, FVirtualTiles);
+    FRangeX, FRangeY, tbTerrain.Down, tbStatics.Down, acNoDraw.Checked,
+    FVirtualTiles);
   //TODO : ghost tile
 
   //Pre-process the buffer

@@ -178,8 +178,8 @@ type
       write FOnStaticHued;
     { Methods }
     procedure FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
-      AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
-      ANoDraw: Boolean; AAdditionalTiles: TList = nil);
+      AHeight: Word; AMap, AStatics: Boolean; ANoDraw: Boolean;
+      AAdditionalTiles: TList = nil);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
     procedure GetNormals(AX, AY: Word; var ANormals: TNormals);
@@ -843,10 +843,9 @@ begin
 end;
 
 procedure TLandscape.FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
-  AHeight: Word; AMinZ, AMaxZ: ShortInt; AMap, AStatics: Boolean;
-  ANoDraw: Boolean; AAdditionalTiles: TList = nil);
+  AHeight: Word; AMap, AStatics: Boolean; ANoDraw: Boolean;
+  AAdditionalTiles: TList = nil);
 var
-  landAlt: ShortInt;
   drawMapCell: TMapCell;
   drawStatics: TList;
   i, x, y: Integer;
@@ -860,17 +859,13 @@ begin
     begin
       if AMap then
       begin
-        landAlt := GetLandAlt(x, y, 0);
-        if (landAlt >= AMinZ) and (landAlt <= AMaxZ) then
+        drawMapCell := GetMapCell(x, y);
+        if (drawMapCell <> nil) and (ANoDraw or (drawMapCell.TileID > 2)) then
         begin
-          drawMapCell := GetMapCell(x, y);
-          if (drawMapCell <> nil) and (ANoDraw or (drawMapCell.TileID > 2)) then
-          begin
-            drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
-            drawMapCell.PriorityBonus := 0;
-            drawMapCell.PrioritySolver := 0;
-            tempDrawList.Add(drawMapCell);
-          end;
+          drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
+          drawMapCell.PriorityBonus := 0;
+          drawMapCell.PrioritySolver := 0;
+          tempDrawList.Add(drawMapCell);
         end;
       end;
 
@@ -879,14 +874,12 @@ begin
         drawStatics := GetStaticList(x, y);
         if drawStatics <> nil then
           for i := 0 to drawStatics.Count - 1 do
-            if (TStaticItem(drawStatics[i]).Z >= AMinZ) and
-               (TStaticItem(drawStatics[i]).Z <= AMaxZ) then
-            begin
-              TStaticItem(drawStatics[i]).UpdatePriorities(
-                ResMan.Tiledata.StaticTiles[TStaticItem(drawStatics[i]).TileID],
-                ADrawList.GetSerial);
-              tempDrawList.Add(drawStatics[i]);
-            end;
+          begin
+            TStaticItem(drawStatics[i]).UpdatePriorities(
+              ResMan.Tiledata.StaticTiles[TStaticItem(drawStatics[i]).TileID],
+              ADrawList.GetSerial);
+            tempDrawList.Add(drawStatics[i]);
+          end;
       end;
     end;
   end;
