@@ -140,7 +140,7 @@ type
     FOnStaticDeleted: TStaticChangedEvent;
     FOnStaticElevated: TStaticChangedEvent;
     FOnStaticHued: TStaticChangedEvent;
-    FOpenRequests: array of Boolean;
+    FOpenRequests: TBits;
     { Methods }
     function GetMapBlock(AX, AY: Word): TMapBlock;
     function GetMapCell(AX, AY: Word): TMapCell;
@@ -504,10 +504,9 @@ begin
   FOnStaticElevated := nil;
   FOnStaticHued := nil;
   FOnStaticInserted := nil;
-  
-  SetLength(FOpenRequests, FWidth * FHeight); //TODO : TBits?
-  for blockID := 0 to Length(FOpenRequests) - 1 do
-    FOpenRequests[blockID] := False;
+
+  FOpenRequests := TBits.Create(FWidth * FHeight);
+  FOpenRequests.Clearall;
 
   RegisterPacketHandler($04, TPacketHandler.Create(0, @OnBlocksPacket));
   RegisterPacketHandler($06, TPacketHandler.Create(8, @OnDrawMapPacket));
