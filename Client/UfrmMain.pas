@@ -350,7 +350,7 @@ uses
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
   UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
-  UfrmRegionControl, Logging;
+  UfrmRegionControl, Logging, LConvEncoding;
 
 type
   TGLArrayf4 = array[0..3] of GLfloat;
@@ -1338,13 +1338,16 @@ begin
         id := tileInfo^.ID;
         if id > $3FFF then
           Dec(id, $4000);
-        PaintInfo.Canvas.TextRect(PaintInfo.CellRect, 0, 0, Format('$%x', [id]), textStyle);
+        PaintInfo.Canvas.TextRect(PaintInfo.CellRect, 0, 0, Format('$%x', [id]),
+          textStyle);
       end;
     1:
       begin
         if ResMan.Art.Exists(tileInfo^.ID) then
         begin
-          artEntry := ResMan.Art.GetArt(tileInfo^.ID, RGB2ARGB(PaintInfo.Canvas.Pixels[PaintInfo.CellRect.Left, PaintInfo.CellRect.Top]), nil, False);
+          artEntry := ResMan.Art.GetArt(tileInfo^.ID,
+            RGB2ARGB(PaintInfo.Canvas.Pixels[PaintInfo.CellRect.Left,
+              PaintInfo.CellRect.Top]), nil, False);
           DisplayImage(PaintInfo.Canvas, PaintInfo.CellRect, artEntry.Graphic);
           artEntry.Free;
         end;
@@ -1352,7 +1355,9 @@ begin
     2:
       begin
         tileData := TTileData(ResMan.Tiledata.Block[tileInfo^.ID]);
-        PaintInfo.Canvas.TextRect(PaintInfo.CellRect, PaintInfo.CellRect.Left, PaintInfo.CellRect.Top, Trim(tileData.TileName), textStyle);
+        PaintInfo.Canvas.TextRect(PaintInfo.CellRect, PaintInfo.CellRect.Left,
+          PaintInfo.CellRect.Top, ISO_8859_1ToUTF8(Trim(tileData.TileName)),
+          textStyle);
         tileData.Free;
       end;
   end;
