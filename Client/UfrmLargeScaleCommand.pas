@@ -146,18 +146,18 @@ type
     procedure vstActionsChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstActionsGetText(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: UTF8String);
+      var CellText: String);
     procedure vstActionsPaintText(Sender: TBaseVirtualTree;
       const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType);
     procedure vstAreaChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstAreaGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; TextType: TVSTTextType; var CellText: UTF8String);
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
   protected
     FLastX: Integer;
     FLastY: Integer;
     FAreaMove: TAreaMove;
-    procedure AddNode(AActionID: Integer; ACaption: UTF8String);
+    procedure AddNode(AActionID: Integer; ACaption: String);
     function FindNode(AActionID: Integer): PVirtualNode;
     procedure SerializeTiles(ATileList: TVirtualDrawTree;
       AStream: TEnhancedMemoryStream);
@@ -178,7 +178,7 @@ type
   PNodeInfo = ^TNodeInfo;
   TNodeInfo = record
     ActionID: Integer;
-    Caption: UTF8String;
+    Caption: String;
   end;
   PTileInfo = ^TTileInfo;
   TTileInfo = record
@@ -569,7 +569,7 @@ end;
 
 procedure TfrmLargeScaleCommand.vstActionsGetText(
   Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: UTF8String);
+  TextType: TVSTTextType; var CellText: String);
 var
   nodeInfo: PNodeInfo;
 begin
@@ -612,7 +612,7 @@ end;
 
 procedure TfrmLargeScaleCommand.vstAreaGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var CellText: UTF8String);
+  var CellText: String);
 var
   nodeInfo: ^TRect;
 begin
@@ -621,7 +621,7 @@ begin
     nodeInfo^.Right, nodeInfo^.Bottom]);
 end;
 
-procedure TfrmLargeScaleCommand.AddNode(AActionID: Integer; ACaption: UTF8String);
+procedure TfrmLargeScaleCommand.AddNode(AActionID: Integer; ACaption: String);
 var
   node: PVirtualNode;
   nodeInfo: PNodeInfo;

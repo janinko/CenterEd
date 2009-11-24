@@ -15,10 +15,9 @@
     <LazDoc Paths="../doc"/>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <AutoIncrementBuild Value="True"/>
       <CurrentMajorRevNr Value="4"/>
       <CurrentMinorRevNr Value="2"/>
-      <CurrentBuildNr Value="127"/>
+      <CurrentBuildNr Value="141"/>
       <ProjectVersion Value="0.4.2.85"/>
       <CompanyName Value="AKS DataBasis"/>
       <FileDescription Value="UO CentrED"/>

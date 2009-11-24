@@ -248,7 +248,7 @@ type
     procedure vstChatClick(Sender: TObject);
     procedure vstChatFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstChatGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; TextType: TVSTTextType; var CellText: UTF8String);
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
     procedure vstChatPaintText(Sender: TBaseVirtualTree;
       const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType);
@@ -256,11 +256,11 @@ type
     procedure vstLocationsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode
       );
     procedure vstLocationsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; TextType: TVSTTextType; var CellText: UTF8String);
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
     procedure vstLocationsLoadNode(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Stream: TStream);
     procedure vstLocationsNewText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; NewText: WideString);
+      Column: TColumnIndex; const NewText: String);
     procedure vstLocationsSaveNode(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Stream: TStream);
   protected
@@ -1454,15 +1454,15 @@ begin
 end;
 
 procedure TfrmMain.vstChatGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-  Column: TColumnIndex; TextType: TVSTTextType; var CellText: UTF8String);
+  Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
 var
   chatInfo: PChatInfo;
 begin
   chatInfo := Sender.GetNodeData(Node);
   case Column of
-    0: CellText := UTF8Encode(TimeToStr(chatInfo^.Time));
-    1: CellText := UTF8Encode(chatInfo^.Sender);
-    2: CellText := UTF8Encode(chatInfo^.Msg);
+    0: CellText := TimeToStr(chatInfo^.Time);
+    1: CellText := chatInfo^.Sender;
+    2: CellText := chatInfo^.Msg;
   end;
 end;
 
@@ -1506,14 +1506,14 @@ end;
 
 procedure TfrmMain.vstLocationsGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var CellText: UTF8String);
+  var CellText: String);
 var
   locationInfo: PLocationInfo;
 begin
   locationInfo := Sender.GetNodeData(Node);
   case Column of
-    0: CellText := UTF8Encode(Format('%d, %d', [locationInfo^.X, locationInfo^.Y]));
-    1: CellText := UTF8Encode(locationInfo^.Name);
+    0: CellText := Format('%d, %d', [locationInfo^.X, locationInfo^.Y]);
+    1: CellText := locationInfo^.Name;
   end;
 end;
 
@@ -1535,7 +1535,7 @@ begin
 end;
 
 procedure TfrmMain.vstLocationsNewText(Sender: TBaseVirtualTree;
-  Node: PVirtualNode; Column: TColumnIndex; NewText: WideString);
+  Node: PVirtualNode; Column: TColumnIndex; const NewText: String);
 var
   locationInfo: PLocationInfo;
 begin
