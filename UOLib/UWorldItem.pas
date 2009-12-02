@@ -159,7 +159,6 @@ begin
     FOwner.Changed := False
   else if Assigned(FOrgOwner) and (not FChanged) then
     FOrgOwner.Changed := True;
-  Free;
 end;
 
 procedure TWorldItem.DoChanged;
