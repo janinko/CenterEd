@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UTiledata;
 
@@ -33,58 +33,35 @@ uses
   Classes, SysUtils, UMulBlock;
 
 const
-  tdfBackground = $00000001;
-  tdfWeapon = $00000002;
-  tdfTransparent = $00000004;
-  tdfTranslucent = $00000008;
-  tdfWall = $00000010;
-  tdfDamaging = $00000020;
-  tdfImpassable = $00000040;
-  tdfWet = $00000080;
-  tdfUnknown1 = $00000100;
-  tdfSurface = $00000200;
-  tdfBridge = $00000400;
-  tdfGeneric = $00000800;
-  tdfWindow = $00001000;
-  tdfNoShoot = $00002000;
-  tdfArticleA = $00004000;
-  tdfArticleAn = $00008000;
-  tdfInternal = $00010000;
-  tdfFoliage = $00020000;
-  tdfPartialHue = $00040000;
-  tdfUnknown2 = $00080000;
-  tdfMap = $00100000;
-  tdfContainer = $00200000;
-  tdfWearable = $00400000;
-  tdfLightSource = $00800000;
-  tdfAnimation = $01000000;
-  tdfNoDiagonal = $02000000;
-  tdfArtUsed = $04000000;
-  tdfArmor = $08000000;
-  tdfRoof = $10000000;
-  tdfDoor = $20000000;
-  tdfStairBack = $40000000;
-  tdfStairRight = $80000000;
-
   LandTileDataSize = 26;
   LandTileGroupSize = 4 + 32 * LandTileDataSize;
   StaticTileDataSize = 37;
   StaticTileGroupSize = 4 + 32 * StaticTileDataSize;
 
 type
+  TTileDataFlag = (tdfBackground, tdfWeapon, tdfTransparent, tdfTranslucent,
+                   tdfWall, tdfDamaging, tdfImpassable, tdfWet, tdfUnknown1,
+                   tdfSurface, tdfBridge, tdfGeneric, tdfWindow, tdfNoShoot,
+                   tdfArticleA, tdfArticleAn, tdfInternal, tdfFoliage,
+                   tdfPartialHue, tdfUnknown2, tdfMap, tdfContainer,
+                   tdfWearable, tdfLightSource, tdfAnimation, tdfNoDiagonal,
+                   tdfArtUsed, tdfArmor, tdfRoof, tdfDoor, tdfStairBack,
+                   tdfStairRight);
+  TTileDataFlags = set of TTileDataFlag;
 
   { TTiledata }
 
   TTiledata = class(TMulBlock)
   protected
-    FFlags: LongWord;
+    FFlags: TTileDataFlags;
     FTileName: string;
   public
-    property Flags: LongWord read FFlags write FFlags;
+    property Flags: TTileDataFlags read FFlags write FFlags;
     property TileName: string read FTileName write FTileName;
-    
-    function HasFlag(AFlag: LongWord): Boolean;
   end;
+
+  { TLandTiledata }
+
   TLandTiledata = class(TTiledata)
     constructor Create(AData: TStream);
     destructor Destroy; override;
@@ -96,6 +73,9 @@ type
   public
     property TextureID: Word read FTextureID write FTextureID;
   end;
+
+  { TStaticTiledata }
+
   TStaticTiledata = class(TTiledata)
     constructor Create(AData: TStream);
     destructor Destroy; override;
@@ -125,6 +105,9 @@ type
     property Unknown4: Word read FUnknown4 write FUnknown4;
     property Height: Byte read FHeight write FHeight;
   end;
+
+  { TLandTileGroup }
+
   TLandTileGroup = class(TMulBlock)
     constructor Create(AData: TStream);
     destructor Destroy; override;
@@ -137,6 +120,9 @@ type
     LandTileData: array[0..31] of TLandTiledata;
     property Unknown: LongInt read FUnknown write FUnknown;
   end;
+
+  { TStaticTileGroup }
+
   TStaticTileGroup = class(TMulBlock)
     constructor Create(AData: TStream);
     destructor Destroy; override;
@@ -173,6 +159,8 @@ begin
     Result := group * LandTileGroupSize + 4 + tile * LandTileDataSize;
   end;
 end;
+
+{ TLandTiledata }
 
 constructor TLandTiledata.Create(AData: TStream);
 begin
@@ -216,6 +204,8 @@ function TLandTiledata.GetSize: Integer;
 begin
   GetSize := LandTileDataSize;
 end;
+
+{ TStaticTiledata}
 
 constructor TStaticTiledata.Create(AData: TStream);
 begin
@@ -287,6 +277,8 @@ begin
   GetSize := StaticTileDataSize;
 end;
 
+{ TLandTileGroup }
+
 constructor TLandTileGroup.Create(AData: TStream);
 var
   i: Integer;
@@ -332,6 +324,8 @@ begin
   GetSize := LandTileGroupSize;
 end;
 
+{ TStaticTileGroup }
+
 constructor TStaticTileGroup.Create(AData: TStream);
 var
   i: Integer;
@@ -375,13 +369,6 @@ end;
 function TStaticTileGroup.GetSize: Integer;
 begin
   GetSize := StaticTileGroupSize;
-end;
-
-{ TTiledata }
-
-function TTiledata.HasFlag(AFlag: LongWord): Boolean;
-begin
-  Result := (FFlags and AFlag) = AFlag;
 end;
 
 end.

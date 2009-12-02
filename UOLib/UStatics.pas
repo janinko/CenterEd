@@ -36,7 +36,8 @@ type
   { TStaticItem }
 
   TStaticItem = class(TWorldItem)
-    constructor Create(AOwner: TWorldBlock; AData: TStream; ABlockX, ABlockY: Word); overload;
+    constructor Create(AOwner: TWorldBlock; AData: TStream; ABlockX,
+      ABlockY: Word); overload;
     constructor Create(AOwner: TWorldBlock; AData: TStream); overload;
   protected
     { Members }
@@ -63,7 +64,8 @@ type
   { TStaticBlock}
 
   TStaticBlock = class(TWorldBlock)
-    constructor Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word); overload;
+    constructor Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word);
+      overload;
     constructor Create(AData: TStream; AIndex: TGenericIndex); overload;
     destructor Destroy; override;
   protected
@@ -92,12 +94,14 @@ end;
 
 { TStaticItem }
 
-constructor TStaticItem.Create(AOwner: TWorldBlock; AData: TStream; ABlockX, ABlockY: Word);
+constructor TStaticItem.Create(AOwner: TWorldBlock; AData: TStream; ABlockX,
+  ABlockY: Word);
 var
   iX, iY: Byte;
 begin
   inherited Create(AOwner);
-  if assigned(AData) then
+
+  if AData <> nil then
   begin
     AData.Read(FTileID, SizeOf(SmallInt));
     AData.Read(iX, SizeOf(Byte));
@@ -108,6 +112,7 @@ begin
     FX := ABlockX * 8 + iX;
     FY := ABlockY * 8 + iY;
   end;
+
   InitOriginalState;
 end;
 
@@ -152,7 +157,7 @@ procedure TStaticItem.UpdatePriorities(ATileData: TStaticTiledata;
   ASolver: Integer);
 begin
   FPriorityBonus := 0;
-  if not ((ATileData.Flags and tdfBackground) = tdfBackground) then
+  if not (tdfBackground in ATileData.Flags) then
     Inc(FPriorityBonus);
   if ATileData.Height > 0 then
     Inc(FPriorityBonus);
@@ -176,7 +181,8 @@ end;
 
 { TStaticBlock }
 
-constructor TStaticBlock.Create(AData: TStream; AIndex: TGenericIndex; AX, AY: Word);
+constructor TStaticBlock.Create(AData: TStream; AIndex: TGenericIndex;
+  AX, AY: Word);
 var
   i: Integer;
   block: TMemoryStream;

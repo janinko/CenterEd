@@ -1733,8 +1733,6 @@ var
   west, south, east: Single;
   z: SmallInt;
   staticItem: TStaticItem;
-  hue: THue;
-  staticTiledata: TStaticTiledata;
 begin
   //add normals to map tiles and materials where possible
 
@@ -1806,13 +1804,8 @@ begin
   begin
     staticItem := TStaticItem(item);
 
-    staticTiledata := ResMan.Tiledata.StaticTiles[staticItem.TileID];
-    if staticItem.Hue > 0 then
-      hue := ResMan.Hue.Hues[staticItem.Hue - 1]
-    else
-      hue := nil;
-
-    ABlockInfo^.LowRes := FTextureManager.GetArtMaterial($4000 + staticItem.TileID, hue, (staticTileData.Flags and tdfPartialHue) = tdfPartialHue);
+    ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(staticItem);
+    ABlockInfo^.HueOverride := False;
     ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - ABlockInfo^.LowRes.RealWidth / 2),
       Trunc(drawY + 44 - ABlockInfo^.LowRes.RealHeight - z * 4),
       ABlockInfo^.LowRes.RealWidth,
@@ -2292,6 +2285,27 @@ procedure TfrmMain.UpdateSelection;
 var
   selectedRect: TRect;
   blockInfo: PBlockInfo;
+
+  procedure SetHighlight(ABlockInfo: PBlockInfo; AHighlighted: Boolean);
+  begin
+    if (ABlockInfo^.Item is TStaticItem) and acHue.Checked then
+    begin
+      if ABlockInfo^.HueOverride <> AHighlighted then
+      begin
+        ABlockInfo^.HueOverride := AHighlighted;
+        if AHighlighted then
+          ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(
+            TStaticItem(ABlockInfo^.Item), frmHueSettings.lbHue.ItemIndex)
+        else
+          ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(
+            TStaticItem(ABlockInfo^.Item));
+      end;
+    end else
+    begin
+      ABlockInfo^.Highlighted := AHighlighted;
+    end;
+  end;
+
 begin
   Logger.EnterMethod([lcClient, lcDebug], 'UpdateSelection');
   if (CurrentTile <> nil) and (not acSelect.Checked) then
@@ -2303,14 +2317,15 @@ begin
       selectedRect := GetSelectedRect;
       Logger.Send([lcClient, lcDebug], 'SelectedRect', selectedRect);
       while FScreenBuffer.Iterate(blockInfo) do
-        if blockInfo^.State = ssNormal then
-          blockInfo^.Highlighted := PtInRect(selectedRect, Point(blockInfo^.Item.X, blockInfo^.Item.Y));
+        if (blockInfo^.State = ssNormal) then
+          SetHighlight(blockInfo, PtInRect(selectedRect,
+            Point(blockInfo^.Item.X, blockInfo^.Item.Y)));
     end else
     begin
       Logger.Send([lcClient, lcDebug], 'Single Target');
       while FScreenBuffer.Iterate(blockInfo) do
         if blockInfo^.State = ssNormal then
-          blockInfo^.Highlighted := (blockInfo^.Item = CurrentTile);
+          SetHighlight(blockInfo, (blockInfo^.Item = CurrentTile));
     end;
   end;
   Logger.ExitMethod([lcClient, lcDebug], 'UpdateSelection');

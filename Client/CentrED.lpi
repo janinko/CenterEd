@@ -56,7 +56,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="31">
+    <Units Count="34">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -253,6 +253,21 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Logging"/>
       </Unit30>
+      <Unit31>
+        <Filename Value="../UOLib/UStatics.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UStatics"/>
+      </Unit31>
+      <Unit32>
+        <Filename Value="../UOLib/UWorldItem.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UWorldItem"/>
+      </Unit32>
+      <Unit33>
+        <Filename Value="../UOLib/UMap.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UMap"/>
+      </Unit33>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

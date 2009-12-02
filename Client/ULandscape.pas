@@ -72,15 +72,18 @@ type
   TLandTextureManager = class
     constructor Create;
     destructor Destroy; override;
-    function GetArtMaterial(ATileID: Word): TMaterial; overload;
-    function GetArtMaterial(ATileID: Word; AHue: THue;
-      APartialHue: Boolean): TMaterial; overload;
-    function GetFlatLandMaterial(ATileID: Word): TMaterial;
-    function GetTexMaterial(ATileID: Word): TMaterial;
   protected
     FArtCache: TCacheManager;
     FFlatLandArtCache: TCacheManager;
     FTexCache: TCacheManager;
+  public
+    function GetArtMaterial(ATileID: Word): TMaterial; overload;
+    function GetArtMaterial(ATileID: Word; AHue: THue;
+      APartialHue: Boolean): TMaterial; overload;
+    function GetFlatLandMaterial(ATileID: Word): TMaterial;
+    function GetStaticMaterial(AStaticItem: TStaticItem;
+      AOverrideHue: Integer = -1): TMaterial;
+    function GetTexMaterial(ATileID: Word): TMaterial;
   end;
 
  { TSeperatedStaticBlock }
@@ -205,6 +208,7 @@ type
     Normals: PNormals;
     State: TScreenState;
     Highlighted: Boolean;
+    HueOverride: Boolean;
     Next: PBlockInfo;
   end;
 
@@ -290,7 +294,8 @@ begin
   end;
 end;
 
-function TLandTextureManager.GetArtMaterial(ATileID: Word; AHue: THue; APartialHue: Boolean): TMaterial;
+function TLandTextureManager.GetArtMaterial(ATileID: Word; AHue: THue;
+  APartialHue: Boolean): TMaterial;
 var
   artEntry: TArt;
   id: Integer;
@@ -328,6 +333,25 @@ begin
 
     artEntry.Free;
   end;
+end;
+
+function TLandTextureManager.GetStaticMaterial(AStaticItem: TStaticItem;
+  AOverrideHue: Integer = -1): TMaterial;
+var
+  staticTiledata: TStaticTiledata;
+  hue: THue;
+begin
+  staticTiledata := ResMan.Tiledata.StaticTiles[AStaticItem.TileID];
+  if AOverrideHue < 0 then
+    AOverrideHue := AStaticItem.Hue;
+
+  if AOverrideHue > 0 then
+    hue := ResMan.Hue.Hues[AOverrideHue]
+  else
+    hue := nil;
+
+  Result := GetArtMaterial($4000 + AStaticItem.TileID, hue,
+    tdfPartialHue in staticTiledata.Flags);
 end;
 
 function TLandTextureManager.GetTexMaterial(ATileID: Word): TMaterial;
@@ -706,8 +730,8 @@ begin
          (staticItem.Hue = staticInfo.Hue) then
       begin
         if Assigned(FOnStaticDeleted) then FOnStaticDeleted(staticItem);
-        statics.Delete(i);
         staticItem.Delete;
+        statics.Delete(i);
 
         Break;
       end;
@@ -785,8 +809,8 @@ begin
     if staticItem <> nil then
     begin
       if Assigned(FOnStaticDeleted) then FOnStaticDeleted(staticItem);
-      statics.Remove(staticItem);
       staticItem.Delete;
+      statics.Remove(staticItem);
     end;
   end;
 

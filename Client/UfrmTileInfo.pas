@@ -80,9 +80,9 @@ var
   tileData: TTiledata;
   prefix, flags: string;
   
-  procedure UpdateFlags(AFlag: LongWord; AName: string);
+  procedure UpdateFlags(AFlag: TTileDataFlag; AName: string);
   begin
-    if tileData.HasFlag(AFlag) then
+    if AFlag in tileData.Flags then
     begin
       if flags <> '' then
         flags := flags + ', ' + AName
@@ -111,9 +111,9 @@ begin
     tileData := ResMan.Tiledata.StaticTiles[ATileID];
   end;
 
-  if tileData.HasFlag(tdfArticleA) then
+  if tdfArticleA in tileData.Flags then
     prefix := 'a '
-  else if tileData.HasFlag(tdfArticleAn) then
+  else if tdfArticleAn in tileData.Flags then
     prefix := 'an '
   else
     prefix := '';
