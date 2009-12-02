@@ -90,7 +90,7 @@ type
     constructor Create(AData: TStream; AIndex: TGenericIndex); overload;
     destructor Destroy; override;
   public
-    Cells: array[0..63] of TList;
+    Cells: array[0..63] of TStaticItemList;
     { Methods }
     function Clone: TSeperatedStaticBlock; override;
     function GetSize: Integer; override;
@@ -149,7 +149,7 @@ type
     function GetMapCell(AX, AY: Word): TMapCell;
     function GetNormals(AX, AY: Word): TNormals;
     function GetStaticBlock(AX, AY: Word): TSeperatedStaticBlock;
-    function GetStaticList(AX, AY: Word): TList;
+    function GetStaticList(AX, AY: Word): TStaticItemList;
     { Events }
     procedure OnRemoveCachedObject(AObject: TObject);
     procedure OnBlocksPacket(ABuffer: TEnhancedMemoryStream);
@@ -166,7 +166,7 @@ type
     property CellWidth: Word read FCellWidth;
     property CellHeight: Word read FCellHeight;
     property MapCell[X, Y: Word]: TMapCell read GetMapCell;
-    property StaticList[X, Y: Word]: TList read GetStaticList;
+    property StaticList[X, Y: Word]: TStaticItemList read GetStaticList;
     property Normals[X, Y: Word]: TNormals read GetNormals;
     property OnChange: TLandscapeChangeEvent read FOnChange write FOnChange;
     property OnMapChanged: TMapChangedEvent read FOnMapChanged write FOnMapChanged;
@@ -183,7 +183,7 @@ type
     function CanWrite(AX, AY: Word): Boolean;
     procedure FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
       AHeight: Word; AMap, AStatics: Boolean; ANoDraw: Boolean;
-      AAdditionalTiles: TList = nil);
+      AAdditionalTiles: TWorldItemList = nil);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
     procedure GetNormals(AX, AY: Word; var ANormals: TNormals);
@@ -362,13 +362,13 @@ var
   block: TMemoryStream;
 begin
   inherited Create;
-  FItems := TList.Create;
+  FItems := TStaticItemList.Create(False);
 
   FX := AX;
   FY := AY;
 
   for i := 0 to 63 do
-    Cells[i] := TList.Create;
+    Cells[i] := TStaticItemList.Create;
 
   if (AData <> nil) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
   begin
@@ -399,18 +399,7 @@ begin
   for i := 0 to 63 do
   begin
     if Cells[i] <> nil then
-    begin
-      for j := 0 to Cells[i].Count - 1 do
-      begin
-        if Cells[i][j] <> nil then
-        begin
-          TStaticItem(Cells[i][j]).Free;
-          Cells[i][j] := nil;
-        end;
-      end;
-      Cells[i].Free;
-      Cells[i] := nil;
-    end;
+      FreeAndNil(Cells[i]);
   end;
 
   inherited Destroy;
@@ -588,7 +577,7 @@ begin
   end;
 end;
 
-function TLandscape.GetStaticList(AX, AY: Word): TList;
+function TLandscape.GetStaticList(AX, AY: Word): TStaticItemList;
 var
   block: TSeperatedStaticBlock;
 begin
@@ -668,7 +657,7 @@ var
   x, y: Word;
   block: TSeperatedStaticBlock;
   staticItem: TStaticItem;
-  targetStaticList: TList;
+  targetStaticList: TStaticItemList;
   i: Integer;
 begin
   x := ABuffer.ReadWord;
@@ -685,10 +674,10 @@ begin
     targetStaticList := block.Cells[(y mod 8) * 8 + x mod 8];
     targetStaticList.Add(staticItem);
     for i := 0 to targetStaticList.Count - 1 do
-      TStaticItem(targetStaticList.Items[i]).UpdatePriorities(
-        ResMan.Tiledata.StaticTiles[TStaticItem(targetStaticList.Items[i]).TileID],
+      targetStaticList.Items[i].UpdatePriorities(
+        ResMan.Tiledata.StaticTiles[targetStaticList.Items[i].TileID],
         i);
-    targetStaticList.Sort(@CompareWorldItems);
+    targetStaticList.Sort(@CompareStaticItems);
     staticItem.Owner := block;
     staticItem.CanBeEdited := CanWrite(x, y);
 
@@ -700,7 +689,7 @@ procedure TLandscape.OnDeleteStaticPacket(ABuffer: TEnhancedMemoryStream);
 var
   block: TSeperatedStaticBlock;
   i: Integer;
-  statics: TList;
+  statics: TStaticItemList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
 begin
@@ -711,7 +700,7 @@ begin
     statics := block.Cells[(staticInfo.Y mod 8) * 8 + staticInfo.X mod 8];
     for i := 0 to statics.Count - 1 do
     begin
-      staticItem := TStaticItem(statics.Items[i]);
+      staticItem := statics.Items[i];
       if (staticItem.Z = staticInfo.Z) and
          (staticItem.TileID = staticInfo.TileID) and
          (staticItem.Hue = staticInfo.Hue) then
@@ -730,7 +719,7 @@ procedure TLandscape.OnElevateStaticPacket(ABuffer: TEnhancedMemoryStream);
 var
   block: TSeperatedStaticBlock;
   i,j : Integer;
-  statics: TList;
+  statics: TStaticItemList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
 begin
@@ -741,17 +730,17 @@ begin
     statics := block.Cells[(staticInfo.Y mod 8) * 8 + staticInfo.X mod 8];
     for i := 0 to statics.Count - 1 do
     begin
-      staticItem := TStaticItem(statics.Items[i]);
+      staticItem := statics.Items[i];
       if (staticItem.Z = staticInfo.Z) and
          (staticItem.TileID = staticInfo.TileID) and
          (staticItem.Hue = staticInfo.Hue) then
       begin
         staticItem.Z := ABuffer.ReadShortInt;
         for j := 0 to statics.Count - 1 do
-          TStaticItem(statics.Items[j]).UpdatePriorities(
-            ResMan.Tiledata.StaticTiles[TStaticItem(statics.Items[j]).TileID],
+          statics.Items[j].UpdatePriorities(
+            ResMan.Tiledata.StaticTiles[statics.Items[j].TileID],
             j);
-        statics.Sort(@CompareWorldItems);
+        statics.Sort(@CompareStaticItems);
 
         if Assigned(FOnStaticElevated) then FOnStaticElevated(staticItem);
 
@@ -765,7 +754,7 @@ procedure TLandscape.OnMoveStaticPacket(ABuffer: TEnhancedMemoryStream);
 var
   sourceBlock, targetBlock: TSeperatedStaticBlock;
   i: Integer;
-  statics: TList;
+  statics: TStaticItemList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
   newX, newY: Word;
@@ -783,7 +772,7 @@ begin
     i := 0;
     while (i < statics.Count) and (staticItem = nil) do
     begin
-      staticItem := TStaticItem(statics.Items[i]);
+      staticItem := statics.Items[i];
       if (staticItem.Z <> staticInfo.Z) or
          (staticItem.TileID <> staticInfo.TileID) or
          (staticItem.Hue <> staticInfo.Hue) then
@@ -815,7 +804,7 @@ begin
       TStaticItem(statics.Items[i]).UpdatePriorities(
         ResMan.Tiledata.StaticTiles[TStaticItem(statics.Items[i]).TileID],
         i);
-    statics.Sort(@CompareWorldItems);
+    statics.Sort(@CompareStaticItems);
     staticItem.Owner := targetBlock;
     staticItem.CanBeEdited := CanWrite(newX, newY);
 
@@ -827,7 +816,7 @@ procedure TLandscape.OnHueStaticPacket(ABuffer: TEnhancedMemoryStream);
 var
   block: TSeperatedStaticBlock;
   i : Integer;
-  statics: TList;
+  statics: TStaticItemList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
 begin
@@ -838,7 +827,7 @@ begin
     statics := block.Cells[(staticInfo.Y mod 8) * 8 + staticInfo.X mod 8];
     for i := 0 to statics.Count - 1 do
     begin
-      staticItem := TStaticItem(statics.Items[i]);
+      staticItem := statics.Items[i];
       if (staticItem.Z = staticInfo.Z) and
          (staticItem.TileID = staticInfo.TileID) and
          (staticItem.Hue = staticInfo.Hue) then
@@ -858,15 +847,15 @@ end;
 
 procedure TLandscape.FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
   AHeight: Word; AMap, AStatics: Boolean; ANoDraw: Boolean;
-  AAdditionalTiles: TList = nil);
+  AAdditionalTiles: TWorldItemList = nil);
 var
   drawMapCell: TMapCell;
-  drawStatics: TList;
+  drawStatics: TStaticItemList;
   i, x, y: Integer;
-  tempDrawList: TList;
+  tempDrawList: TWorldItemList;
 begin
   ADrawList.Clear;
-  tempDrawList := TList.Create;
+  tempDrawList := TWorldItemList.Create(False);;
   for x := AX to AX + AWidth do
   begin
     for y := AY to AY + AWidth do
@@ -889,8 +878,8 @@ begin
         if drawStatics <> nil then
           for i := 0 to drawStatics.Count - 1 do
           begin
-            TStaticItem(drawStatics[i]).UpdatePriorities(
-              ResMan.Tiledata.StaticTiles[TStaticItem(drawStatics[i]).TileID],
+            drawStatics[i].UpdatePriorities(
+              ResMan.Tiledata.StaticTiles[drawStatics[i].TileID],
               ADrawList.GetSerial);
             tempDrawList.Add(drawStatics[i]);
           end;
@@ -898,8 +887,8 @@ begin
     end;
   end;
 
-  if AAdditionalTiles <> nil then
-    tempDrawList.AddList(AAdditionalTiles);
+  for i := 0 to AAdditionalTiles.Count - 1 do
+    tempDrawList.Add(AAdditionalTiles[i]);
 
   tempDrawList.Sort(@CompareWorldItems);
   for i := 0 to tempDrawList.Count - 1 do
@@ -1018,7 +1007,7 @@ end;
 procedure TLandscape.MoveStatic(AStatic: TStaticItem; AX, AY: Word);
 var
   sourceBlock, targetBlock: TSeperatedStaticBlock;
-  targetStaticList: TList;
+  targetStaticList: TStaticItemList;
   i: Integer;
 begin
   if (AX >= 0) and (AX <= FCellWidth) and (AY >= 0) and (AY <= FCellHeight) then
@@ -1031,10 +1020,10 @@ begin
       targetStaticList := targetBlock.Cells[(AY mod 8) * 8 + AX mod 8];
       targetStaticList.Add(AStatic);
       for i := 0 to targetStaticList.Count - 1 do
-        TStaticItem(targetStaticList.Items[i]).UpdatePriorities(
-          ResMan.Tiledata.StaticTiles[TStaticItem(targetStaticList.Items[i]).TileID],
+        targetStaticList.Items[i].UpdatePriorities(
+          ResMan.Tiledata.StaticTiles[targetStaticList.Items[i].TileID],
           i);
-      targetStaticList.Sort(@CompareWorldItems);
+      targetStaticList.Sort(@CompareStaticItems);
       AStatic.UpdatePos(AX, AY, AStatic.Z);
       AStatic.Owner := targetBlock;
     end;
@@ -1309,7 +1298,7 @@ begin
   Result^.State := ssNormal;
   Result^.Highlighted := False;
 
-  if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]) < 0) then
+  if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]^.Item) < 0) then
   begin
     if FShortCuts[0] = nil then
       FShortCuts[-1] := Result;  //Update last item
@@ -1321,7 +1310,7 @@ begin
     //find best entry point
     shortcut := 0;
     while (shortcut <= 10) and (FShortCuts[shortcut] <> nil) and
-      (CompareWorldItems(AItem, FShortCuts[shortcut]) >= 0) do
+      (CompareWorldItems(AItem, FShortCuts[shortcut]^.Item) >= 0) do
     begin
       current := FShortCuts[shortcut];
       Inc(shortcut);

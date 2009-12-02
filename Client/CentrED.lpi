@@ -281,6 +281,7 @@
     <Linking>
       <Debugging>
         <GenerateDebugInfo Value="True"/>
+        <UseHeaptrc Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>
       <Options>

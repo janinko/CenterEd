@@ -278,7 +278,7 @@ type
     FCurrentTile: TWorldItem;
     FSelectedTile: TWorldItem;
     FGhostTile: TWorldItem;
-    FVirtualTiles: TObjectList;
+    FVirtualTiles: TWorldItemList;
     FVLayerMaterial: TMaterial;
     FOverlayUI: TOverlayUI;
     FLocationsFile: string;
@@ -776,7 +776,7 @@ begin
     virtualLayerGraphic);
   virtualLayerGraphic.Free;
 
-  FVirtualTiles := TObjectList.Create(True);
+  FVirtualTiles := TWorldItemList.Create(True);
   
   FRandomPresetLocation := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + 'RandomPresets' + PathDelim;
   if not DirectoryExists(FRandomPresetLocation) then CreateDir(FRandomPresetLocation);

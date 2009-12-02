@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UMap;
 
@@ -30,13 +30,16 @@ unit UMap;
 interface
 
 uses
-  SysUtils, Classes, UMulBlock, UWorldItem;
+  SysUtils, Classes, fgl, UMulBlock, UWorldItem;
 
 const
   MapCellSize = 3;
   MapBlockSize = 4 + (64 * MapCellSize);
 
 type
+
+  { TMapCell }
+
   TMapCell = class(TWorldItem)
     constructor Create(AOwner: TWorldBlock; AData: TStream; AX, AY: Word); overload;
     constructor Create(AOwner: TWorldBlock; AData: TStream); overload;
@@ -46,6 +49,11 @@ type
   public
     property Altitude: ShortInt read FZ write FZ;
   end;
+
+  TMapCellList = specialize TFPGObjectList<TMapCell>;
+
+  { TMapBlock }
+
   TMapBlock = class(TWorldBlock)
     constructor Create(AData: TStream; AX, AY: Word); overload;
     constructor Create(AData: TStream); overload;
@@ -73,6 +81,8 @@ begin
 
   Result := group * MapBlockSize + 4 + tile * MapCellSize;
 end;
+
+{ TMapCell }
 
 constructor TMapCell.Create(AOwner: TWorldBlock; AData: TStream; AX, AY: Word);
 begin
@@ -111,6 +121,8 @@ function TMapCell.GetSize: Integer;
 begin
   Result := MapCellSize;
 end;
+
+{ TMapBlock }
 
 constructor TMapBlock.Create(AData: TStream; AX, AY: Word);
 var

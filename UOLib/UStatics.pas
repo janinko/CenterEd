@@ -30,7 +30,7 @@ unit UStatics;
 interface
 
 uses
-  SysUtils, Classes, UGenericIndex, UWorldItem, UTiledata;
+  SysUtils, Classes, fgl, UGenericIndex, UWorldItem, UTiledata;
 
 type
   { TStaticItem }
@@ -58,6 +58,8 @@ type
     procedure Write(AData: TStream); override;
   end;
 
+  TStaticItemList = specialize TFPGObjectList<TStaticItem>;
+
   { TStaticBlock}
 
   TStaticBlock = class(TWorldBlock)
@@ -66,10 +68,10 @@ type
     destructor Destroy; override;
   protected
     { Members }
-    FItems: TList;
+    FItems: TStaticItemList;
   public
     { Fields }
-    property Items: TList read FItems write FItems;
+    property Items: TStaticItemList read FItems write FItems;
 
     { Methods }
     function Clone: TStaticBlock; override;
@@ -79,7 +81,14 @@ type
     procedure Write(AData: TStream); override;
   end;
 
+function CompareStaticItems(const AStatic1, AStatic2: TStaticItem): Integer;
+
 implementation
+
+function CompareStaticItems(const AStatic1, AStatic2: TStaticItem): Integer;
+begin
+  Result := CompareWorldItems(AStatic1, AStatic2);
+end;
 
 { TStaticItem }
 
@@ -176,8 +185,8 @@ begin
   FX := AX;
   FY := AY;
 
-  FItems := TList.Create;
-  if assigned(AData) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
+  FItems := TStaticItemList.Create(True);
+  if (AData <> nil) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
   begin
     AData.Position := AIndex.Lookup;
     block := TMemoryStream.Create;
@@ -198,17 +207,7 @@ destructor TStaticBlock.Destroy;
 var
   i: Integer;
 begin
-  if Assigned(FItems) then
-  begin
-    for i := 0 to FItems.Count - 1 do
-      if Assigned(FItems[i]) then
-      begin
-        TStaticItem(FItems[i]).Free;
-        FItems[i] := nil;
-      end;
-    FItems.Free;
-    FItems := nil;
-  end;
+  FreeAndNil(FItems);
   inherited;
 end;
 
@@ -218,7 +217,7 @@ var
 begin
   Result := TStaticBlock.Create(nil, nil, FX, FY);
   for i := 0 to FItems.Count - 1 do
-    Result.FItems.Add(TStaticItem(FItems.Items[i]).Clone);
+    Result.FItems.Add(FItems.Items[i].Clone);
 end;
 
 function TStaticBlock.GetSize: Integer;
@@ -231,14 +230,12 @@ var
   i: Integer;
 begin
   for i := FItems.Count - 1 downto 0 do
-  begin
-    TStaticItem(FItems[i]).Write(AData);
-  end;
+    FItems[i].Write(AData);
 end;
 
 procedure TStaticBlock.Sort;
 begin
-  FItems.Sort(@CompareWorldItems);
+  FItems.Sort(@CompareStaticItems);
 end;
 
 procedure TStaticBlock.Write(AData: TStream);
@@ -246,7 +243,7 @@ var
   i: Integer;
 begin
   for i := 0 to FItems.Count - 1 do
-    TStaticItem(FItems[i]).Write(AData);
+    FItems[i].Write(AData);
 end;
 
 end.

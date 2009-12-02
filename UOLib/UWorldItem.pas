@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UWorldItem;
 
@@ -30,7 +30,7 @@ unit UWorldItem;
 interface
 
 uses
-  Classes, UMulBlock;
+  Classes, fgl, UMulBlock;
 
 type
   TWorldBlock = class;
@@ -79,6 +79,8 @@ type
     property PrioritySolver: Integer read FPrioritySolver write FPrioritySolver;
   end;
 
+  TWorldItemList = specialize TFPGObjectList<TWorldItem>;
+
   { TWorldBlock }
 
   TWorldBlock = class(TMulBlock)
@@ -103,39 +105,39 @@ type
 
   TVirtualTile = class(TWorldItem);
 
-function CompareWorldItems(AItem1, AItem2: Pointer): Integer;
+function CompareWorldItems(const AItem1, AItem2: TWorldItem): Integer;
 
 implementation
 
 uses
   UMap, UStatics;
 
-function CompareWorldItems(AItem1, AItem2: Pointer): Integer;
+function CompareWorldItems(const AItem1, AItem2: TWorldItem): Integer;
 begin
-  if TWorldItem(AItem1).X <> TWorldItem(AItem2).X then
-    Exit(TWorldItem(AItem1).X - TWorldItem(AItem2).X);
+  if AItem1.X <> AItem2.X then
+    Exit(AItem1.X - AItem2.X);
 
-  if TWorldItem(AItem1).Y <> TWorldItem(AItem2).Y then
-    Exit(TWorldItem(AItem1).Y - TWorldItem(AItem2).Y);
+  if AItem1.Y <> AItem2.Y then
+    Exit(AItem1.Y - AItem2.Y);
 
-  Result := TWorldItem(AItem1).Priority - TWorldItem(AItem2).Priority;
+  Result := AItem1.Priority - AItem2.Priority;
   if Result = 0 then
   begin
-    if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TStaticItem) then
+    if (AItem1 is TMapCell) and (AItem2 is TStaticItem) then
       Result := -1
-    else if (TObject(AItem1) is TStaticItem) and (TObject(AItem2) is TMapCell) then
+    else if (AItem1 is TStaticItem) and (AItem2 is TMapCell) then
       Result := 1
-    else if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TVirtualTile) then
+    else if (AItem1 is TMapCell) and (AItem2 is TVirtualTile) then
       Result := -1
-    else if (TObject(AItem1) is TVirtualTile) and (TObject(AItem2) is TMapCell) then
+    else if (AItem1 is TVirtualTile) and (AItem2 is TMapCell) then
       Result := 1;
   end;
 
   if Result = 0 then
-    Result := TWorldItem(AItem1).PriorityBonus - TWorldItem(AItem2).PriorityBonus;
+    Result := AItem1.PriorityBonus - AItem2.PriorityBonus;
 
   if Result = 0 then
-    Result := TWorldItem(AItem1).PrioritySolver - TWorldItem(AItem2).PrioritySolver;
+    Result := AItem1.PrioritySolver - AItem2.PrioritySolver;
 end;
 
 { TWorldItem }
