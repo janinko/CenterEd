@@ -14,15 +14,15 @@ object frmLogin: TfrmLogin
   OnCreate = FormCreate
   Position = poScreenCenter
   ShowInTaskBar = stAlways
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.29'
   object lblCopyright: TLabel
-    Height = 26
-    Top = 239
+    Left = 0
+    Height = 14
+    Top = 251
     Width = 489
     Align = alBottom
     Alignment = taCenter
     ParentColor = False
-    ParentFont = True
   end
   object gbConnection: TGroupBox
     Left = 8
@@ -30,9 +30,8 @@ object frmLogin: TfrmLogin
     Top = 8
     Width = 321
     Caption = 'Connection'
-    ClientHeight = 113
+    ClientHeight = 110
     ClientWidth = 317
-    ParentFont = True
     TabOrder = 0
     object lblHost: TLabel
       Left = 30
@@ -41,25 +40,22 @@ object frmLogin: TfrmLogin
       Width = 28
       Caption = 'Host:'
       ParentColor = False
-      ParentFont = True
     end
     object lblUsername: TLabel
       Left = 30
       Height = 14
       Top = 43
-      Width = 58
+      Width = 55
       Caption = 'Username:'
       ParentColor = False
-      ParentFont = True
     end
     object lblPassword: TLabel
       Left = 30
       Height = 14
       Top = 77
-      Width = 54
+      Width = 53
       Caption = 'Password:'
       ParentColor = False
-      ParentFont = True
     end
     object imgHost: TImage
       Left = 6
@@ -329,39 +325,35 @@ object frmLogin: TfrmLogin
     end
     object edHost: TEdit
       Left = 101
-      Height = 23
+      Height = 21
       Top = 5
       Width = 137
-      ParentFont = True
       TabOrder = 0
       Text = 'localhost'
     end
     object edUsername: TEdit
       Left = 101
-      Height = 23
+      Height = 21
       Top = 39
       Width = 201
-      ParentFont = True
       TabOrder = 2
     end
     object edPassword: TEdit
       Left = 101
-      Height = 23
+      Height = 21
       Top = 73
       Width = 201
       EchoMode = emPassword
-      ParentFont = True
       PasswordChar = '*'
       TabOrder = 3
     end
     object edPort: TSpinEdit
       Left = 246
-      Height = 23
+      Height = 21
       Top = 5
       Width = 56
       MaxValue = 65565
       MinValue = 1024
-      ParentFont = True
       TabOrder = 1
       Value = 2597
     end
@@ -371,9 +363,8 @@ object frmLogin: TfrmLogin
     Height = 96
     Top = 8
     Width = 145
-    ClientHeight = 79
+    ClientHeight = 78
     ClientWidth = 141
-    ParentFont = True
     TabOrder = 2
     object btnOK: TButton
       Left = 6
@@ -384,7 +375,6 @@ object frmLogin: TfrmLogin
       Caption = '&OK'
       Default = True
       OnClick = btnOKClick
-      ParentFont = True
       TabOrder = 0
     end
     object btnCancel: TButton
@@ -396,7 +386,6 @@ object frmLogin: TfrmLogin
       Caption = '&Cancel'
       ModalResult = 2
       OnClick = btnCancelClick
-      ParentFont = True
       TabOrder = 1
     end
   end
@@ -406,9 +395,8 @@ object frmLogin: TfrmLogin
     Top = 144
     Width = 321
     Caption = 'Data files'
-    ClientHeight = 80
+    ClientHeight = 79
     ClientWidth = 317
-    ParentFont = True
     TabOrder = 1
     object lblData: TLabel
       Left = 7
@@ -418,18 +406,17 @@ object frmLogin: TfrmLogin
       AutoSize = False
       Caption = 'Select the directory containing art.mul, artidx.mul, hues.mul, tiledata.mul, texmaps.mul and texidx.mul.'
       ParentColor = False
-      ParentFont = True
       WordWrap = True
     end
     object edData: TDirectoryEdit
       Left = 7
-      Height = 23
+      Height = 21
       Top = 48
       Width = 280
+      ShowHidden = False
       ButtonWidth = 23
       NumGlyphs = 1
-      ParentColor = False
-      ParentFont = True
+      MaxLength = 0
       TabOrder = 0
     end
   end
@@ -439,9 +426,8 @@ object frmLogin: TfrmLogin
     Top = 112
     Width = 145
     Caption = 'Profiles'
-    ClientHeight = 73
+    ClientHeight = 70
     ClientWidth = 141
-    ParentFont = True
     TabOrder = 3
     object btnSaveProfile: TSpeedButton
       Left = 86
@@ -543,11 +529,10 @@ object frmLogin: TfrmLogin
     end
     object cbProfile: TComboBox
       Left = 6
-      Height = 29
+      Height = 21
       Top = 8
       Width = 128
-      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
-      MaxLength = 0
+      ItemHeight = 13
       OnChange = cbProfileChange
       Style = csDropDownList
       TabOrder = 0

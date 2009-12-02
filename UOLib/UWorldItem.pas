@@ -101,6 +101,8 @@ type
     procedure CleanUp;
   end;
 
+  TVirtualTile = class(TWorldItem);
+
 function CompareWorldItems(AItem1, AItem2: Pointer): Integer;
 
 implementation
@@ -122,6 +124,10 @@ begin
     if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TStaticItem) then
       Result := -1
     else if (TObject(AItem1) is TStaticItem) and (TObject(AItem2) is TMapCell) then
+      Result := 1
+    else if (TObject(AItem1) is TMapCell) and (TObject(AItem2) is TVirtualTile) then
+      Result := -1
+    else if (TObject(AItem1) is TVirtualTile) and (TObject(AItem2) is TMapCell) then
       Result := 1;
   end;
 

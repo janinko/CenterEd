@@ -16,9 +16,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <CurrentMajorRevNr Value="4"/>
-      <CurrentMinorRevNr Value="2"/>
+      <CurrentMinorRevNr Value="5"/>
       <CurrentBuildNr Value="141"/>
-      <ProjectVersion Value="0.4.2.85"/>
+      <ProjectVersion Value="0.4.5.141"/>
       <CompanyName Value="AKS DataBasis"/>
       <FileDescription Value="UO CentrED"/>
       <LegalCopyright Value="Andreas Schneider"/>
@@ -282,6 +282,7 @@
       <Debugging>
         <GenerateDebugInfo Value="True"/>
       </Debugging>
+      <LinkSmart Value="True"/>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>
@@ -289,8 +290,7 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-FE../bin/
-"/>
+      <CustomOptions Value="-FE../bin/"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
