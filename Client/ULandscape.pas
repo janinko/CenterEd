@@ -251,10 +251,6 @@ implementation
 uses
   UGameResources, UdmNetwork, UPackets, UPacketHandlers, Logging;
 
-const
-  mMap = 0;
-  mStatics = 1;
-
 function GetID(AX, AY: Word): Integer;
 begin
   Result := ((AX and $7FFF) shl 15) or (AY and $7FFF);
@@ -416,7 +412,7 @@ end;
 
 destructor TSeperatedStaticBlock.Destroy;
 var
-  i, j: Integer;
+  i: Integer;
 begin
   FreeAndNil(FItems);
 
@@ -505,7 +501,7 @@ end;
 
 constructor TLandscape.Create(AWidth, AHeight: Word);
 var
-  blockID, i: Integer;
+  i: Integer;
 begin
   inherited Create;
   FWidth := AWidth;
@@ -959,7 +955,7 @@ var
     u, v: TVector;
   begin
     cell := GetMapCell(X, Y);
-    if Assigned(cell) then
+    if cell <> nil then
     begin
       north := cell.Altitude;
       west := GetLandAlt(cell.X, cell.Y + 1, north);
@@ -975,27 +971,27 @@ var
 
     if (north = west) and (west = east) and (north = south) then
     begin
-      ANormals[0] := Vector(0, 0, 1);
-      ANormals[1] := Vector(0, 0, 1);
-      ANormals[2] := Vector(0, 0, 1);
-      ANormals[3] := Vector(0, 0, 1);
+      Result[0] := Vector(0, 0, 1);
+      Result[1] := Vector(0, 0, 1);
+      Result[2] := Vector(0, 0, 1);
+      Result[3] := Vector(0, 0, 1);
     end else
     begin
       u := Vector(-22, 22, (north - east) * 4);
       v := Vector(-22, -22, (west - north) * 4);
-      ANormals[0] := VectorNorm(VectorCross(u, v));
+      Result[0] := VectorNorm(VectorCross(u, v));
 
       u := Vector(22, 22, (east - south) * 4);
       v := Vector(-22, 22, (north - east) * 4);
-      ANormals[1] := VectorNorm(VectorCross(u, v));
+      Result[1] := VectorNorm(VectorCross(u, v));
 
       u := Vector(22, -22, (south - west) * 4);
       v := Vector(22, 22, (east - south) * 4);
-      ANormals[2] := VectorNorm(VectorCross(u, v));
+      Result[2] := VectorNorm(VectorCross(u, v));
 
       u := Vector(-22, -22, (west - north) * 4);
       v := Vector(22, -22, (south - west) * 4);
-      ANormals[3] := VectorNorm(VectorCross(u, v));
+      Result[3] := VectorNorm(VectorCross(u, v));
     end;
   end;
 begin

@@ -34,12 +34,14 @@ uses
   ComCtrls, OpenGLContext, GL, GLU, UGameResources, ULandscape, ExtCtrls,
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
-  ImagingClasses, dateutils, UPlatformTypes, UVector, UMap, contnrs;
+  ImagingClasses, dateutils, UPlatformTypes, UMap;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
   TScreenBufferState = (sbsValid, sbsIndexed, sbsFiltered);
   TScreenBufferStates = set of TScreenBufferState;
+
+  TGhostTile = class(TStaticItem);
 
   { TfrmMain }
 
@@ -342,7 +344,7 @@ var
 implementation
 
 uses
-  UdmNetwork, UArt, UTiledata, UHue, UAdminHandling, UPackets,
+  UdmNetwork, UArt, UTiledata, UAdminHandling, UPackets,
   UfrmAccountControl, UGraphicHelper, ImagingComponents, UfrmDrawSettings,
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
@@ -701,9 +703,11 @@ begin
   WheelDelta := WheelDelta div WHEEL_DELTA;
 
   cursorNeedsUpdate := False;
-  if (CurrentTile is TVirtualTile) or ((ssCtrl in Shift) and (frmVirtualLayer.cbShowLayer.Checked)) then
+  if (CurrentTile is TVirtualTile) or ((ssCtrl in Shift) and
+     (frmVirtualLayer.cbShowLayer.Checked)) then
   begin
-    frmVirtualLayer.seZ.Value := EnsureRange(frmVirtualLayer.seZ.Value + WheelDelta, -128, 127);
+    frmVirtualLayer.seZ.Value := EnsureRange(frmVirtualLayer.seZ.Value +
+      WheelDelta, -128, 127);
     cursorNeedsUpdate := True;
     Handled := True;
   end else if not (ssCtrl in Shift) then
@@ -772,14 +776,17 @@ begin
   RegisterPacketHandler($0C, TPacketHandler.Create(0, @OnClientHandlingPacket));
 
   virtualLayerGraphic := TSingleImage.CreateFromStream(ResourceManager.GetResource(2));
-  FVLayerMaterial := TMaterial.Create(virtualLayerGraphic.Width, virtualLayerGraphic.Height,
-    virtualLayerGraphic);
+  FVLayerMaterial := TMaterial.Create(virtualLayerGraphic.Width,
+    virtualLayerGraphic.Height, virtualLayerGraphic);
   virtualLayerGraphic.Free;
 
   FVirtualTiles := TWorldItemList.Create(True);
   
-  FRandomPresetLocation := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + 'RandomPresets' + PathDelim;
-  if not DirectoryExists(FRandomPresetLocation) then CreateDir(FRandomPresetLocation);
+  FRandomPresetLocation := IncludeTrailingPathDelimiter(ExtractFilePath(
+    Application.ExeName)) + 'RandomPresets' + PathDelim;
+  if not DirectoryExists(FRandomPresetLocation) then
+    CreateDir(FRandomPresetLocation);
+
   if FindFirst(FRandomPresetLocation + '*.dat', faAnyFile, searchRec) = 0 then
   begin
     repeat
@@ -851,8 +858,8 @@ end;
 
 procedure TfrmMain.btnClearLocationsClick(Sender: TObject);
 begin
-  if MessageDlg('Are you sure you want to delete all saved locations?', mtConfirmation,
-    [mbYes, mbNo], 0) = mrYes then
+  if MessageDlg('Are you sure you want to delete all saved locations?',
+    mtConfirmation, [mbYes, mbNo], 0) = mrYes then
   begin
     vstLocations.Clear;
   end;
@@ -878,7 +885,8 @@ var
   locationInfo: PLocationInfo;
 begin
   locationName := '';
-  if InputQuery('New Location', 'Enter the name of the new location:', locationName) then
+  if InputQuery('New Location', 'Enter the name of the new location:',
+    locationName) then
   begin
     locationInfo := vstLocations.GetNodeData(vstLocations.AddChild(nil));
     locationInfo^.X := X;
@@ -1112,8 +1120,8 @@ begin
     if node = nil then
     begin
       //edSearchID.Font.Color := clRed;
-      MessageDlg('Error', 'The tile with the specified ID could not be found.' + LineEnding +
-        'Check for conflicting filter settings.', mtError, [mbOK], 0);
+      MessageDlg('Error', 'The tile with the specified ID could not be found.' +
+        LineEnding + 'Check for conflicting filter settings.', mtError, [mbOK], 0);
       vdtTiles.SetFocus;
       Exit;
     end;
@@ -1124,7 +1132,8 @@ begin
     edSearchID.Visible := False;
     //edSearchID.Font.Color := clWindowText;
     Key := #0;
-  end else if not (Key in ['$', '0'..'9', 'a'..'f', 'A'..'F', 's', 'S', 't', 'T', #8]) then
+  end else if not (Key in ['$', '0'..'9', 'a'..'f', 'A'..'F', 's', 'S',
+    't', 'T', #8]) then
     Key := #0;
 end;
 
@@ -1569,7 +1578,8 @@ end;
 
 procedure TfrmMain.SetPos(AX, AY: Word);
 begin
-  if InRange(AX, 0, FLandscape.CellWidth - 1) and InRange(AY, 0, FLandscape.CellHeight - 1) then
+  if InRange(AX, 0, FLandscape.CellWidth - 1) and InRange(AY, 0,
+    FLandscape.CellHeight - 1) then
   begin
     FX := AX;
     edX.Value := FX;
@@ -1632,21 +1642,27 @@ begin
   begin
     FCurrentTile.OnDestroy.RegisterEvent(@OnTileRemoved);
     if FCurrentTile is TVirtualTile then
-      lblTileInfo.Caption := Format('Virtual Layer: X: %d, Y: %d, Z: %d', [FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z])
+      lblTileInfo.Caption := Format('Virtual Layer: X: %d, Y: %d, Z: %d',
+        [FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z])
     else if FCurrentTile is TMapCell then
-      lblTileInfo.Caption := Format('Terrain TileID: $%x, X: %d, Y: %d, Z: %d', [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z])
+      lblTileInfo.Caption := Format('Terrain TileID: $%x, X: %d, Y: %d, Z: %d',
+        [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z])
     else if FCurrentTile is TStaticItem then
-      lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x', [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z, TStaticItem(FCurrentTile).Hue]);
+      lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x',
+        [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z,
+         TStaticItem(FCurrentTile).Hue]);
 
     if (acDraw.Checked) and (SelectedTile = nil) then
     begin
       if FGhostTile <> nil then
       begin
-        if (FGhostTile is TStaticItem) and (not frmDrawSettings.cbForceAltitude.Checked) then
+        if (FGhostTile is TStaticItem) and
+           (not frmDrawSettings.cbForceAltitude.Checked) then
         begin
           FGhostTile.Z := CurrentTile.Z;
           if FCurrentTile is TStaticItem then
-            FGhostTile.Z := FGhostTile.Z + ResMan.Tiledata.StaticTiles[FCurrentTile.TileID].Height;
+            FGhostTile.Z := FGhostTile.Z +
+              ResMan.Tiledata.StaticTiles[FCurrentTile.TileID].Height;
         end else
           FGhostTile.Z := frmDrawSettings.seForceAltitude.Value;
       end;
@@ -1827,21 +1843,11 @@ end;
 
 procedure TfrmMain.Render;
 var
-  z: ShortInt;
-  mat: TMaterial;
-  staticItem: TStaticItem;
-  staticTileData: TStaticTileData;
-  hue: THue;
   highlight: Boolean;
-  ghostTile: TWorldItem;
-  tileRect: TRect;
-  virtualTile: TVirtualTile;
   intensity: GLfloat;
   blockInfo: PBlockInfo;
   item: TWorldItem;
 begin
-  tileRect := GetSelectedRect;
-
   if not (sbsValid in FScreenBufferState) then
     RebuildScreenBuffer;
 
@@ -2009,8 +2015,10 @@ end;
 
 procedure TfrmMain.OnStaticInserted(AStaticItem: TStaticItem);
 begin
-  if (AStaticItem.X >= FX + FLowOffsetX) and (AStaticItem.X <= FX + FHighOffsetX) and
-     (AStaticItem.Y >= FY + FLowOffsetY) and (AStaticItem.Y <= FY + FHighOffsetY) then
+  if (AStaticItem.X >= FX + FLowOffsetX) and
+     (AStaticItem.X <= FX + FHighOffsetX) and
+     (AStaticItem.Y >= FY + FLowOffsetY) and
+     (AStaticItem.Y <= FY + FHighOffsetY) then
   begin
     AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
     PrepareScreenBlock(FScreenBuffer.Insert(AStaticItem));
@@ -2045,7 +2053,8 @@ begin
   begin
     if ResMan.Art.Exists(i) then
     begin
-      if (filter <> '') and (Pos(filter, AnsiLowerCase(TTileData(ResMan.Tiledata.Block[i]).TileName)) = 0) then Continue;
+      if (filter <> '') and (Pos(filter, AnsiLowerCase(TTileData(
+        ResMan.Tiledata.Block[i]).TileName)) = 0) then Continue;
       node := vdtTiles.AddChild(nil);
       tileInfo := vdtTiles.GetNodeData(node);
       tileInfo^.ID := i;
@@ -2078,7 +2087,8 @@ begin
   if acSelect.Checked then
   begin
     //lblTip.Caption := 'Right click shows a menu with all the tools.';
-    lblTip.Caption := 'Press and hold the left mouse button to show a list with actions (eg. grab hue).';
+    lblTip.Caption := 'Press and hold the left mouse button to show a list with'
+      + ' actions (eg. grab hue).';
     oglGameWindow.Cursor := crDefault;
 
     //no highlighted tiles in "selection" mode
