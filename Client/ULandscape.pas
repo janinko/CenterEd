@@ -1421,7 +1421,8 @@ begin
     current := current^.Next;
   end;
 
-  if oldNode <> newNodePosition then
+  //oldNode = nil, if the change happend out-of-screen
+  if (oldNode <> nil ) and (oldNode <> newNodePosition) then
   begin
     if oldNodePrev <> oldNode then
     begin
