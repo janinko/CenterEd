@@ -287,6 +287,7 @@ type
     FLastDraw: TDateTime;
     FAccessChangedListeners: array of TAccessChangedListener;
     FRepaintNeeded: Boolean;
+    FSelection: TRect;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -371,6 +372,14 @@ type
 
 const
   CScreenBufferValid = [sbsValid, sbsIndexed, sbsFiltered];
+
+function IsInRect(const AX, AY: Integer; const ARect: TRect): Boolean; inline;
+begin
+  Result := (AX >= ARect.Left) and
+            (AX <= ARect.Right) and
+            (AY >= ARect.Top) and
+            (AY <= ARect.Bottom);
+end;
 
 { TfrmMain }
 
@@ -535,7 +544,7 @@ var
   tileX, tileY: Word;
   offsetX, offsetY: Integer;
   tile: TWorldItem;
-  targetTiles: TList;
+  targetTiles: TWorldItemList;
   targetTile: TWorldItem;
 begin
   if Button <> mbLeft then
@@ -604,7 +613,7 @@ begin
         if (not acMove.Checked) or (SelectedTile <> targetTile) or
            (not frmMoveSettings.cbAsk.Checked) or ConfirmAction then
         begin
-          targetTiles := TList.Create;
+          targetTiles := TWorldItemList.Create(False);
           if SelectedTile = targetTile then
           begin
             targetTiles.Add(targetTile)
@@ -615,7 +624,7 @@ begin
             begin
               if (blockInfo^.State = ssNormal) and
                 blockInfo^.Item.CanBeEdited and
-                PtInRect(targetRect, Point(blockInfo^.Item.X, blockInfo^.Item.Y)) then
+                IsInRect(blockInfo^.Item.X, blockInfo^.Item.Y, targetRect) then
               begin
                 targetTiles.Add(blockInfo^.Item);
               end;
@@ -628,7 +637,7 @@ begin
             offsetY := frmMoveSettings.GetOffsetY;
             for i := 0 to targetTiles.Count - 1 do
             begin
-              tile := TWorldItem(targetTiles.Items[i]);
+              tile := targetTiles.Items[i];
 
               if tile is TStaticItem then
               begin
@@ -641,7 +650,7 @@ begin
           begin
             for i := 0 to targetTiles.Count - 1 do
             begin
-              tile := TWorldItem(targetTiles.Items[i]);
+              tile := targetTiles.Items[i];
 
               z := frmElevateSettings.seZ.Value;
               if frmElevateSettings.rbRaise.Checked then
@@ -664,7 +673,7 @@ begin
           begin
             for i := 0 to targetTiles.Count - 1 do
             begin
-              tile := TWorldItem(targetTiles.Items[i]);
+              tile := targetTiles.Items[i];
 
               if tile is TStaticItem then
                 dmNetwork.Send(TDeleteStaticPacket.Create(TStaticItem(tile)));
@@ -673,7 +682,7 @@ begin
           begin
             for i := 0 to targetTiles.Count - 1 do
             begin
-              tile := TWorldItem(targetTiles.Items[i]);
+              tile := targetTiles.Items[i];
 
               if (tile is TStaticItem) and
                 (TStaticItem(tile).Hue <> frmHueSettings.lbHue.ItemIndex) then
@@ -2303,6 +2312,7 @@ var
 
 begin
   Logger.EnterMethod([lcClient, lcDebug], 'UpdateSelection');
+  selectedRect := Rect(-1, -1, -1, -1);
   if (CurrentTile <> nil) and (not acSelect.Checked) then
   begin
     blockInfo := nil;
@@ -2313,8 +2323,8 @@ begin
       Logger.Send([lcClient, lcDebug], 'SelectedRect', selectedRect);
       while FScreenBuffer.Iterate(blockInfo) do
         if (blockInfo^.State = ssNormal) then
-          SetHighlight(blockInfo, PtInRect(selectedRect,
-            Point(blockInfo^.Item.X, blockInfo^.Item.Y)));
+          SetHighlight(blockInfo, IsInRect(blockInfo^.Item.X, blockInfo^.Item.Y,
+            selectedRect));
     end else
     begin
       Logger.Send([lcClient, lcDebug], 'Single Target');
@@ -2323,6 +2333,7 @@ begin
           SetHighlight(blockInfo, (blockInfo^.Item = CurrentTile));
     end;
   end;
+  FSelection := selectedRect;
   Logger.ExitMethod([lcClient, lcDebug], 'UpdateSelection');
 end;
 
@@ -2436,14 +2447,14 @@ begin
     begin
       Result.Left := Min(CurrentTile.X, SelectedTile.X);
       Result.Top := Min(CurrentTile.Y, SelectedTile.Y);
-      Result.Right := Max(CurrentTile.X, SelectedTile.X) + 1;
-      Result.Bottom := Max(CurrentTile.Y, SelectedTile.Y) + 1;
+      Result.Right := Max(CurrentTile.X, SelectedTile.X);
+      Result.Bottom := Max(CurrentTile.Y, SelectedTile.Y);
     end else
     begin
       Result.Left := CurrentTile.X;
       Result.Top := CurrentTile.Y;
-      Result.Right := CurrentTile.X + 1;
-      Result.Bottom := CurrentTile.Y + 1;
+      Result.Right := CurrentTile.X;
+      Result.Bottom := CurrentTile.Y;
     end;
   end;
 end;
