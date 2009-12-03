@@ -279,7 +279,6 @@ type
     FScreenBufferState: TScreenBufferStates;
     FCurrentTile: TWorldItem;
     FSelectedTile: TWorldItem;
-    FGhostTile: TWorldItem;
     FVirtualTiles: TWorldItemList;
     FVLayerMaterial: TMaterial;
     FOverlayUI: TOverlayUI;
@@ -561,7 +560,7 @@ begin
     begin
       if acDraw.Checked then                        //***** Drawing Mode *****//
       begin
-        if FGhostTile <> nil then
+        {if FGhostTile <> nil then
         begin
           for tileX := targetRect.Left to targetRect.Right - 1 do
           begin
@@ -599,7 +598,7 @@ begin
               end;
             end;
           end;
-        end;
+        end;}
       end else if (SelectedTile <> targetTile) or targetTile.CanBeEdited then
       begin
         if (not acMove.Checked) or (SelectedTile <> targetTile) or
@@ -1052,7 +1051,6 @@ begin
   FreeAndNil(FTextureManager);
   FreeAndNil(FScreenBuffer);
   FreeAndNil(FOverlayUI);
-  FreeAndNil(FGhostTile);
   FreeAndNil(FVLayerMaterial);
   FreeAndNil(FVirtualTiles);
   
@@ -1651,22 +1649,6 @@ begin
       lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x',
         [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z,
          TStaticItem(FCurrentTile).Hue]);
-
-    if (acDraw.Checked) and (SelectedTile = nil) then
-    begin
-      if FGhostTile <> nil then
-      begin
-        if (FGhostTile is TStaticItem) and
-           (not frmDrawSettings.cbForceAltitude.Checked) then
-        begin
-          FGhostTile.Z := CurrentTile.Z;
-          if FCurrentTile is TStaticItem then
-            FGhostTile.Z := FGhostTile.Z +
-              ResMan.Tiledata.StaticTiles[FCurrentTile.TileID].Height;
-        end else
-          FGhostTile.Z := frmDrawSettings.seForceAltitude.Value;
-      end;
-    end;
   end;
 
   UpdateSelection;
@@ -1783,7 +1765,7 @@ begin
     begin
       if ABlockInfo^.Normals = nil then
         New(ABlockInfo^.Normals);
-      FLandscape.GetNormals(item.X, item.Y, ABlockInfo^.Normals^); //Unused so far
+      FLandscape.GetNormals(item.X, item.Y, ABlockInfo^.Normals^);
       ABlockInfo^.DrawQuad[0][0] := drawX;
       ABlockInfo^.DrawQuad[0][1] := drawY - z * 4;
       ABlockInfo^.DrawQuad[1][0] := drawX + 22;
@@ -1950,7 +1932,11 @@ var
   current, north, east, west: PBlockInfo;
   cell: TMapCell;
 begin
-  PrepareScreenBlock(FScreenBuffer.UpdateSortOrder(AMapCell));
+  current := FScreenBuffer.UpdateSortOrder(AMapCell);
+  if current = nil then
+    Exit; //off-screen update
+
+  PrepareScreenBlock(current);
   Exclude(FScreenBufferState, sbsIndexed);
 
   //Find surrounding cells
@@ -2103,8 +2089,6 @@ begin
     oglGameWindow.Cursor := crHandPoint;
   end;
 
-  if FGhostTile <> nil then FreeAndNil(FGhostTile);
-
   if acDraw.Checked then
   begin
     tileInfo := nil;
@@ -2125,7 +2109,8 @@ begin
 
     if tileInfo <> nil then
     begin
-      if tileInfo^.ID < $4000 then
+      //TODO Update Ghost Tile
+      {if tileInfo^.ID < $4000 then
       begin
         FGhostTile := TMapCell.Create(nil, nil, 0, 0);
         FGhostTile.TileID := tileInfo^.ID;
@@ -2134,7 +2119,7 @@ begin
         FGhostTile := TStaticItem.Create(nil, nil, 0, 0);
         FGhostTile.TileID := tileInfo^.ID - $4000;
         TStaticItem(FGhostTile).Hue := frmHueSettings.lbHue.ItemIndex;
-      end;
+      end;}
     end;
   end;
 
