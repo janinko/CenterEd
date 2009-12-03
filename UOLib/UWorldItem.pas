@@ -52,6 +52,8 @@ type
     FPriority: Integer;
     FPriorityBonus: ShortInt;
     FPrioritySolver: Integer;
+    function GetTileID: Word; virtual;
+    function GetZ: ShortInt; virtual;
     procedure SetTileID(ATileID: Word);
     procedure SetX(AX: Word);
     procedure SetY(AY: Word);
@@ -65,11 +67,12 @@ type
     procedure UpdatePos(AX, AY: Word; AZ: ShortInt);
     procedure Delete;
     procedure InitOriginalState; virtual;
+
     property Owner: TWorldBlock read FOwner write SetOwner;
-    property TileID: Word read FTileID write SetTileID;
+    property TileID: Word read GetTileID write SetTileID;
     property X: Word read FX write SetX;
     property Y: Word read FY write SetY;
-    property Z: ShortInt read FZ write SetZ;
+    property Z: ShortInt read GetZ write SetZ;
     property Selected: Boolean read FSelected write SetSelected;
     property CanBeEdited: Boolean read FCanBeEdited write FCanBeEdited;
     property Locked: Boolean read FLocked write SetLocked;
@@ -77,6 +80,9 @@ type
     property Priority: Integer read FPriority write FPriority;
     property PriorityBonus: ShortInt read FPriorityBonus write FPriorityBonus;
     property PrioritySolver: Integer read FPrioritySolver write FPrioritySolver;
+
+    property RawTileID: Word read FTileID;
+    property RawZ: ShortInt read FZ;
   end;
 
   TWorldItemList = specialize TFPGObjectList<TWorldItem>;
@@ -149,6 +155,16 @@ begin
   FLocked := False;
   FChanged := False;
   FOwner := AOwner;
+end;
+
+function TWorldItem.GetTileID: Word;
+begin
+  Result := FTileID;
+end;
+
+function TWorldItem.GetZ: ShortInt;
+begin
+  Result := FZ;
 end;
 
 procedure TWorldItem.Delete;

@@ -43,11 +43,21 @@ type
   TMapCell = class(TWorldItem)
     constructor Create(AOwner: TWorldBlock; AData: TStream; AX, AY: Word); overload;
     constructor Create(AOwner: TWorldBlock; AData: TStream); overload;
+  protected
+    FIsGhost: Boolean;
+    FGhostZ: ShortInt;
+    FGhostID: Word;
+    function GetTileID: Word; override;
+    function GetZ: ShortInt; override;
+  public
+    property Altitude: ShortInt read GetZ write SetZ;
+    property IsGhost: Boolean read FIsGhost write FIsGhost;
+    property GhostZ: ShortInt write FGhostZ;
+    property GhostID: Word write FGhostID;
+
     function Clone: TMapCell; override;
     function GetSize: Integer; override;
     procedure Write(AData: TStream); override;
-  public
-    property Altitude: ShortInt read FZ write FZ;
   end;
 
   TMapCellList = specialize TFPGObjectList<TMapCell>;
@@ -58,14 +68,14 @@ type
     constructor Create(AData: TStream; AX, AY: Word); overload;
     constructor Create(AData: TStream); overload;
     destructor Destroy; override;
-    function Clone: TMapBlock; override;
-    function GetSize: Integer; override;
-    procedure Write(AData: TStream); override;
   protected
     FHeader: LongInt;
   public
     Cells: array[0..63] of TMapCell;
     property Header: LongInt read FHeader write FHeader;
+    function Clone: TMapBlock; override;
+    function GetSize: Integer; override;
+    procedure Write(AData: TStream); override;
   end;
 
 function GetMapCellOffset(ABlock: Integer): Integer;
@@ -87,19 +97,39 @@ end;
 constructor TMapCell.Create(AOwner: TWorldBlock; AData: TStream; AX, AY: Word);
 begin
   inherited Create(AOwner);
+
   FX := AX;
   FY := AY;
-  if assigned(AData) then
+  if AData <> nil then
   begin
     AData.Read(FTileID, SizeOf(Word));
     AData.Read(FZ, SizeOf(ShortInt));
   end;
+
+  FIsGhost := False;
+
   InitOriginalState;
 end;
 
 constructor TMapCell.Create(AOwner: TWorldBlock; AData: TStream);
 begin
   Create(AOwner, AData, 0, 0);
+end;
+
+function TMapCell.GetTileID: Word;
+begin
+  if FIsGhost then
+    Result := FGhostID
+  else
+    Result := FTileID;
+end;
+
+function TMapCell.GetZ: ShortInt;
+begin
+  if FIsGhost then
+    Result := FGhostZ
+  else
+    Result := FZ;
 end;
 
 function TMapCell.Clone: TMapCell;
