@@ -543,6 +543,7 @@ var
   targetRect: TRect;
   offsetX, offsetY: Integer;
   tile: TWorldItem;
+  tileX, tileY: Word;
   targetTiles: TWorldItemList;
   targetTile: TWorldItem;
 begin
@@ -573,45 +574,22 @@ begin
     begin
       if acDraw.Checked then                        //***** Drawing Mode *****//
       begin
-        {if FGhostTile <> nil then
-        begin
-          for tileX := targetRect.Left to targetRect.Right - 1 do
+        for tileX := FSelection.Left to FSelection.Right do
+          for tileY := FSelection.Top to FSelection.Bottom do
           begin
-            for tileY := targetRect.Top to targetRect.Bottom - 1 do
-            begin
-              tileInfo := nil;
-              if frmDrawSettings.rbTileList.Checked then
-              begin
-                node := vdtTiles.GetFirstSelected;
-                if node <> nil then
-                  tileInfo := vdtTiles.GetNodeData(node);
-              end else if frmDrawSettings.rbRandom.Checked then
-              begin
-                node := vdtRandom.GetFirst;
-                for i := 1 to Random(vdtRandom.RootNodeCount) do
-                  node := vdtRandom.GetNext(node);
-
-                if node <> nil then
-                  tileInfo := vdtRandom.GetNodeData(node);
-              end;
-
-              if tileInfo^.ID < $4000 then
-              begin
-                map := FLandscape.MapCell[tileX, tileY];
-                if frmDrawSettings.cbForceAltitude.Checked then
-                  map.Altitude := frmDrawSettings.seForceAltitude.Value;
-                if frmDrawSettings.cbRandomHeight.Checked then
-                  map.Altitude := map.Altitude + Random(frmDrawSettings.seRandomHeight.Value);
-                dmNetwork.Send(TDrawMapPacket.Create(map.X, map.Y, map.Z, tileInfo^.ID));
-              end else
-              begin
-                dmNetwork.Send(TInsertStaticPacket.Create(tileX, tileY,
-                  FGhostTile.Z, tileInfo^.ID - $4000,
-                  TStaticItem(FGhostTile).Hue));
-              end;
-            end;
+            map := FLandscape.MapCell[tileX, tileY];
+            if map.IsGhost then
+              dmNetwork.Send(TDrawMapPacket.Create(tileX, tileY, map.Z,
+                map.TileID));
           end;
-        end;}
+
+        for i := 0 to FVirtualTiles.Count - 1 do
+        begin
+          tile := FVirtualTiles[i];
+          if tile is TGhostTile then
+            dmNetwork.Send(TInsertStaticPacket.Create(tile.X, tile.Y, tile.Z,
+              tile.TileID, TGhostTile(tile).Hue));
+        end;
       end else if (SelectedTile <> targetTile) or targetTile.CanBeEdited then
       begin
         if (not acMove.Checked) or (SelectedTile <> targetTile) or
@@ -2344,6 +2322,7 @@ procedure TfrmMain.UpdateSelection;
 
         ghostTile.UpdatePriorities(ResMan.Tiledata.StaticTiles[ghostTile.TileID],
           MaxInt);
+        ghostTile.CanBeEdited := True;
 
         FVirtualTiles.Add(ghostTile);
         blockInfo := FScreenBuffer.Insert(ghostTile);
