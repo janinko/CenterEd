@@ -915,29 +915,29 @@ object frmMain: TfrmMain
       ShowHint = True
       Style = tbsCheck
     end
-    object tbSeparator2: TToolButton
-      Left = 178
+    object tbSeparator3: TToolButton
+      Left = 209
       Top = 2
-      Width = 15
-      Caption = 'tbSeparator2'
+      Width = 16
+      Caption = 'tbSeparator3'
       Style = tbsDivider
     end
     object tbBoundaries: TToolButton
-      Left = 193
+      Left = 225
       Top = 2
       Action = acBoundaries
       ParentShowHint = False
       ShowHint = True
     end
-    object tbSeparator3: TToolButton
-      Left = 262
+    object tbSeparator4: TToolButton
+      Left = 294
       Top = 2
-      Width = 15
-      Caption = 'tbSeparator3'
+      Width = 17
+      Caption = 'tbSeparator4'
       Style = tbsDivider
     end
     object tbTerrain: TToolButton
-      Left = 277
+      Left = 311
       Hint = 'Show Terrain'
       Top = 2
       Caption = 'Terrain'
@@ -949,7 +949,7 @@ object frmMain: TfrmMain
       OnClick = tbTerrainClick
     end
     object tbStatics: TToolButton
-      Left = 300
+      Left = 334
       Hint = 'Show Statics'
       Top = 2
       Caption = 'Statics'
@@ -960,15 +960,15 @@ object frmMain: TfrmMain
       Style = tbsCheck
       OnClick = tbStaticsClick
     end
-    object tbSeparator4: TToolButton
-      Left = 369
+    object tbSeparator5: TToolButton
+      Left = 403
       Top = 2
-      Width = 15
-      Caption = 'tbSeparator4'
+      Width = 17
+      Caption = 'tbSeparator5'
       Style = tbsDivider
     end
     object tbRadarMap: TToolButton
-      Left = 384
+      Left = 420
       Hint = 'Radar Map'
       Top = 2
       Caption = 'Radar Map'
@@ -978,28 +978,40 @@ object frmMain: TfrmMain
       OnClick = tbRadarMapClick
     end
     object tbVirtualLayer: TToolButton
-      Left = 216
+      Left = 248
       Top = 2
       Action = acVirtualLayer
     end
     object tbFilter: TToolButton
-      Left = 239
+      Left = 271
       Top = 2
       Action = acFilter
       Style = tbsCheck
       OnMouseMove = tbFilterMouseMove
     end
     object tbFlat: TToolButton
-      Left = 346
+      Left = 380
       Top = 2
       Action = acFlat
       Style = tbsCheck
     end
     object tbNoDraw: TToolButton
-      Left = 323
+      Left = 357
       Top = 2
       Action = acNoDraw
       Style = tbsCheck
+    end
+    object tbSeparator2: TToolButton
+      Left = 178
+      Top = 2
+      Width = 8
+      Caption = 'tbSeparator2'
+      Style = tbsDivider
+    end
+    object tbUndo: TToolButton
+      Left = 186
+      Top = 2
+      Action = acUndo
     end
   end
   object pnlChatHeader: TPanel
@@ -1419,7 +1431,7 @@ object frmMain: TfrmMain
     left = 264
     top = 32
     Bitmap = {
-      4C69140000001000000010000000000000000000000000000000000000000000
+      4C69150000001000000010000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000D9A781FFD39E76FF00000000000000000000000000000000000000000000
       0000000000000000000000000000ECBEA1FFE7BB9DFFE4B697FFE0B292FFDAAE
@@ -2059,7 +2071,39 @@ object frmMain: TfrmMain
       84FF94C7F9FF91C9F9FF4185C9FF256BACFFB7D9D4FFD4E2ECFFCFE5D6FFD5ED
       D9FFD8EFDCFFD5EDD9FF616C63FF454D47FF5F6A61FF636F64FF646F64FF143F
       56FF295F86FF4988BCFF4A86A7FF5D7070FF646F66FF646F66FF646F67FF646F
-      67FF647067FF616C63FF474E48FF
+      67FF647067FF616C63FF474E48FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF0066C472FF64C270FF62BF
+      6EFF60BC6BFF5DB868FF5BB565FF58B162FD55AC5FEA52A85BB74FA358704B9F
+      541DFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF0064C170FFA6DBB0FFA6DA
+      AFFFA3D9ADFFA2D8ABFF9FD7A8FF9CD5A5FF94D09DFF83C58CFF6CB474FF4799
+      50B044944C39FFFFFF00FFFFFF00FFFFFF00FFFFFF0062BE6DFFA5DAAEFFA2D8
+      ACFFA1D8AAFF9ED6A7FF9CD5A5FF99D4A2FF97D29FFF8CCD95FF91CF99FF73B8
+      7BFF408F47B03C8A431DFFFFFF00FFFFFF00FFFFFF005FBA6AFF5CB667FF59B3
+      64FF56AE60FF53AA5DFF50A659FF4DA156FF68B170FF88C890FF8DCC95FF8BCB
+      92FF5DA564FF38853F70FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF0046974E8F42924AE281C388FF7DC4
+      85FF6EB375FF357F3BB7FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF003E8D458F64AB6BFF7FC4
+      86FF79BE81FF317A36EAFFFFFF00FFFFFF00FFFFFF00FFFFFF0052A85B034FA3
+      587BFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF003A87418F61A867FF7BC2
+      82FF76BC7CFF2D7532EAFFFFFF00FFFFFF00FFFFFF00FFFFFF004EA3579F4B9E
+      53D2FFFFFF00FFFFFF00FFFFFF00FFFFFF003A86408F36813CE275BB7BFF70BD
+      77FF63AB69FF2A702EB7FFFFFF00FFFFFF00FFFFFF004DA2569367B16FFF64AD
+      6BFF43944BFF408F47FF3C8A43FF398540FF549D5AFF74BA7AFF79C17FFF77BF
+      7DFF4A914FFF266B2B70FFFFFF00FFFFFF004DA1568A66B06EFF8ACA92FF89CA
+      90FF86C88DFF83C68AFF80C587FF7EC384FF7BC281FF6DBB74FF76BE7CFF59A0
+      5DFF266B2AB02367271DFFFFFF00FFFFFF00499C518462AC6AFF85C88DFF85C7
+      8BFF82C688FF7FC486FF7CC282FF79C180FF71B978FF5FA865FF49914EFF256A
+      2AB023662739FFFFFF00FFFFFF00FFFFFF00FFFFFF00429149905AA462FF58A1
+      5EFF37833EFF347E3AFF317A36FF2E7533FF2B712FEA286D2CB7256929702266
+      261DFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF003A87419C3782
+      3DD2FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF0036813C03337D
+      3978FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00
     }
   end
   object pmTileList: TPopupMenu
@@ -2529,6 +2573,15 @@ object frmMain: TfrmMain
       Hint = 'Display "No Draw" tiles'
       ImageIndex = 18
       OnExecute = acNoDrawExecute
+    end
+    object acUndo: TAction
+      Category = 'Tools'
+      Caption = 'Undo'
+      Enabled = False
+      Hint = 'Undo last set of changes'
+      ImageIndex = 20
+      OnExecute = acUndoExecute
+      ShortCut = 16474
     end
   end
   object tmGrabTileInfo: TTimer

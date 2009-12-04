@@ -33,8 +33,8 @@ uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Menus,
   ComCtrls, OpenGLContext, GL, GLU, UGameResources, ULandscape, ExtCtrls,
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
-  LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
-  ImagingClasses, dateutils, UPlatformTypes, UMap;
+  LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList, fgl,
+  ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -42,6 +42,7 @@ type
   TScreenBufferStates = set of TScreenBufferState;
 
   TGhostTile = class(TStaticItem);
+  TPacketList = specialize TFPGObjectList<TPacket>;
 
   { TfrmMain }
 
@@ -56,6 +57,7 @@ type
     acFilter: TAction;
     acFlat: TAction;
     acNoDraw: TAction;
+    acUndo: TAction;
     acVirtualLayer: TAction;
     ActionList1: TActionList;
     ApplicationProperties1: TApplicationProperties;
@@ -128,11 +130,13 @@ type
     tbFlat: TToolButton;
     tbNoDraw: TToolButton;
     tmTileHint: TTimer;
+    tbSeparator2: TToolButton;
+    tbUndo: TToolButton;
     tsLocations: TTabSheet;
     tbSetHue: TToolButton;
     tmGrabTileInfo: TTimer;
     tmMovement: TTimer;
-    tbSeparator4: TToolButton;
+    tbSeparator5: TToolButton;
     tbRadarMap: TToolButton;
     tbVirtualLayer: TToolButton;
     tsClients: TTabSheet;
@@ -144,9 +148,9 @@ type
     tbMoveTile: TToolButton;
     tbElevateTile: TToolButton;
     tbDeleteTile: TToolButton;
-    tbSeparator2: TToolButton;
-    tbBoundaries: TToolButton;
     tbSeparator3: TToolButton;
+    tbBoundaries: TToolButton;
+    tbSeparator4: TToolButton;
     tbTerrain: TToolButton;
     tbStatics: TToolButton;
     tsTiles: TTabSheet;
@@ -164,6 +168,7 @@ type
     procedure acMoveExecute(Sender: TObject);
     procedure acNoDrawExecute(Sender: TObject);
     procedure acSelectExecute(Sender: TObject);
+    procedure acUndoExecute(Sender: TObject);
     procedure acVirtualLayerExecute(Sender: TObject);
     procedure ApplicationProperties1Idle(Sender: TObject; var Done: Boolean);
     procedure btnAddLocationClick(Sender: TObject);
@@ -288,6 +293,7 @@ type
     FAccessChangedListeners: array of TAccessChangedListener;
     FRepaintNeeded: Boolean;
     FSelection: TRect;
+    FUndoList: TPacketList;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -543,7 +549,7 @@ var
   targetRect: TRect;
   offsetX, offsetY: Integer;
   tile: TWorldItem;
-  tileX, tileY: Word;
+  tileX, tileY, newX, newY: Word;
   targetTiles: TWorldItemList;
   targetTile: TWorldItem;
 begin
@@ -569,6 +575,7 @@ begin
   if (not acSelect.Checked) and (targetTile <> nil) and (SelectedTile <> nil) then
   begin
     targetRect := GetSelectedRect;
+    FUndoList.Clear;
 
     if (SelectedTile = targetTile) or ConfirmAction then
     begin
@@ -579,16 +586,23 @@ begin
           begin
             map := FLandscape.MapCell[tileX, tileY];
             if map.IsGhost then
+            begin
+              FUndoList.Add(TDrawMapPacket.Create(tileX, tileY, map.RawZ,
+                map.RawTileID));
               dmNetwork.Send(TDrawMapPacket.Create(tileX, tileY, map.Z,
                 map.TileID));
+            end;
           end;
 
         for i := 0 to FVirtualTiles.Count - 1 do
         begin
           tile := FVirtualTiles[i];
           if tile is TGhostTile then
+          begin
             dmNetwork.Send(TInsertStaticPacket.Create(tile.X, tile.Y, tile.Z,
               tile.TileID, TGhostTile(tile).Hue));
+            FUndoList.Add(TDeleteStaticPacket.Create(TGhostTile(tile)));
+          end;
         end;
       end else if (SelectedTile <> targetTile) or targetTile.CanBeEdited then
       begin
@@ -623,9 +637,12 @@ begin
 
               if tile is TStaticItem then
               begin
+                newX := EnsureRange(tile.X + offsetX, 0, FLandscape.CellWidth - 1);
+                newY := EnsureRange(tile.Y + offsetY, 0, FLandscape.CellHeight - 1);
+                FUndoList.Add(TMoveStaticPacket.Create(newX, newY, tile.Z,
+                  tile.TileID, TStaticItem(tile).Hue, tile.X, tile.Y));
                 dmNetwork.Send(TMoveStaticPacket.Create(TStaticItem(tile),
-                  EnsureRange(tile.X + offsetX, 0, FLandscape.CellWidth - 1),
-                  EnsureRange(tile.Y + offsetY, 0, FLandscape.CellHeight - 1)));
+                  newX, newY));
               end;
             end;
           end else if acElevate.Checked then        //***** Elevate tile *****//
@@ -644,10 +661,14 @@ begin
               begin
                 if frmElevateSettings.cbRandomHeight.Checked then
                   Inc(z, Random(frmElevateSettings.seRandomHeight.Value));
-                dmNetwork.Send(TDrawMapPacket.Create(tile.X, tile.Y,
-                  z, tile.TileID));
+                FUndoList.Add(TDrawMapPacket.Create(tile.X, tile.Y, tile.Z,
+                  tile.TileID));
+                dmNetwork.Send(TDrawMapPacket.Create(tile.X, tile.Y, z,
+                  tile.TileID));
               end else
               begin
+                FUndoList.Add(TElevateStaticPacket.Create(tile.X, tile.Y,
+                  z, tile.TileID, TStaticItem(tile).Hue, tile.Z));
                 dmNetwork.Send(TElevateStaticPacket.Create(TStaticItem(tile), z));
               end;
             end;
@@ -658,7 +679,11 @@ begin
               tile := targetTiles.Items[i];
 
               if tile is TStaticItem then
+              begin
+                FUndoList.Add(TInsertStaticPacket.Create(tile.X, tile.Y,
+                  tile.Z, tile.TileID, TStaticItem(tile).Hue));
                 dmNetwork.Send(TDeleteStaticPacket.Create(TStaticItem(tile)));
+              end;
             end;
           end else if acHue.Checked then                //***** Hue tile *****//
           begin
@@ -669,6 +694,9 @@ begin
               if (tile is TStaticItem) and
                 (TStaticItem(tile).Hue <> frmHueSettings.lbHue.ItemIndex) then
               begin
+                FUndoList.Add(THueStaticPacket.Create(tile.X, tile.Y, tile.Z,
+                  tile.TileID, frmHueSettings.lbHue.ItemIndex,
+                  TStaticItem(tile).Hue));
                 dmNetwork.Send(THueStaticPacket.Create(TStaticItem(tile),
                   frmHueSettings.lbHue.ItemIndex));
               end;
@@ -680,6 +708,7 @@ begin
       end;
     end;
   end;
+  acUndo.Enabled := FUndoList.Count > 0;
   SelectedTile := nil;
   FRepaintNeeded := True;
 end;
@@ -771,6 +800,7 @@ begin
   virtualLayerGraphic.Free;
 
   FVirtualTiles := TWorldItemList.Create(True);
+  FUndoList := TPacketList.Create(True);
   
   FRandomPresetLocation := IncludeTrailingPathDelimiter(ExtractFilePath(
     Application.ExeName)) + 'RandomPresets' + PathDelim;
@@ -891,6 +921,19 @@ begin
   tbSelect.Down := True;
   mnuSelect.Checked := True;
   ProcessToolState;
+end;
+
+procedure TfrmMain.acUndoExecute(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := FUndoList.Count - 1 downto 0 do
+  begin
+    dmNetwork.Send(FUndoList[i]);
+    FUndoList[i] := nil;
+  end;
+  FUndoList.Clear;
+  acUndo.Enabled := False;
 end;
 
 procedure TfrmMain.acVirtualLayerExecute(Sender: TObject);
@@ -1044,6 +1087,7 @@ begin
   FreeAndNil(FOverlayUI);
   FreeAndNil(FVLayerMaterial);
   FreeAndNil(FVirtualTiles);
+  FreeAndNil(FUndoList);
   
   RegisterPacketHandler($0C, nil);
 end;
@@ -2211,7 +2255,6 @@ begin
   FLandscape.FillDrawList(FScreenBuffer, FX + FLowOffsetX, FY + FLowOffsetY,
     FRangeX, FRangeY, tbTerrain.Down, tbStatics.Down, acNoDraw.Checked,
     FVirtualTiles);
-  //TODO : ghost tile
 
   //Pre-process the buffer
   blockInfo := nil;
@@ -2327,7 +2370,6 @@ procedure TfrmMain.UpdateSelection;
 
     if tileInfo <> nil then
     begin
-      //TODO Update Ghost Tile
       if tileInfo^.ID < $4000 then
       begin
         cell := FLandscape.MapCell[AX, AY];

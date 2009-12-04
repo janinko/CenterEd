@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UPackets;
 
@@ -72,6 +72,13 @@ type
   TDrawMapPacket = class(TPacket)
     constructor Create(AX, AY: Word; AZ: ShortInt; ATileID: Word);
   end;
+
+  { TStaticPacket }
+
+  TStaticPacket = class(TPacket)
+  protected
+    procedure WriteStaticItem(AStaticItem: TStaticItem);
+  end;
   
   { TInsertStaticPacket }
 
@@ -81,26 +88,32 @@ type
   
   { TDeleteStaticPacket }
 
-  TDeleteStaticPacket = class(TPacket)
+  TDeleteStaticPacket = class(TStaticPacket)
     constructor Create(AStaticItem: TStaticItem);
   end;
   
   { TElevateStaticPacket }
 
-  TElevateStaticPacket = class(TPacket)
+  TElevateStaticPacket = class(TStaticPacket)
     constructor Create(AStaticItem: TStaticItem; ANewZ: ShortInt);
+    constructor Create(AX, AY: Word; AZ: ShortInt; ATileID: Word; AHue: Word;
+      ANewZ: Word);
   end;
   
   { TMoveStaticPacket }
 
-  TMoveStaticPacket = class(TPacket)
+  TMoveStaticPacket = class(TStaticPacket)
     constructor Create(AStaticItem: TStaticItem; ANewX, ANewY: Word);
+    constructor Create(AX, AY: Word; AZ: ShortInt; ATileID: Word; AHue: Word;
+      ANewX, ANewY: Word);
   end;
   
   { THueStaticPacket }
 
-  THueStaticPacket = class(TPacket)
+  THueStaticPacket = class(TStaticPacket)
     constructor Create(AStaticItem: TStaticItem; ANewHue: Word);
+    constructor Create(AX, AY: Word; AZ: ShortInt; ATileID: Word; AHue: Word;
+      ANewHue: Word);
   end;
   
   { TUpdateClientPosPacket }
@@ -209,6 +222,17 @@ begin
   FStream.WriteWord(ATileID);
 end;
 
+{ TStaticPacket }
+
+procedure TStaticPacket.WriteStaticItem(AStaticItem: TStaticItem);
+begin
+  FStream.WriteWord(AStaticItem.X);
+  FStream.WriteWord(AStaticItem.Y);
+  FStream.WriteShortInt(AStaticItem.Z);
+  FStream.WriteWord(AStaticItem.TileID);
+  FStream.WriteWord(AStaticItem.Hue);
+end;
+
 { TInsertStaticPacket }
 
 constructor TInsertStaticPacket.Create(AX, AY: Word; AZ: ShortInt;
@@ -227,11 +251,7 @@ end;
 constructor TDeleteStaticPacket.Create(AStaticItem: TStaticItem);
 begin
   inherited Create($08, 10);
-  FStream.WriteWord(AStaticItem.X);
-  FStream.WriteWord(AStaticItem.Y);
-  FStream.WriteShortInt(AStaticItem.Z);
-  FStream.WriteWord(AStaticItem.TileID);
-  FStream.WriteWord(AStaticItem.Hue);
+  WriteStaticItem(AStaticItem);
 end;
 
 { TElevateStaticPacket }
@@ -239,11 +259,19 @@ end;
 constructor TElevateStaticPacket.Create(AStaticItem: TStaticItem; ANewZ: ShortInt);
 begin
   inherited Create($09, 11);
-  FStream.WriteWord(AStaticItem.X);
-  FStream.WriteWord(AStaticItem.Y);
-  FStream.WriteShortInt(AStaticItem.Z);
-  FStream.WriteWord(AStaticItem.TileID);
-  FStream.WriteWord(AStaticItem.Hue);
+  WriteStaticItem(AStaticItem);
+  FStream.WriteShortInt(ANewZ);
+end;
+
+constructor TElevateStaticPacket.Create(AX, AY: Word; AZ: ShortInt;
+  ATileID: Word; AHue: Word; ANewZ: Word);
+begin
+  inherited Create($09, 11);
+  FStream.WriteWord(AX);
+  FStream.WriteWord(AY);
+  FStream.WriteShortInt(AZ);
+  FStream.WriteWord(ATileID);
+  FStream.WriteWord(AHue);
   FStream.WriteShortInt(ANewZ);
 end;
 
@@ -253,11 +281,20 @@ constructor TMoveStaticPacket.Create(AStaticItem: TStaticItem; ANewX,
   ANewY: Word);
 begin
   inherited Create($0A, 14);
-  FStream.WriteWord(AStaticItem.X);
-  FStream.WriteWord(AStaticItem.Y);
-  FStream.WriteShortInt(AStaticItem.Z);
-  FStream.WriteWord(AStaticItem.TileID);
-  FStream.WriteWord(AStaticItem.Hue);
+  WriteStaticItem(AStaticItem);
+  FStream.WriteWord(ANewX);
+  FStream.WriteWord(ANewY);
+end;
+
+constructor TMoveStaticPacket.Create(AX, AY: Word; AZ: ShortInt; ATileID: Word;
+  AHue: Word; ANewX, ANewY: Word);
+begin
+  inherited Create($0A, 14);
+  FStream.WriteWord(AX);
+  FStream.WriteWord(AY);
+  FStream.WriteShortInt(AZ);
+  FStream.WriteWord(ATileID);
+  FStream.WriteWord(AHue);
   FStream.WriteWord(ANewX);
   FStream.WriteWord(ANewY);
 end;
@@ -267,11 +304,19 @@ end;
 constructor THueStaticPacket.Create(AStaticItem: TStaticItem; ANewHue: Word);
 begin
   inherited Create($0B, 12);
-  FStream.WriteWord(AStaticItem.X);
-  FStream.WriteWord(AStaticItem.Y);
-  FStream.WriteShortInt(AStaticItem.Z);
-  FStream.WriteWord(AStaticItem.TileID);
-  FStream.WriteWord(AStaticItem.Hue);
+  WriteStaticItem(AStaticItem);
+  FStream.WriteWord(ANewHue);
+end;
+
+constructor THueStaticPacket.Create(AX, AY: Word; AZ: ShortInt; ATileID: Word;
+  AHue: Word; ANewHue: Word);
+begin
+  inherited Create($0B, 12);
+  FStream.WriteWord(AX);
+  FStream.WriteWord(AY);
+  FStream.WriteShortInt(AZ);
+  FStream.WriteWord(ATileID);
+  FStream.WriteWord(AHue);
   FStream.WriteWord(ANewHue);
 end;
 
