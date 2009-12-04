@@ -2280,6 +2280,7 @@ procedure TfrmMain.UpdateSelection;
     tileInfo: PTileInfo;
     node: PVirtualNode;
     cell: TMapCell;
+    ghostTile: TGhostTile;
     i: Integer;
   begin
     tileInfo := nil;
@@ -2308,12 +2309,6 @@ procedure TfrmMain.UpdateSelection;
         begin
           cell.IsGhost := True;
           cell.GhostID := tileInfo^.ID;
-          {if (FGhostTile is TStaticItem) and (not frmDrawSettings.cbForceAltitude.Checked) then
-             begin
-               FGhostTile.Z := CurrentTile.Z;
-               if CurrentTile is TStaticItem then
-                 Inc(FGhostTile.Z, ResMan.Tiledata.StaticTiles[CurrentTile.TileID].Height);
-             end else}
           if frmDrawSettings.cbForceAltitude.Checked then
             cell.GhostZ := frmDrawSettings.seForceAltitude.Value
           else
@@ -2323,9 +2318,25 @@ procedure TfrmMain.UpdateSelection;
         end;
       end else
       begin
-        {FGhostTile := TStaticItem.Create(nil, nil, 0, 0);
-        FGhostTile.TileID := tileInfo^.ID - $4000;
-        TStaticItem(FGhostTile).Hue := frmHueSettings.lbHue.ItemIndex;}
+        ghostTile := TGhostTile.Create(nil, nil, 0, 0);
+        ghostTile.TileID := tileInfo^.ID - $4000;
+        ghostTile.Hue := frmHueSettings.lbHue.ItemIndex;
+        ghostTile.X := AX;
+        ghostTile.Y := AY;
+        if not frmDrawSettings.cbForceAltitude.Checked then
+        begin
+          ghostTile.Z := CurrentTile.Z;
+          if CurrentTile is TStaticItem then
+            ghostTile.Z := ghostTile.Z +
+              ResMan.Tiledata.StaticTiles[CurrentTile.TileID].Height;
+        end else
+          ghostTile.Z := frmDrawSettings.seForceAltitude.Value;
+        ghostTile.PrioritySolver := MaxInt;
+
+        FVirtualTiles.Add(ghostTile);
+        blockInfo := FScreenBuffer.Insert(ghostTile);
+        blockInfo^.State := ssGhost;
+        PrepareScreenBlock(blockInfo);
       end;
 
     end;
