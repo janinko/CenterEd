@@ -201,7 +201,8 @@ type
   PBlockInfo = ^TBlockInfo;
   TBlockInfo = record
     ScreenRect: TRect;
-    DrawQuad: array[0..3,0..1] of TGLfloat;
+    DrawQuad: array[0..3,0..1] of TGLint;
+    RealQuad: array[0..3,0..1] of TGLint;
     Item: TWorldItem;
     HighRes: TMaterial;
     LowRes: TMaterial;
@@ -209,6 +210,7 @@ type
     State: TScreenState;
     Highlighted: Boolean;
     HueOverride: Boolean;
+    CheckRealQuad: Boolean;
     Next: PBlockInfo;
   end;
 
@@ -1278,17 +1280,51 @@ end;
 function TScreenBuffer.Find(AScreenPosition: TPoint): PBlockInfo;
 var
   current: PBlockInfo;
+  buff: array[0..3] of GLuint;
+  hits: GLint;
 begin
   Result := nil;
   current := FShortCuts[0];
   while current <> nil do //search the last matching tile
   begin
     if (current^.State = ssNormal) and
-       PtInRect(current^.ScreenRect, AScreenPosition) and
-       current^.LowRes.HitTest(AScreenPosition.x - current^.ScreenRect.Left,
-                               AScreenPosition.y - current^.ScreenRect.Top) then
+       PtInRect(current^.ScreenRect, AScreenPosition)then
     begin
-      Result := current;
+      if current^.CheckRealQuad then
+      begin
+        //OpenGL hit test
+        //We use the "real quad" here to prevent the draw-preview from
+        //intercepting with our actual tiles (which are "hidden" then).
+        glSelectBuffer(4, @buff[0]);
+        glViewport(current^.ScreenRect.Left, current^.ScreenRect.Top,
+          current^.ScreenRect.Right, current^.ScreenRect.Bottom);
+        glRenderMode(GL_SELECT);
+        glInitNames;
+        glPushName(0);
+
+        glPushMatrix;
+          glMatrixMode(GL_PROJECTION);
+          glLoadIdentity;
+          gluOrtho2D(AScreenPosition.x, AScreenPosition.x + 1,
+            AScreenPosition.y + 1, AScreenPosition.y);
+          glMatrixMode(GL_MODELVIEW);
+          glLoadIdentity;
+
+          glBegin(GL_QUADS);
+            glVertex2iv(@current^.RealQuad[0]);
+            glVertex2iv(@current^.RealQuad[3]);
+            glVertex2iv(@current^.RealQuad[2]);
+            glVertex2iv(@current^.RealQuad[1]);
+          glEnd;
+        glPopMatrix;
+        glFlush;
+
+        if glRenderMode(GL_RENDER) > 0 then //glRenderMode now returns the number of hits
+          Result := current;
+      end else
+      if current^.LowRes.HitTest(AScreenPosition.x - current^.ScreenRect.Left,
+         AScreenPosition.y - current^.ScreenRect.Top) then
+        Result := current;
     end;
     current := current^.Next;
   end;

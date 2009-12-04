@@ -292,7 +292,7 @@ type
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
     procedure GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
-      DrawY: Single); inline;
+      DrawY: Integer); inline;
     function  GetInternalTileID(ATile: TWorldItem): Word;
     function  GetSelectedRect: TRect;
     procedure InitRender;
@@ -1687,7 +1687,7 @@ begin
   glDisable(GL_DITHER);
   glEnable(GL_BLEND); // Enable alpha blending of textures
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glShadeModel(GL_SMOOTH); // Go with flat shading for now
+  glShadeModel(GL_SMOOTH);
   glEnable(GL_NORMALIZE);
 
   glEnable(GL_LIGHT0);
@@ -1716,11 +1716,29 @@ begin
 end;
 
 procedure TfrmMain.PrepareScreenBlock(ABlockInfo: PBlockInfo);
+
+  procedure GetLandAlt(const AX, AY: Integer; const ADefaultZ,
+    ADefaultRaw: SmallInt; var Z, RawZ: SmallInt);
+  var
+    cell: TMapCell;
+  begin
+    cell := FLandscape.MapCell[AX, AY];
+    if cell <> nil then
+    begin
+      Z := cell.Z;
+      RawZ := cell.RawZ;
+    end else
+    begin
+      Z := ADefaultZ;
+      RawZ := ADefaultRaw;
+    end;
+  end;
+
 var
   item: TWorldItem;
-  drawX, drawY: Single;
-  west, south, east: Single;
-  z, rawZ: SmallInt;
+  drawX, drawY: Integer;
+  z, west, south, east: SmallInt;
+  rawZ, rawWest, rawSouth, rawEast: SmallInt;
   staticItem: TStaticItem;
 begin
   //add normals to map tiles and materials where possible
@@ -1739,23 +1757,58 @@ begin
     rawZ := item.RawZ;
   end;
 
+  ABlockInfo^.HighRes := nil;
+  ABlockInfo^.CheckRealQuad := False;
   if item is TMapCell then
   begin
-    ABlockInfo^.HighRes := nil;
     if not acFlat.Checked then
     begin
-      west := FLandscape.GetLandAlt(item.X, item.Y + 1, z);
-      south := FLandscape.GetLandAlt(item.X + 1, item.Y + 1, z);
-      east := FLandscape.GetLandAlt(item.X + 1, item.Y, z);
+      GetLandAlt(item.X, item.Y + 1, z, rawZ, west, rawWest);
+      GetLandAlt(item.X + 1, item.Y + 1, z, rawZ, south, rawSouth);
+      GetLandAlt(item.X + 1, item.Y, z, rawZ, east, rawEast);
 
       if  (west <> z) or (south <> z) or (east <> z) then
-      begin
         ABlockInfo^.HighRes := FTextureManager.GetTexMaterial(item.TileID);
+
+      if (rawWest <> rawZ) or (rawSouth <> rawZ) or (rawEast <> rawZ) then
+      begin
+        ABlockInfo^.RealQuad[0][0] := drawX;
+        ABlockInfo^.RealQuad[0][1] := drawY - rawZ * 4;
+        ABlockInfo^.RealQuad[1][0] := drawX + 22;
+        ABlockInfo^.RealQuad[1][1] := drawY + 22 - rawEast * 4;
+        ABlockInfo^.RealQuad[2][0] := drawX;
+        ABlockInfo^.RealQuad[2][1] := drawY + 44 - rawSouth * 4;
+        ABlockInfo^.RealQuad[3][0] := drawX - 22;
+        ABlockInfo^.RealQuad[3][1] := drawY + 22 - rawWest * 4;
+
+        with ABlockInfo^ do
+        begin
+          with ScreenRect do
+          begin
+            Left := drawX - 22;
+            Right := drawX + 22;
+            Top := RealQuad[0][1];
+            Bottom := RealQuad[0][1];
+
+            if RealQuad[1][1] < Top then Top := RealQuad[1][1];
+            if RealQuad[1][1] > Bottom then Bottom := RealQuad[1][1];
+
+            if RealQuad[2][1] < Top then Top := RealQuad[2][1];
+            if RealQuad[2][1] > Bottom then Bottom := RealQuad[2][1];
+
+            if RealQuad[3][1] < Top then Top := RealQuad[3][1];
+            if RealQuad[3][1] > Bottom then Bottom := RealQuad[3][1];
+          end;
+          CheckRealQuad := True;
+        end;
       end;
     end;
 
+    if not ABlockInfo^.CheckRealQuad then
+      ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - 22),
+        Trunc(drawY - rawZ * 4), 44, 44);
+
     ABlockInfo^.LowRes := FTextureManager.GetArtMaterial(item.TileID);
-    ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - rawZ * 4), 44, 44);
 
     if ABlockInfo^.HighRes <> nil then
     begin
@@ -1785,7 +1838,8 @@ begin
   if item is TVirtualTile then
   begin
     ABlockInfo^.LowRes := FVLayerMaterial;
-    ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4), 44, 44);
+    ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4),
+      44, 44);
     ABlockInfo^.DrawQuad[0][0] := drawX - 22;
     ABlockInfo^.DrawQuad[0][1] := drawY - z * 4;
     ABlockInfo^.DrawQuad[1][0] := drawX - 22 + ABlockInfo^.LowRes.Width;
@@ -1866,46 +1920,36 @@ begin
       glLogicOp(GL_COPY_INVERTED);
     end;
 
-    if item is TMapCell then
+    if blockInfo^.HighRes <> nil then
     begin
-      if blockInfo^.HighRes <> nil then
-      begin
-        glBindTexture(GL_TEXTURE_2D, blockInfo^.HighRes.Texture);
+      glBindTexture(GL_TEXTURE_2D, blockInfo^.HighRes.Texture);
 
-        if not highlight then
-          glEnable(GL_LIGHTING);
+      if not highlight then
+        glEnable(GL_LIGHTING);
 
-        glBegin(GL_QUADS);
-          glNormal3fv(@blockInfo^.Normals^[0]);
-          glTexCoord2f(0, 0); glVertex2fv(@blockInfo^.DrawQuad[0]);
-          glNormal3fv(@blockInfo^.Normals^[3]);
-          glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
-          glNormal3fv(@blockInfo^.Normals^[2]);
-          glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
-          glNormal3fv(@blockInfo^.Normals^[1]);
-          glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
-        glEnd;
+      glLoadName(PtrInt(item));
+      glBegin(GL_QUADS);
+        glNormal3fv(@blockInfo^.Normals^[0]);
+        glTexCoord2i(0, 0); glVertex2iv(@blockInfo^.DrawQuad[0]);
+        glNormal3fv(@blockInfo^.Normals^[3]);
+        glTexCoord2i(0, 1); glVertex2iv(@blockInfo^.DrawQuad[3]);
+        glNormal3fv(@blockInfo^.Normals^[2]);
+        glTexCoord2i(1, 1); glVertex2iv(@blockInfo^.DrawQuad[2]);
+        glNormal3fv(@blockInfo^.Normals^[1]);
+        glTexCoord2i(1, 0); glVertex2iv(@blockInfo^.DrawQuad[1]);
+      glEnd;
 
-        if not highlight then
-          glDisable(GL_LIGHTING);
-      end else
-      begin
-        glBindTexture(GL_TEXTURE_2D, blockInfo^.LowRes.Texture);
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2fv(@blockInfo^.DrawQuad[0]);
-          glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
-          glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
-          glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
-        glEnd;
-      end;
+      if not highlight then
+        glDisable(GL_LIGHTING);
     end else
     begin
       glBindTexture(GL_TEXTURE_2D, blockInfo^.LowRes.Texture);
+      glLoadName(PtrInt(item));
       glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex2fv(@blockInfo^.DrawQuad[0]);
-        glTexCoord2f(1, 0); glVertex2fv(@blockInfo^.DrawQuad[1]);
-        glTexCoord2f(1, 1); glVertex2fv(@blockInfo^.DrawQuad[2]);
-        glTexCoord2f(0, 1); glVertex2fv(@blockInfo^.DrawQuad[3]);
+        glTexCoord2i(0, 0); glVertex2iv(@blockInfo^.DrawQuad[0]);
+        glTexCoord2i(1, 0); glVertex2iv(@blockInfo^.DrawQuad[1]);
+        glTexCoord2i(1, 1); glVertex2iv(@blockInfo^.DrawQuad[2]);
+        glTexCoord2i(0, 1); glVertex2iv(@blockInfo^.DrawQuad[3]);
       glEnd;
     end;
 
@@ -2193,7 +2237,7 @@ end;
 
 procedure TfrmMain.UpdateCurrentTile(AX, AY: Integer);
 var
-  info: PBlockInfo;
+  blockInfo: PBlockInfo;
 begin
   FOverlayUI.ActiveArrow := FOverlayUI.HitTest(AX, AY);
   if FOverlayUI.ActiveArrow > -1 then
@@ -2202,11 +2246,10 @@ begin
     Exit;
   end;
 
-  info := FScreenBuffer.Find(Point(AX, AY));
-  if info <> nil then
-  begin
-    CurrentTile := info^.Item;
-  end else
+  blockInfo := FScreenBuffer.Find(Point(AX, AY));
+  if blockInfo <> nil then
+    CurrentTile := blockInfo^.Item
+  else
     CurrentTile := nil;
 end;
 
@@ -2547,7 +2590,7 @@ begin
 end;
 
 procedure TfrmMain.GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
-  DrawY: Single); inline;
+  DrawY: Integer); inline;
 begin
   DrawX := (oglGameWindow.Width div 2) + (ARelativeX - ARelativeY) * 22;
   DrawY := (oglGamewindow.Height div 2) + (ARelativeX + ARelativeY) * 22;
