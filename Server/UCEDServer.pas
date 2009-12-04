@@ -72,7 +72,7 @@ var
 implementation
 
 uses
-  UClientHandling;
+  Logging, UClientHandling;
 
 {$I version.inc}
 
@@ -250,7 +250,11 @@ begin
     end;
     ANetState.LastAction := Now;
   except
-    Writeln(TimeStamp, 'Error processing buffer of client: ', ANetState.Socket.PeerAddress);
+    on E: Exception do
+    begin
+      Logger.SendException([lcServer], 'Error processing buffer', E);
+      Writeln(TimeStamp, 'Error processing buffer of client: ', ANetState.Socket.PeerAddress);
+    end;
   end;
 end;
 

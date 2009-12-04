@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit ULandscape;
 
@@ -51,7 +51,7 @@ type
     FTiledataProvider: TTiledataProvider;
   public
     { Fields }
-    Cells: array[0..63] of TList;
+    Cells: array[0..63] of TStaticItemList;
     property TiledataProvider: TTiledataProvider read FTiledataProvider write FTiledataProvider;
 
     { Methods }
@@ -98,7 +98,7 @@ type
     procedure OnBlockChanged(ABlock: TMulBlock);
     procedure OnRemoveCachedObject(AObject: TObject);
     function GetMapCell(AX, AY: Word): TMapCell;
-    function GetStaticList(AX, AY: Word): TList;
+    function GetStaticList(AX, AY: Word): TStaticItemList;
     function GetBlockSubscriptions(AX, AY: Word): TLinkedList;
 
     procedure OnDrawMapPacket(ABuffer: TEnhancedMemoryStream;
@@ -121,7 +121,7 @@ type
     property CellWidth: Word read FCellWidth;
     property CellHeight: Word read FCellHeight;
     property MapCell[X, Y: Word]: TMapCell read GetMapCell;
-    property StaticList[X, Y: Word]: TList read GetStaticList;
+    property StaticList[X, Y: Word]: TStaticItemList read GetStaticList;
     property BlockSubscriptions[X, Y: Word]: TLinkedList read GetBlockSubscriptions;
     property TiledataProvider: TTiledataProvider read FTiledataProvider;
 
@@ -132,7 +132,7 @@ type
     procedure UpdateRadar(AX, AY: Word);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
-    procedure SortStaticsList(AStatics: TList);
+    procedure SortStaticsList(AStatics: TStaticItemList);
 
     procedure Flush;
     procedure SaveBlock(AWorldBlock: TWorldBlock);
@@ -185,13 +185,13 @@ var
   block: TMemoryStream;
 begin
   inherited Create;
-  FItems := TList.Create;
+  FItems := TStaticItemList.Create(False);
 
   FX := AX;
   FY := AY;
 
   for i := 0 to 63 do
-    Cells[i] := TList.Create;
+    Cells[i] := TStaticItemList.Create(True);
 
   if (AData <> nil) and (AIndex.Lookup > 0) and (AIndex.Size > 0) then
   begin
@@ -220,21 +220,7 @@ begin
   FreeAndNil(FItems);
 
   for i := 0 to 63 do
-  begin
-    if Cells[i] <> nil then
-    begin
-      for j := 0 to Cells[i].Count - 1 do
-      begin
-        if Cells[i][j] <> nil then
-        begin
-          TStaticItem(Cells[i][j]).Free;
-          Cells[i][j] := nil;
-        end;
-      end;
-      Cells[i].Free;
-      Cells[i] := nil;
-    end;
-  end;
+    FreeAndNil(Cells[i]);
 
   inherited Destroy;
 end;
@@ -263,9 +249,8 @@ begin
       for j := 0 to Cells[i].Count - 1 do
       begin
         FItems.Add(Cells[i].Items[j]);
-        TStaticItem(Cells[i].Items[j]).UpdatePriorities(
-          FTiledataProvider.StaticTiles[TStaticItem(Cells[i].Items[j]).TileID],
-          solver);
+        Cells[i].Items[j].UpdatePriorities(
+          FTiledataProvider.StaticTiles[Cells[i].Items[j].TileID], solver);
         Inc(solver);
       end;
     end;
@@ -355,16 +340,16 @@ var
   i: Integer;
 begin
   for i := 0 to Length(FBlockSubscriptions) - 1 do
-    if FBlockSubscriptions[i] <> nil then FreeAndNil(FBlockSubscriptions[i]);
-  if FBlockCache <> nil then FreeAndNil(FBlockCache);
-  if FTiledataProvider <> nil then FreeAndNil(FTiledataProvider);
-  if FRadarMap <> nil then FreeAndNil(FRadarMap);
+    FreeAndNil(FBlockSubscriptions[i]);
+  FreeAndNil(FBlockCache);
+  FreeAndNil(FTiledataProvider);
+  FreeAndNil(FRadarMap);
   if FOwnsStreams then
   begin
-    if FMap <> nil then FreeAndNil(FMap);
-    if FStatics <> nil then FreeAndNil(FStatics);
-    if FStaIdx <> nil then FreeAndNil(FStaIdx);
-    if FTiledata <> nil then FreeAndNil(FTiledata);
+    FreeAndNil(FMap);
+    FreeAndNil(FStatics);
+    FreeAndNil(FStaIdx);
+    FreeAndNil(FTiledata);
   end;
   
   RegisterPacketHandler($06, nil);
@@ -407,7 +392,7 @@ begin
     Result := ADefault;
 end;
 
-function TLandscape.GetStaticList(AX, AY: Word): TList;
+function TLandscape.GetStaticList(AX, AY: Word): TStaticItemList;
 var
   block: TSeperatedStaticBlock;
 begin
@@ -424,7 +409,8 @@ procedure TLandscape.UpdateRadar(AX, AY: Word);
 var
   mapTile: TMapCell;
   tile: TWorldItem;
-  staticItems, tiles: TList;
+  staticItems: TStaticItemList;
+  tiles: TWorldItemList;
   i: Integer;
 begin
   if (AX mod 8 = 0) and (AY mod 8 = 0) then
@@ -432,7 +418,7 @@ begin
     staticItems := GetStaticList(AX, AY);
     if staticItems <> nil then
     begin
-      tiles := TList.Create;
+      tiles := TWorldItemList.Create(False);
       mapTile := GetMapCell(AX, AY);
       if mapTile <> nil then
       begin
@@ -443,16 +429,16 @@ begin
       end;
       for i := 0 to staticItems.Count - 1 do
       begin
-        TStaticItem(staticItems.Items[i]).UpdatePriorities(
-          FTiledataProvider.StaticTiles[TStaticItem(staticItems.Items[i]).TileID],
+        staticItems[i].UpdatePriorities(
+          FTiledataProvider.StaticTiles[staticItems[i].TileID],
           i + 1);
-        tiles.Add(staticItems.Items[i]);
+        tiles.Add(staticItems[i]);
       end;
       tiles.Sort(@CompareWorldItems);
 
       if tiles.Count > 0 then
       begin
-        tile := TWorldItem(tiles.Items[tiles.Count - 1]);
+        tile := tiles[tiles.Count - 1];
         if tile is TStaticItem then
           FRadarMap.Update(AX div 8, AY div 8, tile.TileID + $4000)
         else
@@ -464,15 +450,15 @@ begin
   end;
 end;
 
-procedure TLandscape.SortStaticsList(AStatics: TList);
+procedure TLandscape.SortStaticsList(AStatics: TStaticItemList);
 var
   i: Integer;
 begin
   for i := 0 to AStatics.Count - 1 do
-    TStaticItem(AStatics.Items[i]).UpdatePriorities(
-      FTiledataProvider.StaticTiles[TStaticItem(AStatics.Items[i]).TileID],
+    AStatics[i].UpdatePriorities(
+      FTiledataProvider.StaticTiles[AStatics[i].TileID],
       i + 1);
-  AStatics.Sort(@CompareWorldItems);
+  AStatics.Sort(@CompareStaticItems);
 end;
 
 function TLandscape.GetEffectiveAltitude(ATile: TMapCell): ShortInt;
@@ -649,7 +635,7 @@ var
   x, y: Word;
   block: TSeperatedStaticBlock;
   staticItem: TStaticItem;
-  targetStaticList: TList;
+  targetStaticList: TStaticItemList;
   subscriptions: TLinkedList;
   subscriptionItem: PLinkedItem;
   packet: TInsertStaticPacket;
@@ -689,7 +675,7 @@ procedure TLandscape.OnDeleteStaticPacket(ABuffer: TEnhancedMemoryStream;
 var
   block: TSeperatedStaticBlock;
   i: Integer;
-  statics: TList;
+  statics: TStaticItemList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
   subscriptions: TLinkedList;
@@ -706,20 +692,22 @@ begin
     statics := block.Cells[(staticInfo.Y mod 8) * 8 + staticInfo.X mod 8];
     for i := 0 to statics.Count - 1 do
     begin
-      staticItem := TStaticItem(statics.Items[i]);
+      staticItem := statics[i];
       if (staticItem.Z = staticInfo.Z) and
          (staticItem.TileID = staticInfo.TileID) and
          (staticItem.Hue = staticInfo.Hue) then
       begin
         packet := TDeleteStaticPacket.Create(staticItem);
-      
-        statics.Delete(i);
+
         staticItem.Delete;
+        statics.Delete(i);
         
-        subscriptions := FBlockSubscriptions[(staticInfo.Y div 8) * FWidth + (staticInfo.X div 8)];
+        subscriptions := FBlockSubscriptions[(staticInfo.Y div 8) * FWidth +
+          (staticInfo.X div 8)];
         subscriptionItem := nil;
         while subscriptions.Iterate(subscriptionItem) do
-          CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data), packet, False);
+          CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data),
+            packet, False);
         packet.Free;
         
         UpdateRadar(staticInfo.X, staticInfo.Y);
@@ -735,7 +723,7 @@ procedure TLandscape.OnElevateStaticPacket(ABuffer: TEnhancedMemoryStream;
 var
   block: TSeperatedStaticBlock;
   i: Integer;
-  statics: TList;
+  statics: TStaticItemList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
   newZ: ShortInt;
@@ -753,7 +741,7 @@ begin
     statics := block.Cells[(staticInfo.Y mod 8) * 8 + staticInfo.X mod 8];
     for i := 0 to statics.Count - 1 do
     begin
-      staticItem := TStaticItem(statics.Items[i]);
+      staticItem := statics[i];
       if (staticItem.Z = staticInfo.Z) and
          (staticItem.TileID = staticInfo.TileID) and
          (staticItem.Hue = staticInfo.Hue) then
@@ -764,10 +752,12 @@ begin
         staticItem.Z := newZ;
         SortStaticsList(statics);
 
-        subscriptions := FBlockSubscriptions[(staticInfo.Y div 8) * FWidth + (staticInfo.X div 8)];
+        subscriptions := FBlockSubscriptions[(staticInfo.Y div 8) * FWidth +
+          (staticInfo.X div 8)];
         subscriptionItem := nil;
         while subscriptions.Iterate(subscriptionItem) do
-          CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data), packet, False);
+          CEDServerInstance.SendPacket(TNetState(subscriptionItem^.Data),
+            packet, False);
         packet.Free;
         
         UpdateRadar(staticInfo.X, staticInfo.Y);
@@ -784,7 +774,7 @@ var
   sourceBlock, targetBlock: TSeperatedStaticBlock;
   sourceSubscriptions, targetSubscriptions: TList;
   i: Integer;
-  statics: TList;
+  statics: TStaticItemList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
   newX, newY: Word;
@@ -816,7 +806,7 @@ begin
     i := 0;
     while (i < statics.Count) and (staticItem = nil) do
     begin
-      staticItem := TStaticItem(statics.Items[i]);
+      staticItem := statics[i];
       if (staticItem.Z <> staticInfo.Z) or
          (staticItem.TileID <> staticInfo.TileID) or
          (staticItem.Hue <> staticInfo.Hue) then
@@ -831,7 +821,10 @@ begin
       deletePacket := TDeleteStaticPacket.Create(staticItem);
       movePacket := TMoveStaticPacket.Create(staticItem, newX, newY);
 
-      statics.Remove(staticItem);
+      i := statics.IndexOf(staticItem);
+      statics[i] := nil;
+      statics.Delete(i);
+
       statics := targetBlock.Cells[(newY mod 8) * 8 + newX mod 8];
       statics.Add(staticItem);
       staticItem.UpdatePos(newX, newY, staticItem.Z);
@@ -882,7 +875,7 @@ procedure TLandscape.OnHueStaticPacket(ABuffer: TEnhancedMemoryStream;
 var
   block: TSeperatedStaticBlock;
   i: Integer;
-  statics: TList;
+  statics: TStaticItemList;
   staticInfo: TStaticInfo;
   staticItem: TStaticItem;
   newHue: Word;
@@ -900,7 +893,7 @@ begin
     statics := block.Cells[(staticInfo.Y mod 8) * 8 + staticInfo.X mod 8];
     for i := 0 to statics.Count - 1 do
     begin
-      staticItem := TStaticItem(statics.Items[i]);
+      staticItem := statics[i];
       if (staticItem.Z = staticInfo.Z) and
          (staticItem.TileID = staticInfo.TileID) and
          (staticItem.Hue = staticInfo.Hue) then
@@ -935,7 +928,7 @@ var
   emptyBits: TBits;
   bitMask: array of TBits;
   mapTile: TMapCell;
-  statics: TList;
+  statics: TStaticItemList;
   operations: TList;
   clients: array of record
     NetState: TNetState;

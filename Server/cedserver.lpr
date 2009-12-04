@@ -33,7 +33,7 @@ uses
   {$ENDIF}{$ENDIF}
   SysUtils, Classes, lnetbase, UConfig, UCEDServer, URadarMap,
   ULargeScaleOperations, UPackets, UAdminHandling, UClientHandling, ULandscape,
-  UPacketHandlers, URegions, UStatics;
+  UPacketHandlers, URegions, UStatics, Logging;
   
 {$I version.inc}
   

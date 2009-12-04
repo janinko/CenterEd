@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit ULargeScaleOperations;
 
@@ -46,7 +46,7 @@ type
   protected
     FLandscape: TLandscape;
   public
-    procedure Apply(AMapCell: TMapCell; AStatics: TList;
+    procedure Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
       AAdditionalAffectedBlocks: TBits); virtual; abstract;
   end;
   
@@ -62,7 +62,7 @@ type
   public
     property OffsetX: Integer read FOffsetX;
     property OffsetY: Integer read FOffsetY;
-    procedure Apply(AMapCell: TMapCell; AStatics: TList;
+    procedure Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
       AAdditionalAffectedBlocks: TBits); override;
   end;
   
@@ -76,7 +76,7 @@ type
     FMaxZ: ShortInt;
     FRelativeZ: ShortInt;
   public
-    procedure Apply(AMapCell: TMapCell; AStatics: TList;
+    procedure Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
       AAdditionalAffectedBlocks: TBits); override;
   end;
   
@@ -87,7 +87,7 @@ type
   protected
     FTileIDs: array of Word;
   public
-    procedure Apply(AMapCell: TMapCell; AStatics: TList;
+    procedure Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
       AAdditionalAffectedBlocks: TBits); override;
   end;
   
@@ -100,7 +100,7 @@ type
     FMinZ: ShortInt;
     FMaxZ: ShortInt;
   public
-    procedure Apply(AMapCell: TMapCell; AStatics: TList;
+    procedure Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
       AAdditionalAffectedBlocks: TBits); override;
   end;
   
@@ -114,7 +114,7 @@ type
     FPlacementType: TStaticsPlacement;
     FFixZ: ShortInt;
   public
-    procedure Apply(AMapCell: TMapCell; AStatics: TList;
+    procedure Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
       AAdditionalAffectedBlocks: TBits); override;
   end;
   
@@ -145,12 +145,12 @@ begin
   FErase := AData.ReadBoolean;
 end;
 
-procedure TLSCopyMove.Apply(AMapCell: TMapCell; AStatics: TList;
+procedure TLSCopyMove.Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
   AAdditionalAffectedBlocks: TBits);
 var
   x, y: Word;
   targetCell: TMapCell;
-  targetStatics: TList;
+  targetStatics: TStaticItemList;
   targetStaticsBlock: TSeperatedStaticBlock;
   i: Integer;
   staticItem: TStaticItem;
@@ -164,9 +164,7 @@ begin
   if FErase then
   begin
     for i := 0 to targetStatics.Count - 1 do
-    begin
-      TStaticItem(targetStatics.Items[i]).Delete;
-    end;
+      targetStatics[i].Delete;
     targetStatics.Clear;
   end;
   targetCell.TileID := AMapCell.TileID;
@@ -179,23 +177,22 @@ begin
       staticItem := TStaticItem.Create(nil, nil, 0, 0);
       staticItem.X := x;
       staticItem.Y := y;
-      staticItem.Z := TStaticItem(AStatics.Items[i]).Z;
-      staticItem.TileID := TStaticItem(AStatics.Items[i]).TileID;
-      staticItem.Hue := TStaticItem(AStatics.Items[i]).Hue;
+      staticItem.Z := AStatics[i].Z;
+      staticItem.TileID := AStatics[i].TileID;
+      staticItem.Hue := AStatics[i].Hue;
       staticItem.Owner := targetStaticsBlock;
       targetStatics.Add(staticItem);
     end;
   end else
   begin
-    {for i := 0 to AStatics.Count - 1 do}
-    while AStatics.Count > 0 do
+    for i := 0 to AStatics.Count - 1 do
     begin
-      targetStatics.Add(AStatics.Items[0]);
-      TStaticItem(AStatics.Items[0]).UpdatePos(x, y, TStaticItem(AStatics.Items[0]).Z);
-      TStaticItem(AStatics.Items[0]).Owner := targetStaticsBlock;
-      AStatics.Delete(0);
+      targetStatics.Add(AStatics[i]);
+      AStatics[i].UpdatePos(x, y, AStatics[i].Z);
+      AStatics[i].Owner := targetStaticsBlock;
+      AStatics[i] := nil;
     end;
-    //AStatics.Clear;
+    AStatics.Clear;
   end;
   
   FLandscape.SortStaticsList(targetStatics);
@@ -222,7 +219,7 @@ begin
   end;
 end;
 
-procedure TLSSetAltitude.Apply(AMapCell: TMapCell; AStatics: TList;
+procedure TLSSetAltitude.Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
   AAdditionalAffectedBlocks: TBits);
 var
   i: Integer;
@@ -243,7 +240,7 @@ begin
   
   for i := 0 to AStatics.Count - 1 do
   begin
-    static := TStaticItem(AStatics.Items[i]);
+    static := AStatics[i];
     static.Z := EnsureRange(static.Z + diff, -128, 127);
   end;
 end;
@@ -261,7 +258,7 @@ begin
   AData.Read(FTileIDs[0], count * SizeOf(Word));
 end;
 
-procedure TLSDrawTerrain.Apply(AMapCell: TMapCell; AStatics: TList;
+procedure TLSDrawTerrain.Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
   AAdditionalAffectedBlocks: TBits);
 begin
   if Length(FTileIDs) > 0 then
@@ -283,7 +280,7 @@ begin
   FMaxZ := AData.ReadShortInt;
 end;
 
-procedure TLSDeleteStatics.Apply(AMapCell: TMapCell; AStatics: TList;
+procedure TLSDeleteStatics.Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
   AAdditionalAffectedBlocks: TBits);
 var
   i, j: Integer;
@@ -292,7 +289,7 @@ begin
   i := 0;
   while i < AStatics.Count do
   begin
-    static := TStaticItem(AStatics.Items[i]);
+    static := AStatics[i];
     if InRange(static.Z, FMinZ, FMaxZ) then
     begin
       if Length(FTileIDs) > 0 then
@@ -301,8 +298,8 @@ begin
         begin
           if static.TileID = FTileIDs[j] - $4000 then
           begin
-            AStatics.Delete(i);
             static.Delete;
+            AStatics.Delete(i);
             Dec(i);
             Break;
           end;
@@ -310,8 +307,8 @@ begin
         Inc(i);
       end else
       begin
-        AStatics.Delete(i);
         static.Delete;
+        AStatics.Delete(i);
       end;
     end else
       Inc(i);
@@ -335,7 +332,7 @@ begin
     FFixZ := AData.ReadShortInt;
 end;
 
-procedure TLSInsertStatics.Apply(AMapCell: TMapCell; AStatics: TList;
+procedure TLSInsertStatics.Apply(AMapCell: TMapCell; AStatics: TStaticItemList;
   AAdditionalAffectedBlocks: TBits);
 var
   staticItem, static: TStaticItem;
@@ -360,8 +357,10 @@ begin
         topZ := AMapCell.Z;
         for i := 0 to AStatics.Count - 1 do
         begin
-          static := TStaticItem(AStatics.Items[i]);
-          staticTop := EnsureRange(static.Z + CEDServerInstance.Landscape.TiledataProvider.StaticTiles[static.TileID].Height, -128, 127);
+          static := AStatics[i];
+          staticTop := EnsureRange(static.Z +
+            CEDServerInstance.Landscape.TiledataProvider.StaticTiles[static.TileID].Height,
+            -128, 127);
           if staticTop > topZ then topZ := staticTop;
         end;
       end;
@@ -372,8 +371,8 @@ begin
   end;
   
   AStatics.Add(staticItem);
-  staticItem.Owner := CEDServerInstance.Landscape.GetStaticBlock(staticItem.X div 8,
-    staticItem.Y div 8);
+  staticItem.Owner := CEDServerInstance.Landscape.GetStaticBlock(
+    staticItem.X div 8, staticItem.Y div 8);
 end;
 
 end.
