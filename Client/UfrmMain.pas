@@ -463,23 +463,28 @@ end;
 procedure TfrmMain.oglGameWindowMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if Button = mbRight then
-    pmTools.PopUp(Mouse.CursorPos.X, Mouse.CursorPos.Y);
-    
-  if Button <> mbLeft then
-    Exit;
+  Logger.EnterMethod([lcClient, lcDebug], 'MouseDown');
+  try
+    if Button = mbRight then
+      pmTools.PopUp(Mouse.CursorPos.X, Mouse.CursorPos.Y);
 
-  UpdateCurrentTile(X, Y);
-  if FOverlayUI.ActiveArrow > -1 then
-    tmMovement.Enabled := True;
-  
-  SelectedTile := CurrentTile;
-  if CurrentTile = nil then Exit;
+    if Button <> mbLeft then
+      Exit;
 
-  if acSelect.Checked then                        //***** Selection Mode *****//
-    tmGrabTileInfo.Enabled := True;
+    UpdateCurrentTile(X, Y);
+    if FOverlayUI.ActiveArrow > -1 then
+      tmMovement.Enabled := True;
 
-  FRepaintNeeded := True;
+    SelectedTile := CurrentTile;
+    if CurrentTile = nil then Exit;
+
+    if acSelect.Checked then                      //***** Selection Mode *****//
+      tmGrabTileInfo.Enabled := True;
+
+    FRepaintNeeded := True;
+  finally
+    Logger.ExitMethod([lcClient, lcDebug], 'MouseDown');
+  end;
 end;
 
 procedure TfrmMain.oglGameWindowMouseEnter(Sender: TObject);
@@ -518,6 +523,7 @@ var
   lastTile: TWorldItem;
   offsetX, offsetY: Integer;
 begin
+  Logger.EnterMethod([lcClient, lcDebug], 'MouseMove');
   lastTile := CurrentTile;
   
   if ssMiddle in Shift then
@@ -528,13 +534,14 @@ begin
       offsetX := lastTile.X - CurrentTile.X;
       offsetY := lastTile.Y - CurrentTile.Y;
       if InRange(offsetX, -8, 8) and InRange(offsetY, -8, 8) then
-        SetPos(FX - offsetX * 4, FY - offsetY * 4);
+        SetPos(FX - offsetX, FY - offsetY);
     end;
   end;
 
   UpdateCurrentTile(X, Y);
 
   FRepaintNeeded := True;
+  Logger.ExitMethod([lcClient, lcDebug], 'MouseMove');
 end;
 
 procedure TfrmMain.oglGameWindowMouseUp(Sender: TObject; Button: TMouseButton;
@@ -553,14 +560,19 @@ var
   targetTiles: TWorldItemList;
   targetTile: TWorldItem;
 begin
+  Logger.EnterMethod([lcClient, lcDebug], 'MouseUp');
   if Button <> mbLeft then
+  begin
+    Logger.ExitMethod([lcClient, lcDebug], 'MouseUp');
     Exit;
+  end;
 
   UpdateCurrentTile(X, Y);
   tmMovement.Enabled := False;
   if CurrentTile = nil then
   begin
     SelectedTile := nil;
+    Logger.ExitMethod([lcClient, lcDebug], 'MouseUp');
     Exit;
   end;
 
@@ -594,6 +606,7 @@ begin
             end;
           end;
 
+        Logger.Send([lcClient, lcDebug], 'Virtual tiles', FVirtualTiles.Count);
         for i := 0 to FVirtualTiles.Count - 1 do
         begin
           tile := FVirtualTiles[i];
@@ -711,12 +724,14 @@ begin
   acUndo.Enabled := FUndoList.Count > 0;
   SelectedTile := nil;
   FRepaintNeeded := True;
+  Logger.ExitMethod([lcClient, lcDebug], 'MouseUp');
 end;
 
 procedure TfrmMain.oglGameWindowMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var
   cursorNeedsUpdate: Boolean;
+  newZ: ShortInt;
 begin
   //We want single steps ...
   WheelDelta := WheelDelta div WHEEL_DELTA;
@@ -731,18 +746,26 @@ begin
     Handled := True;
   end else if not (ssCtrl in Shift) then
   begin
+    FUndoList.Clear;
+    newZ := EnsureRange(CurrentTile.Z + WheelDelta, -128, 127);
     if CurrentTile is TStaticItem then
     begin
+      FUndoList.Add(TElevateStaticPacket.Create(CurrentTile.X, CurrentTile.Y,
+        newZ, CurrentTile.TileID, TStaticItem(CurrentTile).Hue,
+        CurrentTile.Z));
       dmNetwork.Send(TElevateStaticPacket.Create(TStaticItem(CurrentTile),
-        EnsureRange(CurrentTile.Z + WheelDelta, -128, 127)));
+        newZ));
       cursorNeedsUpdate := True;
       Handled := True;
     end else if CurrentTile is TMapCell then
     begin
+      FUndoList.Add(TDrawMapPacket.Create(CurrentTile.X, CurrentTile.Y,
+        CurrentTile.Z, CurrentTile.TileID));
       dmNetwork.Send(TDrawMapPacket.Create(CurrentTile.X, CurrentTile.Y,
-        EnsureRange(CurrentTile.Z + WheelDelta, -128, 127), CurrentTile.TileID));
+        newZ, CurrentTile.TileID));
       Handled := True;
     end;
+    acUndo.Enabled := FUndoList.Count > 0;
   end;
   
   if cursorNeedsUpdate then
@@ -1661,8 +1684,13 @@ end;
 
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
 begin
+  Logger.EnterMethod([lcClient, lcDebug], 'SetCurrentTile');
   if AValue = FCurrentTile then
+  begin
+    Logger.ExitMethod([lcClient, lcDebug], 'SetCurrentTile');
     Exit;
+  end;
+  Logger.Send([lcClient, lcDebug], 'Value', AValue);
 
   if FCurrentTile <> nil then
     FCurrentTile.OnDestroy.UnregisterEvent(@OnTileRemoved);
@@ -1687,12 +1715,18 @@ begin
   end;
 
   UpdateSelection;
+  Logger.ExitMethod([lcClient, lcDebug], 'SetCurrentTile');
 end;
 
 procedure TfrmMain.SetSelectedTile(const AValue: TWorldItem);
 begin
+  Logger.EnterMethod([lcClient, lcDebug], 'SetSelectedTile');
   if AValue = FSelectedTile then
+  begin
+    Logger.ExitMethod([lcClient, lcDebug], 'SetSelectedTile');
     Exit;
+  end;
+  Logger.Send([lcClient, lcDebug], 'Value', AValue);
 
   if FSelectedTile <> nil then
     FSelectedTile.OnDestroy.UnregisterEvent(@OnTileRemoved);
@@ -1701,6 +1735,7 @@ begin
     FSelectedTile.OnDestroy.RegisterEvent(@OnTileRemoved);
 
   UpdateSelection;
+  Logger.ExitMethod([lcClient, lcDebug], 'SetSelectedTile');
 end;
 
 procedure TfrmMain.SetNormalLights;
@@ -2282,10 +2317,13 @@ procedure TfrmMain.UpdateCurrentTile(AX, AY: Integer);
 var
   blockInfo: PBlockInfo;
 begin
+  Logger.EnterMethod([lcClient, lcDebug], 'UpdateCurrentTile');
   FOverlayUI.ActiveArrow := FOverlayUI.HitTest(AX, AY);
   if FOverlayUI.ActiveArrow > -1 then
   begin
+    Logger.Send([lcClient, lcDebug], 'Overlay active');
     CurrentTile := nil;
+    Logger.ExitMethod([lcClient, lcDebug], 'UpdateCurrentTile');
     Exit;
   end;
 
@@ -2294,6 +2332,8 @@ begin
     CurrentTile := blockInfo^.Item
   else
     CurrentTile := nil;
+
+  Logger.ExitMethod([lcClient, lcDebug], 'UpdateCurrentTile');
 end;
 
 procedure TfrmMain.UpdateFilter;
@@ -2480,7 +2520,8 @@ begin
       end else
       begin
         Logger.Send([lcClient, lcDebug], 'Single Target');
-        if acDraw.Checked then
+        if acDraw.Checked and not IsInRect(CurrentTile.X, CurrentTile.Y,
+          FSelection) then
           AddGhostTile(CurrentTile.X, CurrentTile.Y, CurrentTile);
         while FScreenBuffer.Iterate(blockInfo) do
           if blockInfo^.State = ssNormal then
@@ -2490,6 +2531,7 @@ begin
     end;
     FSelection := selectedRect;
   end;
+  Logger.Send([lcClient, lcDebug], 'Virtual Tiles', FVirtualTiles.Count);
   Logger.ExitMethod([lcClient, lcDebug], 'UpdateSelection');
 end;
 
