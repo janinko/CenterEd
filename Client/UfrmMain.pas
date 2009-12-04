@@ -566,7 +566,7 @@ begin
     mnuGrabTileIDClick(nil);
   end;
 
-  if (not acSelect.Checked) and (targetTile <> nil) then
+  if (not acSelect.Checked) and (targetTile <> nil) and (SelectedTile <> nil) then
   begin
     targetRect := GetSelectedRect;
 
