@@ -2096,10 +2096,16 @@ begin
 end;
 
 procedure TfrmMain.OnStaticElevated(AStaticItem: TStaticItem);
+var
+  blockInfo: PBlockInfo;
 begin
   AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
-  PrepareScreenBlock(FScreenBuffer.UpdateSortOrder(AStaticItem));
-  Exclude(FScreenBufferState, sbsIndexed);
+  blockInfo := FScreenBuffer.UpdateSortOrder(AStaticItem);
+  if blockInfo <> nil then
+  begin
+    PrepareScreenBlock(blockInfo);
+    Exclude(FScreenBufferState, sbsIndexed);
+  end;
 end;
 
 procedure TfrmMain.OnStaticHued(AStaticItem: TStaticItem);
