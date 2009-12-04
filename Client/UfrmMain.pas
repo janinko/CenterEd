@@ -1639,7 +1639,7 @@ end;
 
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
 begin
-  if AValue = FSelectedTile then
+  if AValue = FCurrentTile then
     Exit;
 
   if FCurrentTile <> nil then
@@ -2318,6 +2318,8 @@ procedure TfrmMain.UpdateSelection;
             cell.GhostZ := frmDrawSettings.seForceAltitude.Value
           else
             cell.GhostZ := cell.RawZ;
+          if frmDrawSettings.cbRandomHeight.Checked then
+            cell.GhostZ := cell.GhostZ + Random(frmDrawSettings.seRandomHeight.Value);
 
           OnMapChanged(cell);
         end;
@@ -2336,6 +2338,9 @@ procedure TfrmMain.UpdateSelection;
               ResMan.Tiledata.StaticTiles[ABaseTile.TileID].Height;
         end else
           ghostTile.Z := frmDrawSettings.seForceAltitude.Value;
+        if frmDrawSettings.cbRandomHeight.Checked then
+          ghostTile.Z := ghostTile.Z +
+            Random(frmDrawSettings.seRandomHeight.Value);
 
         ghostTile.UpdatePriorities(ResMan.Tiledata.StaticTiles[ghostTile.TileID],
           MaxInt);
@@ -2357,64 +2362,70 @@ var
   i, tileX, tileY: Integer;
 begin
   Logger.EnterMethod([lcClient, lcDebug], 'UpdateSelection');
-  if CurrentTile = nil then
-    selectedRect := Rect(-1, -1, -1, -1)
-  else
-    selectedRect := GetSelectedRect;
 
-  //clean up old ghost tiles
-  Logger.Send([lcClient, lcDebug], 'Cleaning ghost tiles');
-  for i := FVirtualTiles.Count - 1 downto 0 do
+  //If the current tile is nil, but we still have a selected tile, the
+  //procedure is pointless - the selection should stay intact.
+  if (CurrentTile <> nil) or (SelectedTile = nil) then
   begin
-    item := FVirtualTiles[i];
-    if (item is TGhostTile) and not IsInRect(item.X, item.Y, selectedRect) then
+    if CurrentTile = nil then
+      selectedRect := Rect(-1, -1, -1, -1)
+    else
+      selectedRect := GetSelectedRect;
+
+    //clean up old ghost tiles
+    Logger.Send([lcClient, lcDebug], 'Cleaning ghost tiles');
+    for i := FVirtualTiles.Count - 1 downto 0 do
     begin
-      FScreenBuffer.Delete(item);
-      FVirtualTiles.Delete(i);
-    end;
-  end;
-  Logger.Send([lcClient, lcDebug], 'FSelection', FSelection);
-  for tileX := FSelection.Left to FSelection.Right do
-    for tileY := FSelection.Top to FSelection.Bottom do
-      if not IsInRect(tileX, tileY, selectedRect) then
+      item := FVirtualTiles[i];
+      if (item is TGhostTile) and not IsInRect(item.X, item.Y, selectedRect) then
       begin
-        cell := FLandscape.MapCell[tileX, tileY];
-        if (cell <> nil) and cell.IsGhost then
-        begin
-          cell.IsGhost := False;
-          OnMapChanged(cell);
-        end;
+        FScreenBuffer.Delete(item);
+        FVirtualTiles.Delete(i);
       end;
-
-  if (CurrentTile <> nil) and (not acSelect.Checked) then
-  begin
-    blockInfo := nil;
-    if (SelectedTile <> nil) and (CurrentTile <> SelectedTile) then
-    begin
-      Logger.Send([lcClient, lcDebug], 'Multiple Targets');
-      Logger.Send([lcClient, lcDebug], 'SelectedRect', selectedRect);
-      //set new ghost tiles
-      if acDraw.Checked then
-        for tileX := selectedRect.Left to selectedRect.Right do
-          for tileY := selectedRect.Top to selectedRect.Bottom do
-            if not IsInRect(tileX, tileY, FSelection) then
-              AddGhostTile(tileX, tileY, SelectedTile);
-      while FScreenBuffer.Iterate(blockInfo) do
-        if (blockInfo^.State = ssNormal) then
-          SetHighlight(blockInfo, IsInRect(blockInfo^.Item.X, blockInfo^.Item.Y,
-            selectedRect) and not acDraw.Checked);
-    end else
-    begin
-      Logger.Send([lcClient, lcDebug], 'Single Target');
-      if acDraw.Checked then
-        AddGhostTile(CurrentTile.X, CurrentTile.Y, CurrentTile);
-      while FScreenBuffer.Iterate(blockInfo) do
-        if blockInfo^.State = ssNormal then
-          SetHighlight(blockInfo, (blockInfo^.Item = CurrentTile) and
-            not acDraw.Checked);
     end;
+    Logger.Send([lcClient, lcDebug], 'FSelection', FSelection);
+    for tileX := FSelection.Left to FSelection.Right do
+      for tileY := FSelection.Top to FSelection.Bottom do
+        if not IsInRect(tileX, tileY, selectedRect) then
+        begin
+          cell := FLandscape.MapCell[tileX, tileY];
+          if (cell <> nil) and cell.IsGhost then
+          begin
+            cell.IsGhost := False;
+            OnMapChanged(cell);
+          end;
+        end;
+
+    if (CurrentTile <> nil) and (not acSelect.Checked) then
+    begin
+      blockInfo := nil;
+      if (SelectedTile <> nil) and (CurrentTile <> SelectedTile) then
+      begin
+        Logger.Send([lcClient, lcDebug], 'Multiple Targets');
+        Logger.Send([lcClient, lcDebug], 'SelectedRect', selectedRect);
+        //set new ghost tiles
+        if acDraw.Checked then
+          for tileX := selectedRect.Left to selectedRect.Right do
+            for tileY := selectedRect.Top to selectedRect.Bottom do
+              if not IsInRect(tileX, tileY, FSelection) then
+                AddGhostTile(tileX, tileY, SelectedTile);
+        while FScreenBuffer.Iterate(blockInfo) do
+          if (blockInfo^.State = ssNormal) then
+            SetHighlight(blockInfo, IsInRect(blockInfo^.Item.X, blockInfo^.Item.Y,
+              selectedRect) and not acDraw.Checked);
+      end else
+      begin
+        Logger.Send([lcClient, lcDebug], 'Single Target');
+        if acDraw.Checked then
+          AddGhostTile(CurrentTile.X, CurrentTile.Y, CurrentTile);
+        while FScreenBuffer.Iterate(blockInfo) do
+          if blockInfo^.State = ssNormal then
+            SetHighlight(blockInfo, (blockInfo^.Item = CurrentTile) and
+              not acDraw.Checked);
+      end;
+    end;
+    FSelection := selectedRect;
   end;
-  FSelection := selectedRect;
   Logger.ExitMethod([lcClient, lcDebug], 'UpdateSelection');
 end;
 

@@ -52,7 +52,7 @@ type
   public
     property Altitude: ShortInt read GetZ write SetZ;
     property IsGhost: Boolean read FIsGhost write FIsGhost;
-    property GhostZ: ShortInt write FGhostZ;
+    property GhostZ: ShortInt read FGhostZ write FGhostZ;
     property GhostID: Word write FGhostID;
 
     function Clone: TMapCell; override;
