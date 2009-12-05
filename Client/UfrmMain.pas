@@ -297,6 +297,7 @@ type
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
+    procedure ForceUpdateCurrentTile;
     procedure GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
       DrawY: Integer); inline;
     function  GetInternalTileID(ATile: TWorldItem): Word;
@@ -2081,6 +2082,8 @@ begin
   if north <> nil then PrepareScreenBlock(north);
   if east <> nil then PrepareScreenBlock(east);
   if west <> nil then PrepareScreenBlock(west);
+
+  ForceUpdateCurrentTile;
 end;
 
 procedure TfrmMain.OnNewBlock(ABlock: TBlock);
@@ -2093,6 +2096,7 @@ begin
   FScreenBuffer.Delete(AStaticItem);
   UpdateCurrentTile;
   FRepaintNeeded := True;
+  ForceUpdateCurrentTile;
 end;
 
 procedure TfrmMain.OnStaticElevated(AStaticItem: TStaticItem);
@@ -2105,6 +2109,8 @@ begin
   begin
     PrepareScreenBlock(blockInfo);
     Exclude(FScreenBufferState, sbsIndexed);
+
+    ForceUpdateCurrentTile;
   end;
 end;
 
@@ -2133,8 +2139,8 @@ begin
   begin
     AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
     PrepareScreenBlock(FScreenBuffer.Insert(AStaticItem));
-    UpdateCurrentTile;
     FRepaintNeeded := True;
+    ForceUpdateCurrentTile;
   end;
 end;
 
@@ -2677,6 +2683,12 @@ begin
 
   if not oglGameWindow.MouseEntered then
     oglGameWindowMouseLeave(nil);
+end;
+
+procedure TfrmMain.ForceUpdateCurrentTile;
+begin
+  CurrentTile := nil;
+  UpdateCurrentTile;
 end;
 
 procedure TfrmMain.GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
