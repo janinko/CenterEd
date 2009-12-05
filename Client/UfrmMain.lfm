@@ -961,14 +961,14 @@ object frmMain: TfrmMain
       OnClick = tbStaticsClick
     end
     object tbSeparator5: TToolButton
-      Left = 403
+      Left = 415
       Top = 2
       Width = 17
       Caption = 'tbSeparator5'
       Style = tbsDivider
     end
     object tbRadarMap: TToolButton
-      Left = 420
+      Left = 432
       Hint = 'Radar Map'
       Top = 2
       Caption = 'Radar Map'
@@ -993,7 +993,8 @@ object frmMain: TfrmMain
       Left = 380
       Top = 2
       Action = acFlat
-      Style = tbsCheck
+      DropdownMenu = pmFlatViewSettings
+      Style = tbsDropDown
     end
     object tbNoDraw: TToolButton
       Left = 357
@@ -2608,6 +2609,15 @@ object frmMain: TfrmMain
     object mnuGrabHue: TMenuItem
       Caption = 'Grab Hue'
       OnClick = mnuGrabHueClick
+    end
+  end
+  object pmFlatViewSettings: TPopupMenu
+    left = 368
+    top = 136
+    object mnuFlatShowHeight: TMenuItem
+      AutoCheck = True
+      Caption = 'Show Height'
+      OnClick = mnuFlatShowHeightClick
     end
   end
 end

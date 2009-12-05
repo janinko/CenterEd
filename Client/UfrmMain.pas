@@ -87,6 +87,7 @@ type
     lblY: TLabel;
     lbClients: TListBox;
     MainMenu1: TMainMenu;
+    mnuFlatShowHeight: TMenuItem;
     mnuGrabHue: TMenuItem;
     mnuGrabTileID: TMenuItem;
     mnuRegionControl: TMenuItem;
@@ -124,6 +125,7 @@ type
     pmClients: TPopupMenu;
     pnlChat: TPanel;
     pnlChatHeader: TPanel;
+    pmFlatViewSettings: TPopupMenu;
     spChat: TSplitter;
     spTileList: TSplitter;
     tbFilter: TToolButton;
@@ -198,6 +200,7 @@ type
     procedure mnuAccountControlClick(Sender: TObject);
     procedure mnuDisconnectClick(Sender: TObject);
     procedure mnuExitClick(Sender: TObject);
+    procedure mnuFlatShowHeightClick(Sender: TObject);
     procedure mnuFlushClick(Sender: TObject);
     procedure mnuGoToClientClick(Sender: TObject);
     procedure mnuGrabHueClick(Sender: TObject);
@@ -396,6 +399,11 @@ end;
 procedure TfrmMain.mnuExitClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TfrmMain.mnuFlatShowHeightClick(Sender: TObject);
+begin
+  RebuildScreenBuffer;
 end;
 
 procedure TfrmMain.mnuFlushClick(Sender: TObject);
@@ -1889,6 +1897,8 @@ begin
 
   ABlockInfo^.HighRes := nil;
   ABlockInfo^.CheckRealQuad := False;
+  ABlockInfo^.Text.Free;
+
   if item is TMapCell then
   begin
     if not acFlat.Checked then
@@ -1934,8 +1944,8 @@ begin
       end;
     end else
     begin
-      ABlockInfo^.Text.Free;
-      ABlockInfo^.Text := TGLText.Create(FGLFont, IntToStr(item.Z));
+      if mnuFlatShowHeight.Checked then
+        ABlockInfo^.Text := TGLText.Create(FGLFont, IntToStr(item.Z));
     end;
 
     if not ABlockInfo^.CheckRealQuad then
