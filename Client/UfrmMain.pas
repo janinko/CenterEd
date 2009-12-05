@@ -839,6 +839,9 @@ begin
     until FindNext(searchRec) <> 0;
   end;
   FindClose(searchRec);
+
+  DoubleBuffered := True;
+  pnlBottom.DoubleBuffered := True;
   
   FLastDraw := Now;
 end;
