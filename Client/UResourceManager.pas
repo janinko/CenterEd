@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UResourceManager;
 
@@ -69,8 +69,8 @@ end;
 
 destructor TResourceManager.Destroy;
 begin
-  if FFileStream <> nil then FreeAndNil(FFileStream);
-  if FResourceStream <> nil then FreeAndNil(FResourceStream);
+  FreeAndNil(FFileStream);
+  FreeAndNil(FResourceStream);
   inherited Destroy;
 end;
 
@@ -81,8 +81,7 @@ begin
   if AIndex <> FCurrentResource then
   begin
     FFileStream.Position := FLookupTable[AIndex];
-    if FResourceStream <> nil then
-      FResourceStream.Free;
+    FResourceStream.Free;
     FResourceStream := TMemoryStream.Create;
     FFileStream.Read(size, SizeOf(Cardinal));
     FResourceStream.CopyFrom(FFileStream, size);

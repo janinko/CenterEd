@@ -1,5 +1,5 @@
 {
-  $Id: ImagingOpenGL.pas 128 2008-07-23 11:57:36Z galfar $
+  $Id: ImagingOpenGL.pas 165 2009-08-14 12:34:40Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -33,32 +33,35 @@ unit ImagingOpenGL;
 {$I ImagingOptions.inc}
 
 { Define this symbol if you want to use dglOpenGL header.}
-{.$DEFINE USE_DGL_HEADERS}
+{ $DEFINE USE_DGL_HEADERS}
+{ $DEFINE USE_GLSCENE_HEADERS}
 
 interface
 
 uses
   SysUtils, Classes, ImagingTypes, Imaging, ImagingFormats,
-{$IFDEF USE_DGL_HEADERS}
+{$IF Defined(USE_DGL_HEADERS)}
   dglOpenGL,
+{$ELSEIF Defined(USE_GLSCENE_HEADERS)}
+  OpenGL1x,
 {$ELSE}
   gl, glext,
-{$ENDIF}
+{$IFEND}
  ImagingUtility;
 
 type
   { Various texture capabilities of installed OpenGL driver.}
   TGLTextureCaps = record
-    MaxTextureSize: LongInt;  // Max size of texture in pixels supported by HW
-    NonPowerOfTwo: Boolean;   // HW has full support for NPOT textures
-    DXTCompression: Boolean;  // HW supports S3TC/DXTC compressed textures
-    ATI3DcCompression: Boolean; // HW supports ATI 3Dc compressed textures (ATI2N)
-    LATCCompression: Boolean; // HW supports LATC/RGTC compressed textures (ATI1N+ATI2N)
-    FloatTextures: Boolean;   // HW supports floating point textures
-    MaxAnisotropy: LongInt;   // Max anisotropy for aniso texture filtering
+    MaxTextureSize: LongInt;     // Max size of texture in pixels supported by HW
+    NonPowerOfTwo: Boolean;      // HW has full support for NPOT textures
+    DXTCompression: Boolean;     // HW supports S3TC/DXTC compressed textures
+    ATI3DcCompression: Boolean;  // HW supports ATI 3Dc compressed textures (ATI2N)
+    LATCCompression: Boolean;    // HW supports LATC/RGTC compressed textures (ATI1N+ATI2N)
+    FloatTextures: Boolean;      // HW supports floating point textures
+    MaxAnisotropy: LongInt;      // Max anisotropy for aniso texture filtering
     MaxSimultaneousTextures: LongInt; // Number of texture units
-    ClampToEdge: Boolean;     // GL_EXT_texture_edge_clamp
-    TextureLOD: Boolean;      // GL_SGIS_texture_lod
+    ClampToEdge: Boolean;        // GL_EXT_texture_edge_clamp
+    TextureLOD: Boolean;         // GL_SGIS_texture_lod
     VertexTextureUnits: Integer; // Texture units accessible in vertex programs
   end;
 
@@ -277,6 +280,10 @@ const
   GL_UNSIGNED_INT_8_8_8_8_REV       = $8367;
   GL_UNSIGNED_INT_2_10_10_10_REV    = $8368;
   GL_HALF_FLOAT_ARB                 = $140B;
+
+  // Other GL constants
+  GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS = $8B4C;
+
 
 {$IFDEF MSWINDOWS}
   GLLibName = 'opengl32.dll';
@@ -879,6 +886,9 @@ initialization
     - use internal format of texture in CreateMultiImageFromGLTexture
       not only A8R8G8B8
     - support for cube and 3D maps
+
+  -- 0.26.1 Changes/Bug Fixes ---------------------------------
+    - Added support for GLScene's OpenGL header.
 
   -- 0.25.0 Changes/Bug Fixes ---------------------------------
     - Added 3Dc compressed texture formats support.

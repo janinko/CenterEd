@@ -1,5 +1,5 @@
 {
-  $Id: ImagingPortableMaps.pas 127 2008-05-31 01:57:13Z galfar $
+  $Id: ImagingPortableMaps.pas 163 2009-07-28 21:44:10Z galfar $
   Vampyre Imaging Library
   by Marek Mauder
   http://imaginglib.sourceforge.net
@@ -46,7 +46,7 @@ type
   TPortableMapInfo = record
     Width: LongInt;
     Height: LongInt;
-    FormatId: Char;
+    FormatId: AnsiChar;
     MaxVal: LongInt;
     BitCount: LongInt;
     Depth: LongInt;
@@ -200,7 +200,7 @@ var
   MonoData: Pointer;
   Info: TImageFormatInfo;
   PixelFP: TColorFPRec;
-  LineBuffer: array[0..LineBufferCapacity - 1] of Char;
+  LineBuffer: array[0..LineBufferCapacity - 1] of AnsiChar;
   LineEnd, LinePos: LongInt;
   MapInfo: TPortableMapInfo;
   LineBreak: string;
@@ -228,7 +228,7 @@ var
   function ReadString: string;
   var
     S: AnsiString;
-    C: Char;
+    C: AnsiChar;
   begin
     // First skip all whitespace chars
     SetLength(S, 1);
@@ -266,7 +266,7 @@ var
     // Dec pos, current is the begining of the the string
     Dec(LinePos);
 
-    Result := S;
+    Result := string(S);
   end;
 
   function ReadIntValue: LongInt; {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -276,7 +276,7 @@ var
 
   procedure FindLineBreak;
   var
-    C: Char;
+    C: AnsiChar;
   begin
     LineBreak := #10;
     repeat
@@ -586,7 +586,11 @@ var
   begin
     SetLength(S, Length(S) + 1);
     S[Length(S)] := Delimiter;
+  {$IF Defined(DCC) and Defined(UNICODE)}
+    GetIO.Write(Handle, @AnsiString(S)[1], Length(S));
+  {$ELSE}
     GetIO.Write(Handle, @S[1], Length(S));
+  {$IFEND}
     Inc(LineLength, Length(S));
   end;
 
@@ -807,7 +811,6 @@ begin
   FName := SPGMFormatName;
   FSupportedFormats := PGMSupportedFormats;
   AddMasks(SPGMMasks);
-
   RegisterOption(ImagingPGMSaveBinary, @FSaveBinary);
   FIdNumbers := '25';
 end;
@@ -818,7 +821,10 @@ var
   MapInfo: TPortableMapInfo;
 begin
   FillChar(MapInfo, SizeOf(MapInfo), 0);
-  MapInfo.FormatId := Iff(FSaveBinary, FIdNumbers[1], FIdNumbers[0]);
+  if FSaveBinary then
+    MapInfo.FormatId := FIdNumbers[1]
+  else
+    MapInfo.FormatId := FIdNumbers[0];
   MapInfo.Binary := FSaveBinary;
   Result := SaveDataInternal(Handle, Images, Index, MapInfo);
 end;
@@ -853,7 +859,6 @@ begin
   FName := SPPMFormatName;
   FSupportedFormats := PPMSupportedFormats;
   AddMasks(SPPMMasks);
-
   RegisterOption(ImagingPPMSaveBinary, @FSaveBinary);
   FIdNumbers := '36';
 end;
@@ -864,7 +869,10 @@ var
   MapInfo: TPortableMapInfo;
 begin
   FillChar(MapInfo, SizeOf(MapInfo), 0);
-  MapInfo.FormatId := Iff(FSaveBinary, FIdNumbers[1], FIdNumbers[0]);
+  if FSaveBinary then
+    MapInfo.FormatId := FIdNumbers[1]
+  else
+    MapInfo.FormatId := FIdNumbers[0];
   MapInfo.Binary := FSaveBinary;
   Result := SaveDataInternal(Handle, Images, Index, MapInfo);
 end;
@@ -952,11 +960,17 @@ var
 begin
   FillChar(MapInfo, SizeOf(MapInfo), 0);
   Info := GetFormatInfo(Images[Index].Format);
+
   if (Info.ChannelCount > 1) or Info.IsIndexed then
     MapInfo.TupleType := ttRGBFP
   else
     MapInfo.TupleType := ttGrayScaleFP;
-  MapInfo.FormatId := Iff(MapInfo.TupleType = ttGrayScaleFP, FIdNumbers[1], FIdNumbers[0]);
+
+  if MapInfo.TupleType = ttGrayScaleFP then
+    MapInfo.FormatId := FIdNumbers[1]
+  else
+    MapInfo.FormatId := FIdNumbers[0];
+
   MapInfo.Binary := True;
   Result := SaveDataInternal(Handle, Images, Index, MapInfo);
 end;
@@ -983,8 +997,11 @@ initialization
   -- TODOS ----------------------------------------------------
     - nothing now
 
+  -- 0.26.3 Changes/Bug Fixes -----------------------------------
+    - Fixed D2009 Unicode related bug in PNM saving.
+
   -- 0.24.3 Changes/Bug Fixes -----------------------------------
-    - Improved compatibility of 16bit/component image loading. 
+    - Improved compatibility of 16bit/component image loading.
     - Changes for better thread safety.
 
   -- 0.21 Changes/Bug Fixes -----------------------------------

@@ -40,7 +40,7 @@ uses
   UfrmLargeScaleCommand, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
   UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
   UPacketHandlers, UAdminHandling, UGameResources, ULandscape, UfrmToolWindow,
-  Logging, UMap, UWorldItem, UStatics, UTiledata;
+  Logging, UMap, UWorldItem, UStatics, UTiledata, UGLFont;
 
 {$IFDEF WINDOWS}{$R CentrED.rc}{$ENDIF}
 

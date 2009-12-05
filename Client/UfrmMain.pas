@@ -31,10 +31,10 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Menus,
-  ComCtrls, OpenGLContext, GL, GLU, UGameResources, ULandscape, ExtCtrls,
+  ComCtrls, OpenGLContext, GL, GLu, UGameResources, ULandscape, ExtCtrls,
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList, fgl,
-  ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket;
+  ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket, UGLFont;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -269,6 +269,7 @@ type
       Node: PVirtualNode; Stream: TStream);
   protected
     { Members }
+    FAppDir: String;
     FX: Integer;
     FY: Integer;
     FDrawDistance: Integer;
@@ -294,6 +295,7 @@ type
     FRepaintNeeded: Boolean;
     FSelection: TRect;
     FUndoList: TPacketList;
+    FGLFont: TGLFont;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -784,6 +786,8 @@ var
   virtualLayerGraphic: TSingleImage;
   searchRec: TSearchRec;
 begin
+  FAppDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+
   FLandscape := ResMan.Landscape;
   FLandscape.OnChange := @OnLandscapeChanged;
   FLandscape.OnMapChanged := @OnMapChanged;
@@ -812,8 +816,7 @@ begin
   vstChat.NodeDataSize := SizeOf(TChatInfo);
   pnlChatHeader.AnchorSide[akBottom].Control := pnlBottom;
   
-  FLocationsFile := IncludeTrailingPathDelimiter(ExtractFilePath(
-                    Application.ExeName)) + 'Locations.dat';
+  FLocationsFile := FAppDir + 'Locations.dat';
   vstLocations.NodeDataSize := SizeOf(TLocationInfo);
   if FileExists(FLocationsFile) then vstLocations.LoadFromFile(FLocationsFile);
 
@@ -824,11 +827,14 @@ begin
     virtualLayerGraphic.Height, virtualLayerGraphic);
   virtualLayerGraphic.Free;
 
+  FGLFont := TGLFont.Create;
+  FGLFont.LoadImage(ResourceManager.GetResource(3));
+  FGLFont.LoadFontInfo(ResourceManager.GetResource(4));
+
   FVirtualTiles := TWorldItemList.Create(True);
   FUndoList := TPacketList.Create(True);
   
-  FRandomPresetLocation := IncludeTrailingPathDelimiter(ExtractFilePath(
-    Application.ExeName)) + 'RandomPresets' + PathDelim;
+  FRandomPresetLocation := FAppDir + 'RandomPresets' + PathDelim;
   if not DirectoryExists(FRandomPresetLocation) then
     CreateDir(FRandomPresetLocation);
 
@@ -1116,6 +1122,7 @@ begin
   FreeAndNil(FVLayerMaterial);
   FreeAndNil(FVirtualTiles);
   FreeAndNil(FUndoList);
+  FreeAndNil(FGLFont);
   
   RegisterPacketHandler($0C, nil);
 end;
@@ -1783,9 +1790,11 @@ procedure TfrmMain.InitSize;
 begin
   glViewport(0, 0, oglGameWindow.Width, oglGameWindow.Height);
   glMatrixMode(GL_PROJECTION);
+  glPushMatrix;
   glLoadIdentity;
   gluOrtho2D(0, oglGameWindow.Width, oglGameWindow.Height, 0);
   glMatrixMode(GL_MODELVIEW);
+  glPushMatrix;
   glLoadIdentity;
 end;
 
@@ -1923,6 +1932,10 @@ begin
           CheckRealQuad := True;
         end;
       end;
+    end else
+    begin
+      ABlockInfo^.Text.Free;
+      ABlockInfo^.Text := TGLText.Create(FGLFont, IntToStr(item.Z));
     end;
 
     if not ABlockInfo^.CheckRealQuad then
@@ -2082,6 +2095,9 @@ begin
 
     if highlight then
       glDisable(GL_COLOR_LOGIC_OP);
+
+    if (blockInfo^.Text <> nil) then
+      blockInfo^.Text.Render(blockInfo^.ScreenRect);
   end;
 
   FOverlayUI.Draw(oglGameWindow);

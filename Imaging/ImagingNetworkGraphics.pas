@@ -1,5 +1,5 @@
 {
-  $Id: ImagingNetworkGraphics.pas 122 2008-03-14 14:05:42Z galfar $
+  $Id: ImagingNetworkGraphics.pas 171 2009-09-02 01:34:19Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -29,13 +29,19 @@
 { This unit contains image format loaders/savers for Network Graphics image
   file formats PNG, MNG, and JNG.}
 unit ImagingNetworkGraphics;
-
+        
 interface
 
 {$I ImagingOptions.inc}
 
+{ If MN support is enabled we must make sure PNG and JNG are enabled too.}
+{$IFNDEF DONT_LINK_MNG}
+  {$UNDEF DONT_LINK_PNG}
+  {$UNDEF DONT_LINK_JNG}
+{$ENDIF}
+
 uses
-  Classes, ImagingTypes, Imaging, ImagingUtility, ImagingFormats, dzlib;
+  Types, SysUtils, Classes, ImagingTypes, Imaging, ImagingUtility, ImagingFormats, dzlib;
 
 type
   { Basic class for Network Graphics file formats loaders/savers.}
@@ -96,6 +102,8 @@ type
     and pixels with transparent color are replaced with background color
     with alpha = 0).}
   TPNGFileFormat = class(TNetworkGraphicsFileFormat)
+  private
+    FLoadAnimated: LongBool;
   protected
     function LoadData(Handle: TImagingHandle; var Images: TDynImageDataArray;
       OnlyFirstLevel: Boolean): Boolean; override;
@@ -103,9 +111,11 @@ type
       Index: LongInt): Boolean; override;
   public
     constructor Create; override;
+  published
+    property LoadAnimated: LongBool read FLoadAnimated write FLoadAnimated;
   end;
 
-{$IFDEF LINK_MNG}
+{$IFNDEF DONT_LINK_MNG}
   { Class for loading Multiple Network Graphics files.
     This format has complex animation capabilities but Imaging only
     extracts frames. Individual frames are stored as standard PNG or JNG
@@ -130,7 +140,7 @@ type
   end;
 {$ENDIF}  
 
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
   { Class for loading JPEG Network Graphics Images.
     Loads all types of this image format (all images in jng test suite)
     and saves all types except 12 bit JPEGs.
@@ -158,10 +168,11 @@ type
 
 implementation
 
-{$IFDEF LINK_JNG}
 uses
-  ImagingJpeg, ImagingIO;
+{$IFNDEF DONT_LINK_JNG}
+  ImagingJpeg, ImagingIO,
 {$ENDIF}
+  ImagingCanvases;
 
 const
   NGDefaultPreFilter = 5;
@@ -174,6 +185,7 @@ const
     ifA16Gray16, ifR8G8B8, ifA8R8G8B8, ifR16G16B16, ifA16R16G16B16, ifB16G16R16,
     ifA16B16G16R16];
   NGLossyFormats: TImageFormats = [ifGray8, ifA8Gray8, ifR8G8B8, ifA8R8G8B8];
+  PNGDefaultLoadAnimated = True;
 
   SPNGFormatName = 'Portable Network Graphics';
   SPNGMasks      = '*.png';
@@ -192,7 +204,7 @@ type
     ChunkID: TChar4;
   end;
 
-  { IHDR chunk format.}
+  { IHDR chunk format - PNG header.}
   TIHDR = packed record
     Width: LongWord;              // Image width
     Height: LongWord;             // Image height
@@ -205,7 +217,7 @@ type
   end;
   PIHDR = ^TIHDR;
 
-  { MHDR chunk format.}
+  { MHDR chunk format - MNG header.}
   TMHDR = packed record
     FrameWidth: LongWord;         // Frame width
     FrameHeight: LongWord;        // Frame height
@@ -213,11 +225,11 @@ type
     NominalLayerCount: LongWord;  // Number of layers in file
     NominalFrameCount: LongWord;  // Number of frames in file
     NominalPlayTime: LongWord;    // Play time of animation in ticks
-    SimplicityProfile: LongWord;  // Defines which mMNG features are used in this file
+    SimplicityProfile: LongWord;  // Defines which MNG features are used in this file
   end;
   PMHDR = ^TMHDR;
 
-  { JHDR chunk format.}
+  { JHDR chunk format - JNG header.}
   TJHDR = packed record
     Width: LongWord;              // Image width
     Height: LongWord;             // Image height
@@ -233,6 +245,27 @@ type
     AlphaInterlacing: Byte;       // 0 = non interlaced
   end;
   PJHDR = ^TJHDR;
+
+  { acTL chunk format - APNG animation control.}
+  TacTL = packed record
+    NumFrames: LongWord;          // Number of frames
+    NumPlay: LongWord;            // Number of times to loop the animation (0 = inf)
+  end;
+  PacTL =^TacTL;
+
+  { fcTL chunk format - APNG frame control.}
+  TfcTL = packed record
+    SeqNumber: LongWord;          // Sequence number of the animation chunk, starting from 0
+    Width: LongWord;              // Width of the following frame
+    Height: LongWord;             // Height of the following frame
+    XOffset: LongWord;            // X position at which to render the following frame
+    YOffset: LongWord;            // Y position at which to render the following frame
+    DelayNumer: Word;             // Frame delay fraction numerator
+    DelayDenom: Word;             // Frame delay fraction denominator
+    DisposeOp: Byte;              // Type of frame area disposal to be done after rendering this frame
+    BlendOp: Byte;                // Type of frame area rendering for this frame
+  end;
+  PfcTL = ^TfcTL;
 
 const
   { PNG file identifier.}
@@ -260,6 +293,18 @@ const
   tRNSChunk: TChar4 = 'tRNS';
   bKGDChunk: TChar4 = 'bKGD';
   gAMAChunk: TChar4 = 'gAMA';
+  acTLChunk: TChar4 = 'acTL';
+  fcTLChunk: TChar4 = 'fcTL';
+  fdATChunk: TChar4 = 'fdAT';
+
+  { APNG frame dispose operations.}
+  DisposeOpNone       = 0;
+  DisposeOpBackground = 1;
+  DisposeOpPrevious   = 2;
+
+  { APNG frame blending modes}
+  BlendOpSource = 0;
+  BlendOpOver   = 1;
 
   { Interlace start and offsets.}
   RowStart: array[0..6] of LongInt = (0, 0, 4, 0, 2, 0, 1);
@@ -271,9 +316,11 @@ type
   { Helper class that holds information about MNG frame in PNG or JNG format.}
   TFrameInfo = class(TObject)
   public
-    IsJNG: Boolean;
+    FrameWidth, FrameHeight: LongInt;
+    IsJpegFrame: Boolean;
     IHDR: TIHDR;
     JHDR: TJHDR;
+    fcTL: TfcTL;
     Palette: PPalette24;
     PaletteEntries: LongInt;
     Transparency: Pointer;
@@ -285,16 +332,18 @@ type
     JDAAMemory: TMemoryStream;
     constructor Create;
     destructor Destroy; override;
+    procedure AssignSharedProps(Source: TFrameInfo);
   end;
 
   { Defines type of Network Graphics file.}
-  TNGFileType = (ngPNG, ngMNG, ngJNG);
+  TNGFileType = (ngPNG, ngAPNG, ngMNG, ngJNG);
 
   TNGFileHandler = class(TObject)
   public
     FileType: TNGFileType;
     Frames: array of TFrameInfo;
-    MHDR: TMHDR;
+    MHDR: TMHDR; // Main header for MNG files
+    acTL: TacTL; // Global anim control for APNG files
     GlobalPalette: PPalette24;
     GlobalPaletteEntries: LongInt;
     GlobalTransparency: Pointer;
@@ -309,9 +358,9 @@ type
   TNGFileLoader = class(TNGFileHandler)
   public
     function LoadFile(Handle: TImagingHandle): Boolean;
-    procedure LoadImageFromPNGFrame(const IHDR: TIHDR; IDATStream: TMemoryStream; var Image: TImageData);
-{$IFDEF LINK_JNG}
-    procedure LoadImageFromJNGFrame(const JHDR: TJHDR; IDATStream, JDATStream, JDAAStream: TMemoryStream; var Image: TImageData);
+    procedure LoadImageFromPNGFrame(FrameWidth, FrameHeight: LongInt; const IHDR: TIHDR; IDATStream: TMemoryStream; var Image: TImageData);
+{$IFNDEF DONT_LINK_JNG}
+    procedure LoadImageFromJNGFrame(FrameWidth, FrameHeight: LongInt; const JHDR: TJHDR; IDATStream, JDATStream, JDAAStream: TMemoryStream; var Image: TImageData);
 {$ENDIF}
     procedure ApplyFrameSettings(Frame: TFrameInfo; var Image: TImageData);
   end;
@@ -324,22 +373,27 @@ type
     Quality: LongInt;
     Progressive: Boolean;
     function SaveFile(Handle: TImagingHandle): Boolean;
-    procedure AddFrame(const Image: TImageData; IsJNG: Boolean);
+    procedure AddFrame(const Image: TImageData; IsJpegFrame: Boolean);
     procedure StoreImageToPNGFrame(const IHDR: TIHDR; Bits: Pointer; FmtInfo: TImageFormatInfo; IDATStream: TMemoryStream);
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
     procedure StoreImageToJNGFrame(const JHDR: TJHDR; const Image: TImageData; IDATStream, JDATStream, JDAAStream: TMemoryStream);
 {$ENDIF}
     procedure SetFileOptions(FileFormat: TNetworkGraphicsFileFormat);
   end;
 
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
   TCustomIOJpegFileFormat = class(TJpegFileFormat)
   protected
     FCustomIO: TIOFunctions;
     procedure SetJpegIO(const JpegIO: TIOFunctions); override;
     procedure SetCustomIO(const CustomIO: TIOFunctions);
   end;
-{$ENDIF}  
+{$ENDIF}
+
+  TAPNGAnimator = class
+  public
+    class procedure Animate(var Images: TDynImageDataArray; const acTL: TacTL; const SrcFrames: array of TFrameInfo);
+  end;
 
 { Helper routines }
 
@@ -414,7 +468,7 @@ begin
     Shift4[X and 1];
 end;
 
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
 
 { TCustomIOJpegFileFormat class implementation }
 
@@ -448,6 +502,18 @@ begin
   JDATMemory.Free;
   JDAAMemory.Free;
   inherited Destroy;
+end;
+
+procedure TFrameInfo.AssignSharedProps(Source: TFrameInfo);
+begin
+  IHDR := Source.IHDR;
+  JHDR := Source.JHDR;
+  PaletteEntries := Source.PaletteEntries;
+  GetMem(Palette, PaletteEntries * SizeOf(TColor24Rec));
+  Move(Source.Palette^, Palette^, PaletteEntries * SizeOf(TColor24Rec));
+  TransparencySize := Source.TransparencySize;
+  GetMem(Transparency, TransparencySize);
+  Move(Source.Transparency^, Transparency^, TransparencySize);
 end;
 
 { TNGFileHandler class implementation}
@@ -529,9 +595,38 @@ var
     Frame: TFrameInfo;
   begin
     ReadChunkData;
-    Frame := AddFrameInfo;
-    Frame.IsJNG := False;
-    Frame.IHDR := PIHDR(ChunkData)^;
+
+    if Chunk.ChunkID = fcTLChunk then
+    begin
+      if (Length(Frames) = 1) and (Frames[0].IDATMemory.Size = 0) then
+      begin
+        // First fcTL chunk maybe for first IDAT frame which is alredy created
+        Frame := Frames[0];
+      end
+      else
+      begin
+        // Subsequent APNG frames with data in fdAT
+        Frame := AddFrameInfo;
+        // Copy some shared props from first frame (IHDR is the same for all APNG frames, palette etc)
+        Frame.AssignSharedProps(Frames[0]);
+      end;
+      Frame.fcTL := PfcTL(ChunkData)^;
+      SwapEndianLongWord(@Frame.fcTL, 5);
+      Frame.fcTL.DelayNumer := SwapEndianWord(Frame.fcTL.DelayNumer);
+      Frame.fcTL.DelayDenom := SwapEndianWord(Frame.fcTL.DelayDenom);
+      Frame.FrameWidth := Frame.fcTL.Width;
+      Frame.FrameHeight := Frame.fcTL.Height;
+    end
+    else
+    begin
+      // This is frame defined by IHDR chunk
+      Frame := AddFrameInfo;
+      Frame.IHDR := PIHDR(ChunkData)^;
+      SwapEndianLongWord(@Frame.IHDR, 2);
+      Frame.FrameWidth := Frame.IHDR.Width;
+      Frame.FrameHeight := Frame.IHDR.Height;
+    end;
+    Frame.IsJpegFrame := False;
   end;
 
   procedure StartNewJNGImage;
@@ -540,15 +635,21 @@ var
   begin
     ReadChunkData;
     Frame := AddFrameInfo;
-    Frame.IsJNG := True;
+    Frame.IsJpegFrame := True;
     Frame.JHDR := PJHDR(ChunkData)^;
+    SwapEndianLongWord(@Frame.JHDR, 2);
+    Frame.FrameWidth := Frame.JHDR.Width;
+    Frame.FrameHeight := Frame.JHDR.Height;
   end;
 
   procedure AppendIDAT;
   begin
     ReadChunkData;
-    // Append current IDAT chunk to storage stream
-    GetLastFrame.IDATMemory.Write(ChunkData^, Chunk.DataSize);
+    // Append current IDAT/fdAT chunk to storage stream
+    if Chunk.ChunkID = IDATChunk then
+      GetLastFrame.IDATMemory.Write(ChunkData^, Chunk.DataSize)
+    else if Chunk.ChunkID = fdATChunk then
+      GetLastFrame.IDATMemory.Write(PByteArray(ChunkData)[4], Chunk.DataSize - SizeOf(LongWord));
   end;
 
   procedure AppendJDAT;
@@ -634,6 +735,14 @@ var
     end;
   end;
 
+  procedure HandleacTL;
+  begin
+    FileType := ngAPNG;
+    ReadChunkData;
+    acTL := PacTL(ChunkData)^;
+    SwapEndianLongWord(@acTL, SizeOf(acTL) div SizeOf(LongWord));
+  end;
+
 begin
   Result := False;
   Clear;
@@ -654,21 +763,20 @@ begin
       ReadChunkData;
       MHDR := PMHDR(ChunkData)^;
       SwapEndianLongWord(@MHDR, SizeOf(MHDR) div SizeOf(LongWord));
-    end
-    else
-      FillChar(MHDR, SizeOf(MHDR), 0);
+    end;
 
     // Read chunks until ending chunk or EOF is reached
     repeat
       ReadChunk;
-      if Chunk.ChunkID = IHDRChunk then StartNewPNGImage
+      if (Chunk.ChunkID = IHDRChunk) or (Chunk.ChunkID = fcTLChunk) then StartNewPNGImage
       else if Chunk.ChunkID = JHDRChunk then StartNewJNGImage
-      else if Chunk.ChunkID = IDATChunk then AppendIDAT
+      else if (Chunk.ChunkID = IDATChunk) or (Chunk.ChunkID = fdATChunk) then AppendIDAT
       else if Chunk.ChunkID = JDATChunk then AppendJDAT
       else if Chunk.ChunkID = JDAAChunk then AppendJDAA
       else if Chunk.ChunkID = PLTEChunk then LoadPLTE
       else if Chunk.ChunkID = tRNSChunk then LoadtRNS
       else if Chunk.ChunkID = bKGDChunk then LoadbKGD
+      else if Chunk.ChunkID = acTLChunk then HandleacTL
       else SkipChunkData;
     until Eof(Handle) or (Chunk.ChunkID = MENDChunk) or
       ((FileType <> ngMNG) and (Chunk.ChunkID = IENDChunk));
@@ -679,7 +787,7 @@ begin
   end;
 end;
 
-procedure TNGFileLoader.LoadImageFromPNGFrame(const IHDR: TIHDR;
+procedure TNGFileLoader.LoadImageFromPNGFrame(FrameWidth, FrameHeight: LongInt; const IHDR: TIHDR;
   IDATStream: TMemoryStream; var Image: TImageData);
 type
   TGetPixelFunc = function(Line: PByteArray; X: LongInt): Byte;
@@ -823,8 +931,8 @@ var
   end;
 
 begin
-  Image.Width := SwapEndianLongWord(IHDR.Width);
-  Image.Height := SwapEndianLongWord(IHDR.Height);
+  Image.Width := FrameWidth;
+  Image.Height := FrameHeight;
   Image.Format := ifUnknown;
 
   case IHDR.ColorType of
@@ -985,9 +1093,9 @@ begin
   end;
 end;
 
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
 
-procedure TNGFileLoader.LoadImageFromJNGFrame(const JHDR: TJHDR; IDATStream,
+procedure TNGFileLoader.LoadImageFromJNGFrame(FrameWidth, FrameHeight: LongInt; const JHDR: TJHDR; IDATStream,
   JDATStream, JDAAStream: TMemoryStream; var Image: TImageData);
 var
   AlphaImage: TImageData;
@@ -1020,7 +1128,7 @@ var
       end;
     end
     else
-      NewImage(JHDR.Width, JHDR.Height, ifR8G8B8, DestImage);
+      NewImage(FrameWidth, FrameHeight, ifR8G8B8, DestImage);
   end;
 
 begin
@@ -1040,7 +1148,7 @@ begin
       FakeIHDR.Filter := JHDR.AlphaFilter;
       FakeIHDR.Interlacing := JHDR.AlphaInterlacing;
 
-      LoadImageFromPNGFrame(FakeIHDR, IDATStream, AlphaImage);
+      LoadImageFromPNGFrame(FrameWidth, FrameHeight, FakeIHDR, IDATStream, AlphaImage);
     end
     else
     begin
@@ -1114,8 +1222,7 @@ var
         AlphasSize := Frame.TransparencySize;
       end;
     end
-    else
-    if not FmtInfo.HasAlphaChannel then
+    else if not FmtInfo.HasAlphaChannel then
     begin
       FillChar(ColorKey, SizeOf(ColorKey), 0);
       Move(Frame.Transparency^, ColorKey, Min(Frame.TransparencySize, SizeOf(ColorKey)));
@@ -1123,7 +1230,7 @@ var
         SwapValues(ColorKey.R, ColorKey.B);
       SwapEndianWord(@ColorKey, 3);
       // 1/2/4 bit images were converted to 8 bit so we must convert color key too
-      if (not Frame.IsJNG) and (Frame.IHDR.ColorType in [0, 4]) then
+      if (not Frame.IsJpegFrame) and (Frame.IHDR.ColorType in [0, 4]) then
         case Frame.IHDR.BitDepth of
           1: ColorKey.B := Word(ColorKey.B * 255);
           2: ColorKey.B := Word(ColorKey.B * 85);
@@ -1142,7 +1249,7 @@ var
       SwapValues(BackGroundColor.R, BackGroundColor.B);
     SwapEndianWord(@BackGroundColor, 3);
     // 1/2/4 bit images were converted to 8 bit so we must convert back color too
-    if (not Frame.IsJNG) and (Frame.IHDR.ColorType in [0, 4]) then
+    if (not Frame.IsJpegFrame) and (Frame.IHDR.ColorType in [0, 4]) then
       case Frame.IHDR.BitDepth of
         1: BackGroundColor.B := Word(BackGroundColor.B * 255);
         2: BackGroundColor.B := Word(BackGroundColor.B * 85);
@@ -1232,8 +1339,8 @@ begin
   IsBackGroundPresent := False;
   GetImageFormatInfo(Image.Format, FmtInfo);
 
-  IsColorFormat := (Frame.IsJNG and (Frame.JHDR.ColorType in [10, 14])) or
-    (not Frame.IsJNG and (Frame.IHDR.ColorType in [2, 6]));
+  IsColorFormat := (Frame.IsJpegFrame and (Frame.JHDR.ColorType in [10, 14])) or
+    (not Frame.IsJpegFrame and (Frame.IHDR.ColorType in [2, 6]));
 
   // Convert some chunk data to useful format
   if Frame.Transparency <> nil then
@@ -1392,7 +1499,7 @@ begin
   end;
 end;
 
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
 
 procedure TNGFileSaver.StoreImageToJNGFrame(const JHDR: TJHDR;
   const Image: TImageData; IDATStream, JDATStream,
@@ -1504,7 +1611,7 @@ end;
 
 {$ENDIF}
 
-procedure TNGFileSaver.AddFrame(const Image: TImageData; IsJNG: Boolean);
+procedure TNGFileSaver.AddFrame(const Image: TImageData; IsJpegFrame: Boolean);
 var
   Frame: TFrameInfo;
   FmtInfo: TImageFormatInfo;
@@ -1545,15 +1652,15 @@ var
 begin
   // Add new frame
   Frame := AddFrameInfo;
-  Frame.IsJNG := IsJNG;
+  Frame.IsJpegFrame := IsJpegFrame;
 
   with Frame do
   begin
     GetImageFormatInfo(Image.Format, FmtInfo);
 
-    if IsJNG then
+    if IsJpegFrame then
     begin
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
       // Fill JNG header
       JHDR.Width := Image.Width;
       JHDR.Height := Image.Height;
@@ -1598,6 +1705,7 @@ begin
         end;
       end
       else
+      begin
         if FmtInfo.IsIndexed then
           IHDR.ColorType := 3
         else
@@ -1611,15 +1719,33 @@ begin
             IHDR.ColorType := 2;
             IHDR.BitDepth := IHDR.BitDepth div 3;
           end;
+      end;
 
-       // Compress PNG image and store it to stream
-       StoreImageToPNGFrame(IHDR, Image.Bits, FmtInfo, IDATMemory);
-       // Store palette if necesary
-       if FmtInfo.IsIndexed then
-         StorePalette;
+      if FileType = ngAPNG then
+      begin
+        // Fill fcTL chunk of APNG file
+        fcTL.SeqNumber := 0; // Decided when writing to file
+        fcTL.Width := IHDR.Width;
+        fcTL.Height := IHDR.Height;
+        fcTL.XOffset := 0;
+        fcTL.YOffset := 0;
+        fcTL.DelayNumer := 1;
+        fcTL.DelayDenom := 3;
+        fcTL.DisposeOp := DisposeOpNone;
+        fcTL.BlendOp := BlendOpSource;
+        SwapEndianLongWord(@fcTL, 5);
+        fcTL.DelayNumer := SwapEndianWord(fcTL.DelayNumer);
+        fcTL.DelayDenom := SwapEndianWord(fcTL.DelayDenom);
+      end;
 
-       // Finally swap endian
-       SwapEndianLongWord(@IHDR, 2);
+      // Compress PNG image and store it to stream
+      StoreImageToPNGFrame(IHDR, Image.Bits, FmtInfo, IDATMemory);
+      // Store palette if necesary
+      if FmtInfo.IsIndexed then
+        StorePalette;
+
+      // Finally swap endian
+      SwapEndianLongWord(@IHDR, 2);
     end;
   end;
 end;
@@ -1628,6 +1754,16 @@ function TNGFileSaver.SaveFile(Handle: TImagingHandle): Boolean;
 var
   I: LongInt;
   Chunk: TChunkHeader;
+  SeqNo: LongWord;
+
+  function GetNextSeqNo: LongWord;
+  begin
+    // Seq numbers of fcTL and fdAT are "interleaved" as they share the counter.
+    // Example: first fcTL for IDAT has seq=0, next is fcTL for seond frame with
+    // seq=1, then first fdAT with seq=2, fcTL seq=3, fdAT=4, ...
+    Result := SwapEndianLongWord(SeqNo);
+    Inc(SeqNo);
+  end;
 
   function CalcChunkCrc(const ChunkHdr: TChunkHeader; Data: Pointer;
     Size: LongInt): LongWord;
@@ -1652,96 +1788,161 @@ var
     GetIO.Write(Handle, @ChunkCrc, SizeOf(ChunkCrc));
   end;
 
+  procedure WritefdAT(Frame: TFrameInfo);
+  var
+    ChunkCrc: LongWord;
+    ChunkSeqNo: LongWord;
+  begin
+    Chunk.ChunkID := fdATChunk;
+    ChunkSeqNo := GetNextSeqNo;
+    // fdAT saves seq number LongWord before compressed pixels
+    Chunk.DataSize := Frame.IDATMemory.Size + SizeOf(LongWord);
+    Chunk.DataSize := SwapEndianLongWord(Chunk.DataSize);
+    // Calc CRC
+    ChunkCrc := $FFFFFFFF;
+    CalcCrc32(ChunkCrc, @Chunk.ChunkID, SizeOf(Chunk.ChunkID));
+    CalcCrc32(ChunkCrc, @ChunkSeqNo, SizeOf(ChunkSeqNo));
+    CalcCrc32(ChunkCrc, Frame.IDATMemory.Memory, Frame.IDATMemory.Size);
+    ChunkCrc := SwapEndianLongWord(ChunkCrc xor $FFFFFFFF);
+    // Write out all fdAT data
+    GetIO.Write(Handle, @Chunk, SizeOf(Chunk));
+    GetIO.Write(Handle, @ChunkSeqNo, SizeOf(ChunkSeqNo));
+    GetIO.Write(Handle, Frame.IDATMemory.Memory, Frame.IDATMemory.Size);
+    GetIO.Write(Handle, @ChunkCrc, SizeOf(ChunkCrc));
+  end;
+
+  procedure WritePNGMainImageChunks(Frame: TFrameInfo);
+  begin
+    with Frame do
+    begin
+      // Write IHDR chunk
+      Chunk.DataSize := SizeOf(IHDR);
+      Chunk.ChunkID := IHDRChunk;
+      WriteChunk(Chunk, @IHDR);
+      // Write PLTE chunk if data is present
+      if Palette <> nil then
+      begin
+        Chunk.DataSize := PaletteEntries * SizeOf(TColor24Rec);
+        Chunk.ChunkID := PLTEChunk;
+        WriteChunk(Chunk, Palette);
+      end;
+      // Write tRNS chunk if data is present
+      if Transparency <> nil then
+      begin
+        Chunk.DataSize := TransparencySize;
+        Chunk.ChunkID := tRNSChunk;
+        WriteChunk(Chunk, Transparency);
+      end;
+    end;
+  end;
+
 begin
   Result := False;
+  SeqNo := 0;
+
+  case FileType of
+    ngPNG, ngAPNG: GetIO.Write(Handle, @PNGSignature, SizeOf(TChar8));
+    ngMNG: GetIO.Write(Handle, @MNGSignature, SizeOf(TChar8));
+    ngJNG: GetIO.Write(Handle, @JNGSignature, SizeOf(TChar8));
+  end;
+
+  if FileType = ngMNG then
   begin
-    case FileType of
-      ngPNG: GetIO.Write(Handle, @PNGSignature, SizeOf(TChar8));
-      ngMNG: GetIO.Write(Handle, @MNGSignature, SizeOf(TChar8));
-      ngJNG: GetIO.Write(Handle, @JNGSignature, SizeOf(TChar8));
-    end;
+    SwapEndianLongWord(@MHDR, SizeOf(MHDR) div SizeOf(LongWord));
+    Chunk.DataSize := SizeOf(MHDR);
+    Chunk.ChunkID := MHDRChunk;
+    WriteChunk(Chunk, @MHDR);
+  end;
 
-    if FileType = ngMNG then
+  for I := 0 to Length(Frames) - 1 do
+  with Frames[I] do
+  begin
+    if IsJpegFrame then
     begin
-      SwapEndianLongWord(@MHDR, SizeOf(MHDR) div SizeOf(LongWord));
-      Chunk.DataSize := SizeOf(MHDR);
-      Chunk.ChunkID := MHDRChunk;
-      WriteChunk(Chunk, @MHDR);
-    end;
-
-    for I := 0 to Length(Frames) - 1 do
-    with Frames[I] do
+      // Write JHDR chunk
+      Chunk.DataSize := SizeOf(JHDR);
+      Chunk.ChunkID := JHDRChunk;
+      WriteChunk(Chunk, @JHDR);
+      // Write JNG image data
+      Chunk.DataSize := JDATMemory.Size;
+      Chunk.ChunkID := JDATChunk;
+      WriteChunk(Chunk, JDATMemory.Memory);
+      // Write alpha channel if present
+      if JHDR.AlphaSampleDepth > 0 then
+      begin
+        if JHDR.AlphaCompression = 0 then
+        begin
+          // Alpha is PNG compressed
+          Chunk.DataSize := IDATMemory.Size;
+          Chunk.ChunkID := IDATChunk;
+          WriteChunk(Chunk, IDATMemory.Memory);
+        end
+        else
+        begin
+          // Alpha is JNG compressed
+          Chunk.DataSize := JDAAMemory.Size;
+          Chunk.ChunkID := JDAAChunk;
+          WriteChunk(Chunk, JDAAMemory.Memory);
+        end;
+      end;
+      // Write image end
+      Chunk.DataSize := 0;
+      Chunk.ChunkID := IENDChunk;
+      WriteChunk(Chunk, nil);
+    end
+    else if FileType <> ngAPNG then
     begin
-      if IsJNG then
+      // Regular PNG frame (single PNG image or MNG frame)
+      WritePNGMainImageChunks(Frames[I]);
+      // Write PNG image data
+      Chunk.DataSize := IDATMemory.Size;
+      Chunk.ChunkID := IDATChunk;
+      WriteChunk(Chunk, IDATMemory.Memory);
+      // Write image end
+      Chunk.DataSize := 0;
+      Chunk.ChunkID := IENDChunk;
+      WriteChunk(Chunk, nil);
+    end
+    else if FileType = ngAPNG then
+    begin
+      // APNG frame - first frame must have acTL and fcTL before IDAT,
+      // subsequent frames have fcTL and fdAT.
+      if I = 0 then
       begin
-        // Write JHDR chunk
-        Chunk.DataSize := SizeOf(JHDR);
-        Chunk.ChunkID := JHDRChunk;
-        WriteChunk(Chunk, @JHDR);
-        // Write JNG image data
-        Chunk.DataSize := JDATMemory.Size;
-        Chunk.ChunkID := JDATChunk;
-        WriteChunk(Chunk, JDATMemory.Memory);
-        // Write alpha channel if present
-        if JHDR.AlphaSampleDepth > 0 then
-        begin
-          if JHDR.AlphaCompression = 0 then
-          begin
-            // ALpha is PNG compressed
-            Chunk.DataSize := IDATMemory.Size;
-            Chunk.ChunkID := IDATChunk;
-            WriteChunk(Chunk, IDATMemory.Memory);
-          end
-          else
-          begin
-            // Alpha is JNG compressed
-            Chunk.DataSize := JDAAMemory.Size;
-            Chunk.ChunkID := JDAAChunk;
-            WriteChunk(Chunk, JDAAMemory.Memory);
-          end;
-        end;
-        // Write image end
-        Chunk.DataSize := 0;
-        Chunk.ChunkID := IENDChunk;
-        WriteChunk(Chunk, nil);
-      end
-      else
+        WritePNGMainImageChunks(Frames[I]);
+        Chunk.DataSize := SizeOf(acTL);
+        Chunk.ChunkID := acTLChunk;
+        WriteChunk(Chunk, @acTL);
+      end;
+      // Write fcTL before frame data
+      Chunk.DataSize := SizeOf(fcTL);
+      Chunk.ChunkID := fcTLChunk;
+      fcTl.SeqNumber := GetNextSeqNo;
+      WriteChunk(Chunk, @fcTL);
+      // Write data - IDAT for first frame and fdAT for following ones
+      if I = 0 then
       begin
-        // Write IHDR chunk
-        Chunk.DataSize := SizeOf(IHDR);
-        Chunk.ChunkID := IHDRChunk;
-        WriteChunk(Chunk, @IHDR);
-        // Write PLTE chunk if data is present
-        if Palette <> nil then
-        begin
-          Chunk.DataSize := PaletteEntries * SizeOf(TColor24Rec);
-          Chunk.ChunkID := PLTEChunk;
-          WriteChunk(Chunk, Palette);
-        end;
-        // Write tRNS chunk if data is present
-        if Transparency <> nil then
-        begin
-          Chunk.DataSize := TransparencySize;
-          Chunk.ChunkID := tRNSChunk;
-          WriteChunk(Chunk, Transparency);
-        end;
-        // Write PNG image data
         Chunk.DataSize := IDATMemory.Size;
         Chunk.ChunkID := IDATChunk;
         WriteChunk(Chunk, IDATMemory.Memory);
-        // Write image end
+      end
+      else
+        WritefdAT(Frames[I]);
+      // Write image end after last frame
+      if I = Length(Frames) - 1 then
+      begin
         Chunk.DataSize := 0;
         Chunk.ChunkID := IENDChunk;
         WriteChunk(Chunk, nil);
       end;
     end;
+  end;
 
-    if FileType = ngMNG then
-    begin
-      Chunk.DataSize := 0;
-      Chunk.ChunkID := MENDChunk;
-      WriteChunk(Chunk, nil);
-    end;
+  if FileType = ngMNG then
+  begin
+    Chunk.DataSize := 0;
+    Chunk.ChunkID := MENDChunk;
+    WriteChunk(Chunk, nil);
   end;
 end;
 
@@ -1752,6 +1953,123 @@ begin
   LossyAlpha := FileFormat.FLossyAlpha;
   Quality := FileFormat.FQuality;
   Progressive := FileFormat.FProgressive;
+end;
+
+{ TAPNGAnimator class implemnetation }
+
+class procedure TAPNGAnimator.Animate(var Images: TDynImageDataArray;
+  const acTL: TacTL; const SrcFrames: array of TFrameInfo);
+var
+  I, SrcIdx, Offset, Len: Integer;
+  DestFrames: TDynImageDataArray;
+  SrcCanvas, DestCanvas: TImagingCanvas;
+  PreviousCache: TImageData;
+
+  function AnimatingNeeded: Boolean;
+  var
+    I: Integer;
+  begin
+    Result := False;
+    for I := 0 to Len - 1 do
+    with SrcFrames[I] do
+    begin
+      if (FrameWidth <> IHDR.Width) or (FrameHeight <> IHDR.Height) or (Len <> acTL.NumFrames) or
+        (not ((fcTL.DisposeOp = DisposeOpNone) and (fcTL.BlendOp = BlendOpSource)) and
+        not ((fcTL.DisposeOp = DisposeOpBackground) and (fcTL.BlendOp = BlendOpSource)) and
+        not ((fcTL.DisposeOp = DisposeOpBackground) and (fcTL.BlendOp = BlendOpOver))) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+
+begin
+  Len := Length(SrcFrames);
+  if (Len = 0) or not AnimatingNeeded then
+    Exit;
+
+  if (Len = acTL.NumFrames + 1) and (SrcFrames[0].fcTL.Width = 0) then
+  begin
+    // If default image (stored in IDAT chunk) isn't part of animation we ignore it
+    Offset := 1;
+    Len := Len - 1;
+  end
+  else
+    Offset := 0;
+
+  SetLength(DestFrames, Len);
+  DestCanvas := ImagingCanvases.FindBestCanvasForImage(Images[0]).Create;
+  SrcCanvas := ImagingCanvases.FindBestCanvasForImage(Images[0]).Create;
+  InitImage(PreviousCache);
+  NewImage(SrcFrames[0].IHDR.Width, SrcFrames[0].IHDR.Height, Images[0].Format, PreviousCache);
+
+  for I := 0 to Len - 1 do
+  begin
+    SrcIdx := I + Offset;
+    NewImage(SrcFrames[SrcIdx].IHDR.Width, SrcFrames[SrcIdx].IHDR.Height,
+      Images[SrcIdx].Format, DestFrames[I]);
+    if DestFrames[I].Format = ifIndex8 then
+      Move(Images[SrcIdx].Palette^, DestFrames[I].Palette^, 256 * SizeOf(TColor32));
+    DestCanvas.CreateForData(@DestFrames[I]);
+
+    if (SrcFrames[SrcIdx].fcTL.DisposeOp = DisposeOpPrevious) and (SrcFrames[SrcIdx - 1].fcTL.DisposeOp <> DisposeOpPrevious) then
+    begin
+      // Cache current output buffer so we may return to it later (previous dispose op)
+      CopyRect(DestFrames[I - 1], 0, 0, DestFrames[I - 1].Width, DestFrames[I - 1].Height,
+        PreviousCache, 0, 0);
+    end;
+
+    if (I = 0) or (SrcIdx = 0) then
+    begin
+      // Clear whole frame with transparent black color (default for first frame)
+      DestCanvas.FillColor32 := pcClear;
+      DestCanvas.Clear;
+    end
+    else if SrcFrames[SrcIdx - 1].fcTL.DisposeOp = DisposeOpBackground then
+    begin
+      // Restore background color (clear) on previous frame's area and leave previous content outside of it
+      CopyRect(DestFrames[I - 1], 0, 0, DestFrames[I - 1].Width, DestFrames[I - 1].Height,
+        DestFrames[I], 0, 0);
+      DestCanvas.FillColor32 := pcClear;
+      DestCanvas.FillRect(BoundsToRect(SrcFrames[SrcIdx - 1].fcTL.XOffset, SrcFrames[SrcIdx - 1].fcTL.YOffset,
+        SrcFrames[SrcIdx - 1].FrameWidth, SrcFrames[SrcIdx - 1].FrameHeight));
+    end
+    else if SrcFrames[SrcIdx - 1].fcTL.DisposeOp = DisposeOpNone then
+    begin
+      // Clone previous frame - no change to output buffer
+      CopyRect(DestFrames[I - 1], 0, 0, DestFrames[I - 1].Width, DestFrames[I - 1].Height,
+        DestFrames[I], 0, 0);
+    end
+    else if SrcFrames[SrcIdx - 1].fcTL.DisposeOp = DisposeOpPrevious then
+    begin
+      // Revert to previous frame (cached, can't just restore DestFrames[I - 2])
+      CopyRect(PreviousCache, 0, 0, PreviousCache.Width, PreviousCache.Height,
+        DestFrames[I], 0, 0);
+    end;
+
+    // Copy pixels or alpha blend them over
+    if SrcFrames[SrcIdx].fcTL.BlendOp = BlendOpSource then
+    begin
+      CopyRect(Images[SrcIdx], 0, 0, Images[SrcIdx].Width, Images[SrcIdx].Height,
+        DestFrames[I], SrcFrames[SrcIdx].fcTL.XOffset, SrcFrames[SrcIdx].fcTL.YOffset);
+    end
+    else if SrcFrames[SrcIdx].fcTL.BlendOp = BlendOpOver then
+    begin
+      SrcCanvas.CreateForData(@Images[SrcIdx]);
+      SrcCanvas.DrawAlpha(SrcCanvas.ClipRect, DestCanvas,
+        SrcFrames[SrcIdx].fcTL.XOffset, SrcFrames[SrcIdx].fcTL.YOffset);
+    end;
+
+    FreeImage(Images[SrcIdx]);
+  end;
+
+  DestCanvas.Free;
+  SrcCanvas.Free;
+  FreeImage(PreviousCache);
+
+  // Assign dest frames to final output images
+  Images := DestFrames;
 end;
 
 { TNetworkGraphicsFileFormat class implementation }
@@ -1858,17 +2176,21 @@ constructor TPNGFileFormat.Create;
 begin
   inherited Create;
   FName := SPNGFormatName;
+  FIsMultiImageFormat := True;
+  FLoadAnimated := PNGDefaultLoadAnimated;
   AddMasks(SPNGMasks);
 
   FSignature := PNGSignature;
-                      
+
   RegisterOption(ImagingPNGPreFilter, @FPreFilter);
   RegisterOption(ImagingPNGCompressLevel, @FCompressLevel);
+  RegisterOption(ImagingPNGLoadAnimated, @FLoadAnimated);
 end;
 
 function TPNGFileFormat.LoadData(Handle: TImagingHandle;
   var Images: TDynImageDataArray; OnlyFirstLevel: Boolean): Boolean;
 var
+  I, Len: LongInt;
   NGFileLoader: TNGFileLoader;
 begin
   Result := False;
@@ -1876,15 +2198,22 @@ begin
   try
     // Use NG file parser to load file
     if NGFileLoader.LoadFile(Handle) and (Length(NGFileLoader.Frames) > 0) then
-    with NGFileLoader.Frames[0] do
     begin
-      SetLength(Images, 1);
-      // Build actual image bits
-      if not IsJNG then
-        NGFileLoader.LoadImageFromPNGFrame(IHDR, IDATMemory, Images[0]);
-      // Build palette, aply color key or background
-      NGFileLoader.ApplyFrameSettings(NGFileLoader.Frames[0], Images[0]);
-      Result := True;
+      Len := Length(NGFileLoader.Frames);
+      SetLength(Images, Len);
+      for I := 0 to Len - 1 do
+      with NGFileLoader.Frames[I] do
+      begin
+        // Build actual image bits
+        if not IsJpegFrame then
+          NGFileLoader.LoadImageFromPNGFrame(FrameWidth, FrameHeight, IHDR, IDATMemory, Images[I]);
+        // Build palette, aply color key or background
+        NGFileLoader.ApplyFrameSettings(NGFileLoader.Frames[I], Images[I]);
+        Result := True;
+      end;
+      // Animate APNG images
+      if (NGFileLoader.FileType = ngAPNG) and FLoadAnimated then
+        TAPNGAnimator.Animate(Images, NGFileLoader.acTL, NGFileLoader.Frames);
     end;
   finally
     NGFileLoader.Free;
@@ -1894,31 +2223,102 @@ end;
 function TPNGFileFormat.SaveData(Handle: TImagingHandle;
   const Images: TDynImageDataArray; Index: LongInt): Boolean;
 var
+  I: Integer;
   ImageToSave: TImageData;
   MustBeFreed: Boolean;
   NGFileSaver: TNGFileSaver;
+  DefaultFormat: TImageFormat;
+  Screen: TImageData;
+  AnimWidth, AnimHeight: Integer;
 begin
-  // Make image PNG compatible, store it in saver, and save it to file
-  Result := MakeCompatible(Images[Index], ImageToSave, MustBeFreed);
-  if Result then
+  Result := False;
+  DefaultFormat := ifDefault;
+  AnimWidth := 0;
+  AnimHeight := 0;
+  NGFileSaver := TNGFileSaver.Create;
+
+  // Save images with more frames as APNG format
+  if Length(Images) > 1 then
   begin
-    NGFileSaver := TNGFileSaver.Create;
-    with NGFileSaver do
-    try
-      FileType := ngPNG;
-      SetFileOptions(Self);
-      AddFrame(ImageToSave, False);
-      SaveFile(Handle);
-    finally
-      // Free NG saver and compatible image
-      NGFileSaver.Free;
-      if MustBeFreed then
-        FreeImage(ImageToSave);
+    NGFileSaver.FileType := ngAPNG;
+    NGFileSaver.acTL.NumFrames := FLastIdx - FFirstIdx + 1;
+    NGFileSaver.acTL.NumPlay := 1;
+    SwapEndianLongWord(@NGFileSaver.acTL, SizeOf(NGFileSaver.acTL) div SizeOf(LongWord));
+    // Get max dimensions of frames
+    AnimWidth := Images[FFirstIdx].Width;
+    AnimHeight := Images[FFirstIdx].Height;
+    for I := FFirstIdx + 1 to FLastIdx do
+    begin
+      AnimWidth := Max(AnimWidth, Images[I].Width);
+      AnimHeight := Max(AnimHeight, Images[I].Height);
     end;
+  end
+  else
+    NGFileSaver.FileType := ngPNG;
+  NGFileSaver.SetFileOptions(Self);
+
+  with NGFileSaver do
+  try
+    // Store all frames to be saved frames file saver
+    for I := FFirstIdx to FLastIdx do
+    begin
+      if MakeCompatible(Images[I], ImageToSave, MustBeFreed) then
+      try
+        if FileType = ngAPNG then
+        begin
+          // IHDR chunk is shared for all frames so all frames must have the
+          // same data format as the first image.
+          if I = FFirstIdx then
+          begin
+            DefaultFormat := ImageToSave.Format;
+            // Subsequenet frames may be bigger than the first one.
+            // APNG doens't support this - max allowed size is what's written in
+            // IHDR - size of main/default/first image. If some frame is
+            // bigger than the first one we need to resize (create empty bigger
+            // image and copy) the first frame so all following frames could fit to
+            // its area.
+            if (ImageToSave.Width <> AnimWidth) or (ImageToSave.Height <> AnimHeight) then
+            begin
+              InitImage(Screen);
+              NewImage(AnimWidth, AnimHeight, ImageToSave.Format, Screen);
+              CopyRect(ImageToSave, 0, 0, ImageToSave.Width, ImageToSave.Height, Screen, 0, 0);
+              if MustBeFreed then
+                FreeImage(ImageToSave);
+              ImageToSave := Screen;
+            end;
+          end
+          else if ImageToSave.Format <> DefaultFormat then
+          begin
+            if MustBeFreed then
+              ConvertImage(ImageToSave, DefaultFormat)
+            else
+            begin
+              CloneImage(Images[I], ImageToSave);
+              ConvertImage(ImageToSave, DefaultFormat);
+              MustBeFreed := True;
+            end;
+          end;
+        end;
+
+        // Add image as PNG frame
+        AddFrame(ImageToSave, False);
+      finally
+        if MustBeFreed then
+          FreeImage(ImageToSave);
+      end
+      else
+        Exit;
+    end;
+
+    // Finally save PNG file
+    SaveFile(Handle);
+    Result := True;
+  finally
+    NGFileSaver.Free;
   end;
 end;
 
-{$IFDEF LINK_MNG}
+{$IFNDEF DONT_LINK_MNG}
 
 { TMNGFileFormat class implementation }
 
@@ -1959,10 +2359,10 @@ begin
         with NGFileLoader.Frames[I] do
         begin
           // Build actual image bits
-          if IsJNG then
-            NGFileLoader.LoadImageFromJNGFrame(JHDR, IDATMemory, JDATMemory, JDAAMemory, Images[I])
+          if IsJpegFrame then
+            NGFileLoader.LoadImageFromJNGFrame(FrameWidth, FrameHeight, JHDR, IDATMemory, JDATMemory, JDAAMemory, Images[I])
           else
-            NGFileLoader.LoadImageFromPNGFrame(IHDR, IDATMemory, Images[I]);
+            NGFileLoader.LoadImageFromPNGFrame(FrameWidth, FrameHeight, IHDR, IDATMemory, Images[I]);
           // Build palette, aply color key or background
           NGFileLoader.ApplyFrameSettings(NGFileLoader.Frames[I], Images[I]);
         end;
@@ -1971,8 +2371,7 @@ begin
       begin
         // Some MNG files (with BASI-IEND streams) dont have actual pixel data
         SetLength(Images, 1);
-        with NGFileLoader.MHDR do
-          NewImage(FrameWidth, FrameWidth, ifDefault, Images[0]);
+        NewImage(NGFileLoader.MHDR.FrameWidth, NGFileLoader.MHDR.FrameWidth, ifDefault, Images[0]);
       end;
       Result := True;
     end;
@@ -2036,7 +2435,7 @@ end;
 
 {$ENDIF}
 
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
 
 { TJNGFileFormat class implementation }
 
@@ -2070,8 +2469,8 @@ begin
     begin
       SetLength(Images, 1);
       // Build actual image bits
-      if IsJNG then
-        NGFileLoader.LoadImageFromJNGFrame(JHDR, IDATMemory, JDATMemory, JDAAMemory, Images[0]);
+      if IsJpegFrame then
+        NGFileLoader.LoadImageFromJNGFrame(FrameWidth, FrameHeight, JHDR, IDATMemory, JDATMemory, JDAAMemory, Images[0]);
       // Build palette, aply color key or background
       NGFileLoader.ApplyFrameSettings(NGFileLoader.Frames[0], Images[0]);
       Result := True;
@@ -2112,10 +2511,10 @@ end;
 
 initialization
   RegisterImageFileFormat(TPNGFileFormat);
-{$IFDEF LINK_MNG}
+{$IFNDEF DONT_LINK_MNG}
   RegisterImageFileFormat(TMNGFileFormat);
 {$ENDIF}
-{$IFDEF LINK_JNG}
+{$IFNDEF DONT_LINK_JNG}
   RegisterImageFileFormat(TJNGFileFormat);
 {$ENDIF}
 finalization
@@ -2125,6 +2524,14 @@ finalization
 
   -- TODOS ----------------------------------------------------
     - nothing now
+
+  -- 0.26.3 Changes/Bug Fixes ---------------------------------
+    - Added APNG saving support.
+    - Added APNG support to NG loader and animating to PNG loader.
+
+  -- 0.26.1 Changes/Bug Fixes ---------------------------------
+    - Changed file format conditional compilation to reflect changes
+      in LINK symbols.
 
   -- 0.24.3 Changes/Bug Fixes ---------------------------------
     - Changes for better thread safety.

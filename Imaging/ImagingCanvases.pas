@@ -1,5 +1,5 @@
 {
-  $Id: ImagingCanvases.pas 131 2008-08-14 15:14:24Z galfar $
+  $Id: ImagingCanvases.pas 174 2009-09-08 09:37:59Z galfar $
   Vampyre Imaging Library
   by Marek Mauder
   http://imaginglib.sourceforge.net
@@ -75,7 +75,7 @@ type
 
   { Pen mode used when drawing lines, object outlines, and similar on canvas.}
   TPenMode = (
-    pmSolid,  // Draws solid lines using current pen color. 
+    pmSolid,  // Draws solid lines using current pen color.
     pmClear   // No drawing done
   );
 
@@ -118,6 +118,8 @@ type
 
   TDynFPPixelArray = array of TColorFPRec;
 
+  THistogramArray = array[Byte] of Integer;
+
   TSelectPixelFunction = function(var Pixels: TDynFPPixelArray): TColorFPRec;
 
   { Base canvas class for drawing objects, applying effects, and other.
@@ -128,7 +130,7 @@ type
     recompute some data size related stuff).
 
     TImagingCanvas works for all image data formats except special ones
-    (compressed). Because of this its methods are quite slow (they work
+    (compressed). Because of this its methods are quite slow (they usually work
     with colors in ifA32R32G32B32F format). If you want fast drawing you
     can use one of fast canvas clases. These descendants of TImagingCanvas
     work only for few select formats (or only one) but they are optimized thus
@@ -216,6 +218,12 @@ type
       filled by using the current fill settings. Rect specifies bounding rectangle
       of ellipse to be drawn.}
     procedure Ellipse(const Rect: TRect);
+    { Fills area of canvas with current fill color starting at point [X, Y] and
+      coloring its neighbors. Default flood fill mode changes color of all
+      neighbors with the same color as pixel [X, Y]. With BoundaryFillMode
+      set to True neighbors are recolored regardless of their old color,
+      but area which will be recolored has boundary (specified by current pen color).}
+    procedure FloodFill(X, Y: Integer; BoundaryFillMode: Boolean = False);         
 
     { Draws contents of this canvas onto another canvas with pixel blending.
       Blending factors are chosen using TBlendingFactor parameters.
@@ -225,7 +233,7 @@ type
       DestX, DestY: Integer; SrcFactor, DestFactor: TBlendingFactor);
     { Draws contents of this canvas onto another one with typical alpha
       blending (Src 'over' Dest, factors are bfSrcAlpha and bfOneMinusSrcAlpha.)}
-    procedure DrawAlpha(const SrcRect: TRect; DestCanvas: TImagingCanvas; DestX, DestY: Integer);
+    procedure DrawAlpha(const SrcRect: TRect; DestCanvas: TImagingCanvas; DestX, DestY: Integer); virtual;
     { Draws contents of this canvas onto another one using additive blending
       (source and dest factors are bfOne).}
     procedure DrawAdd(const SrcRect: TRect; DestCanvas: TImagingCanvas; DestX, DestY: Integer);
@@ -239,7 +247,7 @@ type
     { Draws contents of this canvas onto another one with typical alpha
       blending (Src 'over' Dest, factors are bfSrcAlpha and bfOneMinusSrcAlpha.)}
     procedure StretchDrawAlpha(const SrcRect: TRect; DestCanvas: TImagingCanvas;
-      const DestRect: TRect; Filter: TResizeFilter = rfBilinear);
+      const DestRect: TRect; Filter: TResizeFilter = rfBilinear); virtual;
     { Draws contents of this canvas onto another one using additive blending
       (source and dest factors are bfOne).}
     procedure StretchDrawAdd(const SrcRect: TRect; DestCanvas: TImagingCanvas;
@@ -286,10 +294,36 @@ type
     { Gamma correction of individual color channels. Range is (0, +inf),
       1.0 means no change.}
     procedure GammaCorection(Red, Green, Blue: Single);
-    { Inverts colors of all image pixels, makes negative image.}
-    procedure InvertColors;
-    { Simple single level thresholding with threshold level for each color channel.}
+    { Inverts colors of all image pixels, makes negative image. Ignores alpha channel.}
+    procedure InvertColors; virtual;
+    { Simple single level thresholding with threshold level (in range [0, 1])
+      for each color channel.}
     procedure Threshold(Red, Green, Blue: Single);
+    { Adjusts the color levels of the image by scaling the
+      colors falling between specified white and black points to full [0, 1] range.
+      The black point specifies the darkest color in the image, white point
+      specifies the lightest color, and mid point is gamma aplied to image.
+      Black and white point must be in range [0, 1].}
+    procedure AdjustColorLevels(BlackPoint, WhitePoint: Single; MidPoint: Single = 1.0);
+    { Premultiplies color channel values by alpha. Needed for some platforms/APIs
+      to display images with alpha properly.}
+    procedure PremultiplyAlpha;
+    { Reverses PremultiplyAlpha operation.}
+    procedure UnPremultiplyAlpha;
+
+    { Calculates image histogram for each channel and also gray values. Each
+      channel has 256 values available. Channel values of data formats with higher
+      precision are scaled and rounded. Example: Red[126] specifies number of pixels
+      in image with red channel = 126.}
+    procedure GetHistogram(out Red, Green, Blue, Alpha, Gray: THistogramArray);
+    { Fills image channel with given value leaving other channels intact.
+      Use ChannelAlpha, ChannelRed, etc. constants from ImagingTypes as
+      channel identifier.}
+    procedure FillChannel(ChannelId: Integer; NewChannelValue: Byte); overload;
+    { Fills image channel with given value leaving other channels intact.
+      Use ChannelAlpha, ChannelRed, etc. constants from ImagingTypes as
+      channel identifier.}
+    procedure FillChannelFP(ChannelId: Integer; NewChannelValue: Single); overload;
 
     { Color used when drawing lines, frames, and outlines of objects.}
     property PenColor32: TColor32 read FPenColor32 write SetPenColor32;
@@ -337,12 +371,18 @@ type
   TFastARGB32Canvas = class(TImagingCanvas)
   protected
     FScanlines: PScanlineArray;
+    procedure AlphaBlendPixels(SrcPix, DestPix: PColor32Rec); {$IFDEF USE_INLINE}inline;{$ENDIF}
     function GetPixel32(X, Y: LongInt): TColor32; override;
     procedure SetPixel32(X, Y: LongInt; const Value: TColor32); override;
   public
     destructor Destroy; override;
 
     procedure UpdateCanvasState; override;
+
+    procedure DrawAlpha(const SrcRect: TRect; DestCanvas: TImagingCanvas; DestX, DestY: Integer); override;
+    procedure StretchDrawAlpha(const SrcRect: TRect; DestCanvas: TImagingCanvas;
+      const DestRect: TRect; Filter: TResizeFilter = rfBilinear); override;
+    procedure InvertColors; override;
 
     property Scanlines: PScanlineArray read FScanlines;
 
@@ -490,7 +530,7 @@ const
     Divisor: 1;
     Bias:    1);
 
-  { Kernel for 3x3 horz/vert embossing filter.}  
+  { Kernel for 3x3 horz/vert embossing filter.}
   FilterEmboss3x3: TConvolutionFilter3x3 = (
     Kernel: ((2,  0,  0),
              (0, -1,  0),
@@ -600,13 +640,16 @@ procedure PixelAlphaProc(const SrcPix: TColorFPRec; DestPtr: PByte;
   DestInfo: PImageFormatInfo; SrcFactor, DestFactor: TBlendingFactor);
 var
   DestPix: TColorFPRec;
+  SrcAlpha, DestAlpha: Single;
 begin
   DestPix := DestInfo.GetPixelFP(DestPtr, DestInfo, nil);
   // Blend the two pixels (Src 'over' Dest alpha composition operation)
-  DestPix.R := SrcPix.R * SrcPix.A + DestPix.R * DestPix.A * (1.0 - SrcPix.A);
-  DestPix.G := SrcPix.G * SrcPix.A + DestPix.G * DestPix.A * (1.0 - SrcPix.A);
-  DestPix.B := SrcPix.B * SrcPix.A + DestPix.B * DestPix.A * (1.0 - SrcPix.A);
-  DestPix.A := SrcPix.A + DestPix.A * (1.0 - SrcPix.A);
+  DestPix.A := SrcPix.A + DestPix.A - SrcPix.A * DestPix.A;
+  SrcAlpha := IffFloat(DestPix.A = 0, 0, SrcPix.A / DestPix.A);
+  DestAlpha := 1.0 - SrcAlpha;
+  DestPix.R := SrcPix.R * SrcAlpha + DestPix.R * DestAlpha;
+  DestPix.G := SrcPix.G * SrcAlpha + DestPix.G * DestAlpha;
+  DestPix.B := SrcPix.B * SrcAlpha + DestPix.B * DestAlpha;
   // Write blended pixel
   DestInfo.SetPixelFP(DestPtr, DestInfo, nil, DestPix);
 end;
@@ -691,7 +734,7 @@ begin
   end;
 end;
 
-function TransformContrastBrightness(const Pixel: TColorFPRec; C, B, Ignore: Single): TColorFPRec;
+function TransformContrastBrightness(const Pixel: TColorFPRec; C, B, P3: Single): TColorFPRec;
 begin
   Result.A := Pixel.A;
   Result.R := Pixel.R * C + B;
@@ -707,7 +750,7 @@ begin
   Result.B := Power(Pixel.B, 1.0 / B);
 end;
 
-function TransformInvert(const Pixel: TColorFPRec; A, B, C: Single): TColorFPRec;
+function TransformInvert(const Pixel: TColorFPRec; P1, P2, P3: Single): TColorFPRec;
 begin
   Result.A := Pixel.A;
   Result.R := 1.0 - Pixel.R;
@@ -722,6 +765,49 @@ begin
   Result.G := IffFloat(Pixel.G >= G, 1.0, 0.0);
   Result.B := IffFloat(Pixel.B >= B, 1.0, 0.0);
 end;
+
+function TransformLevels(const Pixel: TColorFPRec; BlackPoint, WhitePoint, Exp: Single): TColorFPRec;
+begin
+  Result.A := Pixel.A;
+  if Pixel.R > BlackPoint then
+    Result.R := Power((Pixel.R - BlackPoint) / (WhitePoint - BlackPoint), Exp)
+  else
+    Result.R := 0.0;
+  if Pixel.G > BlackPoint then
+    Result.G := Power((Pixel.G - BlackPoint) / (WhitePoint - BlackPoint), Exp)
+  else
+    Result.G := 0.0;
+  if Pixel.B > BlackPoint then
+    Result.B := Power((Pixel.B - BlackPoint) / (WhitePoint - BlackPoint), Exp)
+  else
+    Result.B := 0.0;
+end;
+
+function TransformPremultiplyAlpha(const Pixel: TColorFPRec; P1, P2, P3: Single): TColorFPRec;
+begin
+  Result.A := Pixel.A;
+  Result.R := Result.R * Pixel.A;
+  Result.G := Result.G * Pixel.A;
+  Result.B := Result.B * Pixel.A;
+end;
+
+function TransformUnPremultiplyAlpha(const Pixel: TColorFPRec; P1, P2, P3: Single): TColorFPRec;
+begin
+  Result.A := Pixel.A;
+  if Pixel.A <> 0.0 then
+  begin
+    Result.R := Result.R / Pixel.A;
+    Result.G := Result.G / Pixel.A;
+    Result.B := Result.B / Pixel.A;
+  end
+  else
+  begin
+    Result.R := 0;
+    Result.G := 0;
+    Result.B := 0;
+  end;
+end;
+
 
 { TImagingCanvas class implementation }
 
@@ -1175,6 +1261,98 @@ begin
   end;
 end;
 
+procedure TImagingCanvas.FloodFill(X, Y: Integer; BoundaryFillMode: Boolean);
+var
+  Stack: array of TPoint;
+  StackPos, Y1: Integer;
+  OldColor: TColor32;
+  SpanLeft, SpanRight: Boolean;
+
+  procedure Push(AX, AY: Integer);
+  begin
+    if StackPos < High(Stack) then
+    begin
+      Inc(StackPos);
+      Stack[StackPos].X := AX;
+      Stack[StackPos].Y := AY;
+    end
+    else
+    begin
+      SetLength(Stack, Length(Stack) + FPData.Width);
+      Push(AX, AY);
+    end;
+  end;
+
+  function Pop(out AX, AY: Integer): Boolean;
+  begin
+    if StackPos > 0 then
+    begin
+      AX := Stack[StackPos].X;
+      AY := Stack[StackPos].Y;
+      Dec(StackPos);
+      Result := True;
+    end
+    else
+      Result := False;
+  end;
+
+  function Compare(AX, AY: Integer): Boolean;
+  var
+    Color: TColor32;
+  begin
+    Color := GetPixel32(AX, AY);
+    if BoundaryFillMode then
+      Result := (Color <> FFillColor32) and (Color <> FPenColor32)
+    else
+      Result := Color = OldColor;
+  end;
+
+begin
+  // Scanline Floodfill Algorithm With Stack
+  // http://student.kuleuven.be/~m0216922/CG/floodfill.html
+
+  if not PtInRect(FClipRect, Point(X, Y)) then Exit;
+
+  SetLength(Stack, FPData.Width * 4);
+  StackPos := 0;
+
+  OldColor := GetPixel32(X, Y);
+
+  Push(X, Y);
+
+  while Pop(X, Y) do
+  begin
+    Y1 := Y;
+    while (Y1 >= FClipRect.Top) and Compare(X, Y1) do
+      Dec(Y1);
+
+    Inc(Y1);
+    SpanLeft := False;
+    SpanRight := False;
+
+    while (Y1 < FClipRect.Bottom) and Compare(X, Y1) do
+    begin
+      SetPixel32(X, Y1, FFillColor32);
+      if not SpanLeft and (X > FClipRect.Left) and Compare(X - 1, Y1) then
+      begin
+        Push(X - 1, Y1);
+        SpanLeft := True;
+      end
+      else if SpanLeft and (X > FClipRect.Left) and not Compare(X - 1, Y1) then
+        SpanLeft := False
+      else if not SpanRight and (X < FClipRect.Right - 1) and Compare(X + 1, Y1)then
+      begin
+        Push(X + 1, Y1);
+        SpanRight := True;
+      end
+      else if SpanRight and (X < FClipRect.Right - 1) and not Compare(X + 1, Y1) then
+        SpanRight := False;
+
+      Inc(Y1);
+    end;
+  end;
+end;
+
 procedure TImagingCanvas.DrawInternal(const SrcRect: TRect;
   DestCanvas: TImagingCanvas; DestX, DestY: Integer; SrcFactor,
   DestFactor: TBlendingFactor; PixelWriteProc: TPixelWriteProc);
@@ -1533,7 +1711,7 @@ end;
 procedure TImagingCanvas.ModifyContrastBrightness(Contrast, Brightness: Single);
 begin
   PointTransform(TransformContrastBrightness, 1.0 + Contrast / 100,
-    Brightness / 100, 0.0);
+    Brightness / 100, 0);
 end;
 
 procedure TImagingCanvas.GammaCorection(Red, Green, Blue: Single);
@@ -1551,6 +1729,98 @@ begin
   PointTransform(TransformThreshold, Red, Green, Blue);
 end;
 
+procedure TImagingCanvas.AdjustColorLevels(BlackPoint, WhitePoint, MidPoint: Single);
+begin
+  PointTransform(TransformLevels, BlackPoint, WhitePoint, 1.0 / MidPoint);
+end;
+
+procedure TImagingCanvas.PremultiplyAlpha;
+begin
+  PointTransform(TransformPremultiplyAlpha, 0, 0, 0);
+end;
+
+procedure TImagingCanvas.UnPremultiplyAlpha;
+begin
+  PointTransform(TransformUnPremultiplyAlpha, 0, 0, 0);
+end;
+
+procedure TImagingCanvas.GetHistogram(out Red, Green, Blue, Alpha,
+  Gray: THistogramArray);
+var
+  X, Y, Bpp: Integer;
+  PixPointer: PByte;
+  Color32: TColor32Rec;
+begin
+  FillChar(Red,   SizeOf(Red), 0);
+  FillChar(Green, SizeOf(Green), 0);
+  FillChar(Blue,  SizeOf(Blue), 0);
+  FillChar(Alpha, SizeOf(Alpha), 0);
+  FillChar(Gray,  SizeOf(Gray), 0);
+
+  Bpp := FFormatInfo.BytesPerPixel;
+
+  for Y := FClipRect.Top to FClipRect.Bottom - 1 do
+  begin
+    PixPointer := @PByteArray(FPData.Bits)[Y * FPData.Width * Bpp + FClipRect.Left * Bpp];
+    for X := FClipRect.Left to FClipRect.Right - 1 do
+    begin
+      Color32 := FFormatInfo.GetPixel32(PixPointer, @FFormatInfo, FPData.Palette);
+
+      Inc(Red[Color32.R]);
+      Inc(Green[Color32.G]);
+      Inc(Blue[Color32.B]);
+      Inc(Alpha[Color32.A]);
+      Inc(Gray[Round(GrayConv.R * Color32.R + GrayConv.G * Color32.G + GrayConv.B * Color32.B)]);
+
+      Inc(PixPointer, Bpp);
+    end;
+  end;
+end;
+
+procedure TImagingCanvas.FillChannel(ChannelId: Integer; NewChannelValue: Byte);
+var
+  X, Y, Bpp: Integer;
+  PixPointer: PByte;
+  Color32: TColor32Rec;
+begin
+  Bpp := FFormatInfo.BytesPerPixel;
+
+  for Y := FClipRect.Top to FClipRect.Bottom - 1 do
+  begin
+    PixPointer := @PByteArray(FPData.Bits)[Y * FPData.Width * Bpp + FClipRect.Left * Bpp];
+    for X := FClipRect.Left to FClipRect.Right - 1 do
+    begin
+      Color32 := FFormatInfo.GetPixel32(PixPointer, @FFormatInfo, FPData.Palette);
+      Color32.Channels[ChannelId] := NewChannelValue;
+      FFormatInfo.SetPixel32(PixPointer, @FFormatInfo, FPData.Palette, Color32);
+
+      Inc(PixPointer, Bpp);
+    end;
+  end;
+end;
+
+procedure TImagingCanvas.FillChannelFP(ChannelId: Integer; NewChannelValue: Single);
+var
+  X, Y, Bpp: Integer;
+  PixPointer: PByte;
+  ColorFP: TColorFPRec;
+begin
+  Bpp := FFormatInfo.BytesPerPixel;
+
+  for Y := FClipRect.Top to FClipRect.Bottom - 1 do
+  begin
+    PixPointer := @PByteArray(FPData.Bits)[Y * FPData.Width * Bpp + FClipRect.Left * Bpp];
+    for X := FClipRect.Left to FClipRect.Right - 1 do
+    begin
+      ColorFP := FFormatInfo.GetPixelFP(PixPointer, @FFormatInfo, FPData.Palette);
+      ColorFP.Channels[ChannelId] := NewChannelValue;
+      FFormatInfo.SetPixelFP(PixPointer, @FFormatInfo, FPData.Palette, ColorFP);
+
+      Inc(PixPointer, Bpp);
+    end;
+  end;
+end;
+
 class function TImagingCanvas.GetSupportedFormats: TImageFormats;
 begin
   Result := [ifIndex8..Pred(ifDXT1)];
@@ -1562,6 +1832,55 @@ destructor TFastARGB32Canvas.Destroy;
 begin
   FreeMem(FScanlines);
   inherited Destroy;
+end;
+
+procedure TFastARGB32Canvas.AlphaBlendPixels(SrcPix, DestPix: PColor32Rec);
+var
+  SrcAlpha, DestAlpha, FinalAlpha: Integer;
+begin
+  FinalAlpha := SrcPix.A + 1 + (DestPix.A * (256 - SrcPix.A)) shr 8;
+  if FinalAlpha = 0 then
+    SrcAlpha := 0
+  else
+    SrcAlpha := (SrcPix.A shl 8) div FinalAlpha;
+  DestAlpha := 256 - SrcAlpha;
+
+  DestPix.A := ClampToByte(FinalAlpha);
+  DestPix.R := (SrcPix.R * SrcAlpha + DestPix.R * DestAlpha) shr 8;
+  DestPix.G := (SrcPix.G * SrcAlpha + DestPix.G * DestAlpha) shr 8;
+  DestPix.B := (SrcPix.B * SrcAlpha + DestPix.B * DestAlpha) shr 8;
+end;
+
+procedure TFastARGB32Canvas.DrawAlpha(const SrcRect: TRect;
+  DestCanvas: TImagingCanvas; DestX, DestY: Integer);
+var
+  X, Y, SrcX, SrcY, Width, Height: Integer;
+  SrcPix, DestPix: PColor32Rec;
+begin
+  if DestCanvas.ClassType <> Self.ClassType then
+  begin
+    inherited;
+    Exit;
+  end;
+
+  SrcX := SrcRect.Left;
+  SrcY := SrcRect.Top;
+  Width := SrcRect.Right - SrcRect.Left;
+  Height := SrcRect.Bottom - SrcRect.Top;
+  ClipCopyBounds(SrcX, SrcY, Width, Height, DestX, DestY,
+    FPData.Width, FPData.Height, DestCanvas.ClipRect);
+
+  for Y := 0 to Height - 1 do
+  begin
+    SrcPix := @FScanlines[SrcY + Y, SrcX];
+    DestPix := @TFastARGB32Canvas(DestCanvas).FScanlines[DestY + Y, DestX];
+    for X := 0 to Width - 1 do
+    begin
+      AlphaBlendPixels(SrcPix, DestPix);
+      Inc(SrcPix);
+      Inc(DestPix);
+    end;
+  end;
 end;
 
 function TFastARGB32Canvas.GetPixel32(X, Y: LongInt): TColor32;
@@ -1576,6 +1895,189 @@ begin
   begin
     FScanlines[Y, X].Color := Value;
   end;
+end;
+
+procedure TFastARGB32Canvas.StretchDrawAlpha(const SrcRect: TRect;
+  DestCanvas: TImagingCanvas; const DestRect: TRect; Filter: TResizeFilter);
+var
+  X, Y, ScaleX, ScaleY, Yp, Xp, Weight1, Weight2, Weight3, Weight4,
+    FracX, FracY, InvFracY, T1, T2: Integer;
+  SrcX, SrcY, SrcWidth, SrcHeight: Integer;
+  DestX, DestY, DestWidth, DestHeight: Integer;
+  SrcLine, SrcLine2: PColor32RecArray;
+  DestPix: PColor32Rec;
+  Accum: TColor32Rec;
+begin
+  if (Filter = rfBicubic) or (DestCanvas.ClassType <> Self.ClassType) then
+  begin
+    inherited;
+    Exit;
+  end;
+
+  SrcX := SrcRect.Left;
+  SrcY := SrcRect.Top;
+  SrcWidth := SrcRect.Right - SrcRect.Left;
+  SrcHeight := SrcRect.Bottom - SrcRect.Top;
+  DestX := DestRect.Left;
+  DestY := DestRect.Top;
+  DestWidth := DestRect.Right - DestRect.Left;
+  DestHeight := DestRect.Bottom - DestRect.Top;
+  // Clip src and dst rects
+  ClipStretchBounds(SrcX, SrcY, SrcWidth, SrcHeight, DestX, DestY, DestWidth, DestHeight,
+      FPData.Width, FPData.Height, DestCanvas.ClipRect);
+  ScaleX := (SrcWidth shl 16) div DestWidth;
+  ScaleY := (SrcHeight shl 16) div DestHeight;
+
+  // Nearest and linear filtering using fixed point math
+
+  if Filter = rfNearest then
+  begin
+    Yp := 0;
+    for Y := DestY to DestY + DestHeight - 1 do
+    begin
+      Xp := 0;
+      SrcLine := @FScanlines[SrcY + Yp shr 16, SrcX];
+      DestPix := @TFastARGB32Canvas(DestCanvas).FScanlines[Y, DestX];
+      for X := 0 to DestWidth - 1 do
+      begin
+        AlphaBlendPixels(@SrcLine[Xp shr 16], DestPix);
+        Inc(DestPix);
+        Inc(Xp, ScaleX);
+      end;
+      Inc(Yp, ScaleY);
+    end;
+  end
+  else
+  begin
+    Yp := (ScaleY shr 1) - $8000;
+    for Y := DestY to DestY + DestHeight - 1 do
+    begin
+      DestPix := @TFastARGB32Canvas(DestCanvas).FScanlines[Y, DestX];
+      if Yp < 0 then
+      begin
+        T1 := 0;
+        FracY := 0;
+        InvFracY := $10000;
+      end
+      else
+      begin
+        T1 := Yp shr 16;
+        FracY := Yp and $FFFF;
+        InvFracY := (not Yp and $FFFF) + 1;
+      end;
+
+      T2 := Iff(T1 < SrcHeight - 1, T1 + 1, T1);
+      SrcLine :=  @Scanlines[T1 + SrcY, SrcX];
+      SrcLine2 := @Scanlines[T2 + SrcY, SrcX];
+      Xp := (ScaleX shr 1) - $8000;
+
+      for X := 0 to DestWidth - 1 do
+      begin
+        if Xp < 0 then
+        begin
+          T1 := 0;
+          FracX := 0;
+        end
+        else
+        begin
+          T1 := Xp shr 16;
+          FracX := Xp and $FFFF;
+        end;
+
+        T2 := Iff(T1 < SrcWidth - 1, T1 + 1, T1);
+        Weight2:= (Cardinal(InvFracY) * FracX) shr 16; // cast to Card, Int can overflow gere
+        Weight1:= InvFracY - Weight2;
+        Weight4:= (Cardinal(FracY) * FracX) shr 16;
+        Weight3:= FracY - Weight4;
+
+        Accum.B := (SrcLine[T1].B * Weight1 + SrcLine[T2].B * Weight2 +
+          SrcLine2[T1].B * Weight3 + SrcLine2[T2].B * Weight4 + $8000) shr 16;
+        Accum.G := (SrcLine[T1].G * Weight1 + SrcLine[T2].G * Weight2 +
+          SrcLine2[T1].G * Weight3 + SrcLine2[T2].G * Weight4 + $8000) shr 16;
+        Accum.R := (SrcLine[T1].R * Weight1 + SrcLine[T2].R * Weight2 +
+          SrcLine2[T1].R * Weight3 + SrcLine2[T2].R * Weight4 + $8000) shr 16;
+        Accum.A := (SrcLine[T1].A * Weight1 + SrcLine[T2].A * Weight2 +
+          SrcLine2[T1].A * Weight3 + SrcLine2[T2].A * Weight4 + $8000) shr 16;
+
+        AlphaBlendPixels(@Accum, DestPix);
+
+        Inc(Xp, ScaleX);
+        Inc(DestPix);
+      end;
+      Inc(Yp, ScaleY);
+     end;
+  end;
+         {
+
+  // Generate mapping tables
+  MapX := BuildMappingTable(DestX, DestX + DestWidth, SrcX, SrcX + SrcWidth,
+    FPData.Width, FilterFunction, Radius, False);
+  MapY := BuildMappingTable(DestY, DestY + DestHeight, SrcY, SrcY + SrcHeight,
+    FPData.Height, FilterFunction, Radius, False);
+  FindExtremes(MapX, XMinimum, XMaximum);
+  SetLength(LineBuffer, XMaximum - XMinimum + 1);
+
+  for J := 0 to DestHeight - 1 do
+  begin
+    ClusterY := MapY[J];
+    for X := XMinimum to XMaximum do
+    begin
+      AccumA := 0;
+      AccumR := 0;
+      AccumG := 0;
+      AccumB := 0;
+      for Y := 0 to Length(ClusterY) - 1 do
+      begin
+        Weight := Round(ClusterY[Y].Weight * 256);
+        SrcColor := FScanlines[ClusterY[Y].Pos, X];
+
+        AccumB := AccumB + SrcColor.B * Weight;
+        AccumG := AccumG + SrcColor.G * Weight;
+        AccumR := AccumR + SrcColor.R * Weight;
+        AccumA := AccumA + SrcColor.A * Weight;
+      end;
+      with LineBuffer[X - XMinimum] do
+      begin
+        A := AccumA;
+        R := AccumR;
+        G := AccumG;
+        B := AccumB;
+      end;
+    end;
+
+    DestPtr := @TFastARGB32Canvas(DestCanvas).FScanlines[DestY + J, DestX];
+
+    for I := 0 to DestWidth - 1 do
+    begin
+      ClusterX := MapX[I];
+      AccumA := 0;
+      AccumR := 0;
+      AccumG := 0;
+      AccumB := 0;
+      for X := 0 to Length(ClusterX) - 1 do
+      begin
+        Weight := Round(ClusterX[X].Weight * 256);
+        with LineBuffer[ClusterX[X].Pos - XMinimum] do
+        begin
+          AccumB := AccumB + B * Weight;
+          AccumG := AccumG + G * Weight;
+          AccumR := AccumR + R * Weight;
+          AccumA := AccumA + A * Weight;
+        end;
+      end;
+
+      AccumA := ClampInt(AccumA, 0, $00FF0000);
+      AccumR := ClampInt(AccumR, 0, $00FF0000);
+      AccumG := ClampInt(AccumG, 0, $00FF0000);
+      AccumB := ClampInt(AccumB, 0, $00FF0000);
+      SrcColor.Color := (Cardinal(AccumA and $00FF0000) shl 8) or
+        (AccumR and $00FF0000) or ((AccumG and $00FF0000) shr 8) or ((AccumB and $00FF0000) shr 16);
+
+      AlphaBlendPixels(@SrcColor, DestPtr);
+
+      Inc(DestPtr);
+    end;
+  end;   }
 end;
 
 procedure TFastARGB32Canvas.UpdateCanvasState;
@@ -1601,6 +2103,24 @@ begin
   Result := [ifA8R8G8B8];
 end;
 
+procedure TFastARGB32Canvas.InvertColors;
+var
+  X, Y: Integer;
+  PixPtr: PColor32Rec;
+begin
+  for Y := FClipRect.Top to FClipRect.Bottom - 1 do
+  begin
+    PixPtr := @FScanlines[Y, FClipRect.Left];
+    for X := FClipRect.Left to FClipRect.Right - 1 do
+    begin
+      PixPtr.R := not PixPtr.R;
+      PixPtr.G := not PixPtr.G;
+      PixPtr.B := not PixPtr.B;
+      Inc(PixPtr);
+    end;
+  end;
+end;
+
 initialization
   RegisterCanvas(TFastARGB32Canvas);
 
@@ -1615,6 +2135,19 @@ finalization
     - implement pen width everywhere
     - add blending (*image and object drawing)
     - more objects (arc, polygon)
+
+  -- 0.26.3 Changes/Bug Fixes ---------------------------------
+    - Added some methods to TFastARGB32Canvas (InvertColors, DrawAlpha/StretchDrawAlpha)
+    - Fixed DrawAlpha/StretchDrawAlpha destination alpha calculation.
+    - Added PremultiplyAlpha and UnPremultiplyAlpha methods.
+
+  -- 0.26.1 Changes/Bug Fixes ---------------------------------
+    - Added FillChannel methods.
+    - Added FloodFill method.
+    - Added GetHistogram method.
+    - Fixed "Invalid FP operation" in AdjustColorLevels in FPC compiled exes
+      (thanks to Carlos González).
+    - Added TImagingCanvas.AdjustColorLevels method.
 
   -- 0.25.0 Changes/Bug Fixes ---------------------------------
     - Fixed error that could cause AV in linear and nonlinear filters.

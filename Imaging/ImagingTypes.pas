@@ -1,5 +1,5 @@
 {
-  $Id: ImagingTypes.pas 132 2008-08-27 20:37:38Z galfar $
+  $Id: ImagingTypes.pas 171 2009-09-02 01:34:19Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -39,7 +39,7 @@ const
   { Current Minor version of Imaging.}
   ImagingVersionMinor = 26;
   { Current patch of Imaging.}
-  ImagingVersionPatch = 0;
+  ImagingVersionPatch = 4;
 
   { Imaging Option Ids whose values can be set/get by SetOption/
     GetOption functions.}
@@ -91,6 +91,11 @@ const
     Allowed values are in range 0 (no compresstion) to 9 (best compression).
     Default value is 5.}
   ImagingPNGCompressLevel      = 26;
+  { Boolean option that specifies whether PNG images with more frames (APNG format)
+    are animated by Imaging (according to frame disposal/blend methods) or just
+    raw frames are loaded and sent to user (if you want to animate APNG yourself).
+    Default value is 1.}
+  ImagingPNGLoadAnimated       = 27;
 
   { Specifies whether MNG animation frames are saved with lossy or lossless
     compression. Lossless frames are saved as PNG images and lossy frames are
@@ -140,9 +145,10 @@ const
   { Boolean option that specifies whether GIF images with more frames
     are animated by Imaging (according to frame disposal methods) or just
     raw frames are loaded and sent to user (if you want to animate GIF yourself).
-    Default value is 1.}
+    Default value is 1.
+    Raw frames are 256 color indexed images (ifIndex8), whereas
+    animated frames are always in 32bit ifA8R8G8B8 format (simplifies animating).}
   ImagingGIFLoadAnimated       = 56;
-
 
   { This option is used when reducing number of colors used in
     image (mainly when converting from ARGB image to indexed

@@ -1,7 +1,7 @@
 {
-  $Id: ImagingJpeg.pas 128 2008-07-23 11:57:36Z galfar $
+  $Id: ImagingJpeg.pas 180 2009-10-16 01:07:26Z galfar $
   Vampyre Imaging Library
-  by Marek Mauder 
+  by Marek Mauder
   http://imaginglib.sourceforge.net
 
   The contents of this file are used with permission, subject to the Mozilla
@@ -43,22 +43,22 @@ unit ImagingJpeg;
 {$DEFINE IMJPEGLIB}
 { $DEFINE PASJPEG}
 
-{ Automatically use FPC's PasJpeg when compiling with Lazarus.}
-
-{$IFDEF LCL}
+{ Automatically use FPC's PasJpeg when compiling with Lazarus. But not when
+  WINDOWS is defined. See http://galfar.vevb.net/imaging/smf/index.php/topic,90.0.html}
+{$IF Defined(LCL) and not Defined(WINDOWS)}
   {$UNDEF IMJPEGLIB}
   {$DEFINE PASJPEG}
-{$ENDIF}
+{$IFEND}
 
 interface
 
 uses
   SysUtils, ImagingTypes, Imaging, ImagingColors,
 {$IF Defined(IMJPEGLIB)}
-  imjpeglib, imjmorecfg, imjcomapi, imjdapimin,
+  imjpeglib, imjmorecfg, imjcomapi, imjdapimin, imjdeferr, imjerror,
   imjdapistd, imjcapimin, imjcapistd, imjdmarker, imjcparam,
 {$ELSEIF Defined(PASJPEG)}
-  jpeglib, jmorecfg, jcomapi, jdapimin,
+  jpeglib, jmorecfg, jcomapi, jdapimin, jdeferr, jerror,
   jdapistd, jcapimin, jcapistd, jdmarker, jcparam,
 {$IFEND}
   ImagingUtility;
@@ -70,7 +70,10 @@ uses
 
 type
   { Class for loading/saving Jpeg images. Supports load/save of
-    8 bit grayscale and 24 bit RGB images.}
+    8 bit grayscale and 24 bit RGB images. Jpegs can be saved with optional
+    progressive encoding.
+    Based on IJG's JpegLib so doesn't support alpha channels and lossless
+    coding.}
   TJpegFileFormat = class(TImageFileFormat)
   private
     FGrayScale: Boolean;
@@ -110,9 +113,10 @@ const
 const
   { Jpeg file identifiers.}
   JpegMagic: TChar2 = #$FF#$D8;
-  JFIFSignature: TChar4 = 'JFIF';
-  EXIFSignature: TChar4 = 'Exif';
   BufferSize = 16384;
+
+resourcestring
+  SJpegError = 'JPEG Error';
 
 type
   TJpegContext = record
@@ -139,39 +143,22 @@ type
 
 var
   JIO: TIOFunctions;
-
+  JpegErrorMgr: jpeg_error_mgr;
 
 { Intenal unit jpeglib support functions }
 
-procedure JpegError(CurInfo: j_common_ptr);
+procedure JpegError(CInfo: j_common_ptr);
+var
+  Buffer: string;
 begin
-end;
-
-procedure EmitMessage(CurInfo: j_common_ptr; msg_level: Integer);
-begin
+  { Create the message and raise exception }
+  CInfo^.err^.format_message(CInfo, buffer);
+  raise EImagingError.CreateFmt(SJPEGError + ' %d: ' + Buffer, [CInfo.err^.msg_code]);
 end;
 
 procedure OutputMessage(CurInfo: j_common_ptr);
 begin
 end;
-
-procedure FormatMessage(CurInfo: j_common_ptr; var buffer: string);
-begin
-end;
-
-procedure ResetErrorMgr(CurInfo: j_common_ptr);
-begin
-  CurInfo^.err^.num_warnings := 0;
-  CurInfo^.err^.msg_code := 0;
-end;
-
-var
-  JpegErrorRec: jpeg_error_mgr = (
-    error_exit: JpegError;
-    emit_message: EmitMessage;
-    output_message: OutputMessage;
-    format_message: FormatMessage;
-    reset_error_mgr: ResetErrorMgr);
 
 procedure ReleaseContext(var jc: TJpegContext);
 begin
@@ -221,7 +208,7 @@ begin
       FillInputBuffer(cinfo);
     end;
     Src.Pub.next_input_byte := @PByteArray(Src.Pub.next_input_byte)[num_bytes];
-//    Inc(LongInt(Src.Pub.next_input_byte), num_bytes);
+    //Inc(LongInt(Src.Pub.next_input_byte), num_bytes);
     Dec(Src.Pub.bytes_in_buffer, num_bytes);
   end;
 end;
@@ -311,7 +298,11 @@ end;
 procedure InitDecompressor(Handle: TImagingHandle; var jc: TJpegContext);
 begin
   FillChar(jc, sizeof(jc), 0);
-  jc.common.err := @JpegErrorRec;
+  // Set standard error handlers and then override some
+  jc.common.err := jpeg_std_error(JpegErrorMgr);
+  jc.common.err.error_exit := JpegError;
+  jc.common.err.output_message := OutputMessage;
+
   jpeg_CreateDecompress(@jc.d, JPEG_LIB_VERSION, sizeof(jc.d));
   JpegStdioSrc(jc.d, Handle);
   jpeg_read_header(@jc.d, True);
@@ -329,15 +320,19 @@ procedure InitCompressor(Handle: TImagingHandle; var jc: TJpegContext;
   Saver: TJpegFileFormat);
 begin
   FillChar(jc, sizeof(jc), 0);
-  jc.common.err := @JpegErrorRec;
+  // Set standard error handlers and then override some
+  jc.common.err := jpeg_std_error(JpegErrorMgr);
+  jc.common.err.error_exit := JpegError;
+  jc.common.err.output_message := OutputMessage;
+
   jpeg_CreateCompress(@jc.c, JPEG_LIB_VERSION, sizeof(jc.c));
   JpegStdioDest(jc.c, Handle);
+  if Saver.FGrayScale then
+    jc.c.in_color_space := JCS_GRAYSCALE
+  else
+    jc.c.in_color_space := JCS_RGB;
   jpeg_set_defaults(@jc.c);
   jpeg_set_quality(@jc.c, Saver.FQuality, True);
-  if Saver.FGrayScale then
-    jpeg_set_colorspace(@jc.c, JCS_GRAYSCALE)
-  else
-    jpeg_set_colorspace(@jc.c, JCS_YCbCr);
   if Saver.FProgressive then
     jpeg_simple_progression(@jc.c);
 end;
@@ -376,13 +371,14 @@ var
   jc: TJpegContext;
   Info: TImageFormatInfo;
   Col32: PColor32Rec;
-{$IFDEF RGBSWAPPED}
+  NeedsRedBlueSwap: Boolean;
   Pix: PColor24Rec;
-{$ENDIF}
 begin
   // Copy IO functions to global var used in JpegLib callbacks
+  Result := False;
   SetJpegIO(GetIO);
   SetLength(Images, 1);
+  
   with JIO, Images[0] do
   try
     InitDecompressor(Handle, jc);
@@ -390,6 +386,8 @@ begin
       JCS_GRAYSCALE: Format := ifGray8;
       JCS_RGB:       Format := ifR8G8B8;
       JCS_CMYK:      Format := ifA8R8G8B8;
+    else
+      Exit;
     end;
     NewImage(jc.d.image_width, jc.d.image_height, Format, Images[0]);
     jpeg_start_decompress(@jc.d);
@@ -398,11 +396,18 @@ begin
     LinesPerCall := 1;
     Dest := Bits;
 
+    // If Jpeg's colorspace is RGB and not YCbCr we need to swap
+    // R and B to get Imaging's native order
+    NeedsRedBlueSwap := jc.d.jpeg_color_space = JCS_RGB;
+  {$IFDEF RGBSWAPPED}
+    // Force R-B swap for FPC's PasJpeg
+    NeedsRedBlueSwap := True;
+  {$ENDIF}
+
     while jc.d.output_scanline < jc.d.output_height do
     begin
       LinesRead := jpeg_read_scanlines(@jc.d, @Dest, LinesPerCall);
-    {$IFDEF RGBSWAPPED}
-      if Format = ifR8G8B8 then
+      if NeedsRedBlueSwap and (Format = ifR8G8B8) then
       begin
         Pix := PColor24Rec(Dest);
         for I := 0 to Width - 1 do
@@ -411,7 +416,6 @@ begin
           Inc(Pix);
         end;
       end;
-    {$ENDIF}
       Inc(Dest, PtrInc * LinesRead);
     end;
 
@@ -526,7 +530,7 @@ end;
 function TJpegFileFormat.TestFormat(Handle: TImagingHandle): Boolean;
 var
   ReadCount: LongInt;
-  ID: array[0..9] of Char;
+  ID: array[0..9] of AnsiChar;
 begin
   Result := False;
   if Handle <> nil then
@@ -554,8 +558,20 @@ initialization
  -- TODOS ----------------------------------------------------
     - nothing now
 
+  -- 0.26.5 Changes/Bug Fixes ---------------------------------
+    - Fixed swapped Red-Blue order when loading Jpegs with
+      jc.d.jpeg_color_space = JCS_RGB.
+
+  -- 0.26.3 Changes/Bug Fixes ---------------------------------
+    - Changed the Jpeg error manager, messages were not properly formated.
+
+  -- 0.26.1 Changes/Bug Fixes ---------------------------------
+    - Fixed wrong color space setting in InitCompressor.
+    - Fixed problem with progressive Jpegs in FPC (modified JpegLib,
+      can't use FPC's PasJpeg in Windows).
+
   -- 0.25.0 Changes/Bug Fixes ---------------------------------
-    -- FPC's PasJpeg wasn't really used in last version, fixed.
+    - FPC's PasJpeg wasn't really used in last version, fixed.
 
   -- 0.24.1 Changes/Bug Fixes ---------------------------------
     - Fixed loading of CMYK jpeg images. Could cause heap corruption

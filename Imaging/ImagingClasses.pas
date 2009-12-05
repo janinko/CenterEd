@@ -1,5 +1,5 @@
 {
-  $Id: ImagingClasses.pas 124 2008-04-21 09:47:07Z galfar $
+  $Id: ImagingClasses.pas 173 2009-09-04 17:05:52Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -68,7 +68,7 @@ type
     constructor CreateFromImage(AImage: TBaseImage);
     destructor Destroy; override;
     { Returns info about current image.}
-    function ToString: string;
+    function ToString: string; {$IF Defined(DCC) and (CompilerVersion >= 20.0)}override;{$IFEND}
 
     { Creates a new image data with the given size and format. Old image
       data is lost. Works only for the current image of TMultiImage.}
@@ -81,8 +81,8 @@ type
     { Mirrors current image. Reverses the image along its vertical axis the left
       side becomes the right and vice versa.}
     procedure Mirror;
-    { Rotates image by 90, 180, 270, -90, -180, or -270 degrees counterclockwise.}
-    procedure Rotate(Angle: LongInt);
+    { Rotates image by Angle degrees counterclockwise.}
+    procedure Rotate(Angle: Single);
     { Copies rectangular part of SrcImage to DstImage. No blending is performed -
       alpha is simply copied to destination image. Operates also with
       negative X and Y coordinates.
@@ -451,7 +451,7 @@ begin
     DoPixelsChanged;
 end;
 
-procedure TBaseImage.Rotate(Angle: LongInt);
+procedure TBaseImage.Rotate(Angle: Single);
 begin
   if Valid and Imaging.RotateImage(FPData^, Angle) then
     DoPixelsChanged;

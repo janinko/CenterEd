@@ -1,5 +1,5 @@
 {
-  $Id: ImagingUtility.pas 128 2008-07-23 11:57:36Z galfar $
+  $Id: ImagingUtility.pas 175 2009-10-06 11:55:15Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net
@@ -56,9 +56,10 @@ type
   TBooleanArray = array[0..MaxInt - 1] of Boolean;
   PBooleanArray = ^TBooleanArray;
 
+  TDynByteArray = array of Byte;
   TDynIntegerArray = array of Integer;
   TDynBooleanArray = array of Boolean;
-
+  
   TWordRec = packed record
     case Integer of
       0: (WordValue: Word);
@@ -98,10 +99,11 @@ type
    end;
   PFloatHelper = ^TFloatHelper;
 
-  TChar2 = array[0..1] of Char;
-  TChar3 = array[0..2] of Char;
-  TChar4 = array[0..3] of Char;
-  TChar8 = array[0..7] of Char;
+  TChar2 = array[0..1] of AnsiChar;
+  TChar3 = array[0..2] of AnsiChar;
+  TChar4 = array[0..3] of AnsiChar;
+  TChar8 = array[0..7] of AnsiChar;
+  TChar16 = array[0..15] of AnsiChar;
 
   { Options for BuildFileList function:
     flFullNames - file names in result will have full path names
@@ -114,7 +116,7 @@ type
 
 
 { Frees class instance and sets its reference to nil.}
-procedure FreeAndNil(var Obj); 
+procedure FreeAndNil(var Obj);
 { Frees pointer and sets it to nil.}
 procedure FreeMemNil(var P); {$IFDEF USE_INLINE}inline;{$ENDIF}
 { Replacement of standard System.FreeMem procedure which checks if P is nil
@@ -156,10 +158,13 @@ function PosNoCase(const SubStr, S: string; Offset: LongInt = 1): LongInt; {$IFD
 function StrToken(var S: string; Sep: Char): string;
 { Same as StrToken but searches from the end of S string.}
 function StrTokenEnd(var S: string; Sep: Char): string;
+{ Fills instance of TStrings with tokens from string S where tokens are separated by
+  one of Seps characters.}
+procedure StrTokensToList(const S: string; Sep: Char; Tokens: TStrings);
 { Returns string representation of integer number (with digit grouping).}
-function IntToStrFmt(const I: Int64): string;
+function IntToStrFmt(const I: Int64): string; {$IFDEF USE_INLINE}inline;{$ENDIF}
 { Returns string representation of float number (with digit grouping).}
-function FloatToStrFmt(const F: Double; Precision: Integer = 2): string;
+function FloatToStrFmt(const F: Double; Precision: Integer = 2): string; {$IFDEF USE_INLINE}inline;{$ENDIF}
 
 { Clamps integer value to range <Min, Max>}
 function ClampInt(Number: LongInt; Min, Max: LongInt): LongInt; {$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -447,7 +452,7 @@ var
     if CaseSensitive then
       Result := A = B
     else
-      Result := UpCase(A) = UpCase(B);
+      Result := AnsiUpperCase (A) = AnsiUpperCase (B);
   end;
 
   function MatchAt(MaskPos, KeyPos: LongInt): Boolean;
@@ -609,101 +614,6 @@ begin
 end;
 
 function PosEx(const SubStr, S: string; Offset: LongInt = 1): LongInt;
-{$IFDEF USE_ASM}
-asm
-  // The Original ASM Code is (C) Fastcode project.
-       test  eax, eax
-       jz    @Nil
-       test  edx, edx
-       jz    @Nil
-       dec   ecx
-       jl    @Nil
-
-       push  esi
-       push  ebx
-
-       mov   esi, [edx-4]  //Length(Str)
-       mov   ebx, [eax-4]  //Length(Substr)
-       sub   esi, ecx      //effective length of Str
-       add   edx, ecx      //addr of the first char at starting position
-       cmp   esi, ebx
-       jl    @Past         //jump if EffectiveLength(Str)<Length(Substr)
-       test  ebx, ebx
-       jle   @Past         //jump if Length(Substr)<=0
-
-       add   esp, -12
-       add   ebx, -1       //Length(Substr)-1
-       add   esi, edx      //addr of the terminator
-       add   edx, ebx      //addr of the last char at starting position
-       mov   [esp+8], esi  //save addr of the terminator
-       add   eax, ebx      //addr of the last char of Substr
-       sub   ecx, edx      //-@Str[Length(Substr)]
-       neg   ebx           //-(Length(Substr)-1)
-       mov   [esp+4], ecx  //save -@Str[Length(Substr)]
-       mov   [esp], ebx    //save -(Length(Substr)-1)
-       movzx ecx, byte ptr [eax] //the last char of Substr
-
-@Loop:
-       cmp   cl, [edx]
-       jz    @Test0
-@AfterTest0:
-       cmp   cl, [edx+1]
-       jz    @TestT
-@AfterTestT:
-       add   edx, 4
-       cmp   edx, [esp+8]
-       jb   @Continue
-@EndLoop:
-       add   edx, -2
-       cmp   edx, [esp+8]
-       jb    @Loop
-@Exit:
-       add   esp, 12
-@Past:
-       pop   ebx
-       pop   esi
-@Nil:
-       xor   eax, eax
-       ret
-@Continue:
-       cmp   cl, [edx-2]
-       jz    @Test2
-       cmp   cl, [edx-1]
-       jnz   @Loop
-@Test1:
-       add   edx,  1
-@Test2:
-       add   edx, -2
-@Test0:
-       add   edx, -1
-@TestT:
-       mov   esi, [esp]
-       test  esi, esi
-       jz    @Found
-@String:
-       movzx ebx, word ptr [esi+eax]
-       cmp   bx, word ptr [esi+edx+1]
-       jnz   @AfterTestT
-       cmp   esi, -2
-       jge   @Found
-       movzx ebx, word ptr [esi+eax+2]
-       cmp   bx, word ptr [esi+edx+3]
-       jnz   @AfterTestT
-       add   esi, 4
-       jl    @String
-@Found:
-       mov   eax, [esp+4]
-       add   edx, 2
-
-       cmp   edx, [esp+8]
-       ja    @Exit
-
-       add   esp, 12
-       add   eax, edx
-       pop   ebx
-       pop   esi
-end;
-{$ELSE}
 var
   I, X: LongInt;
   Len, LenSubStr: LongInt;
@@ -728,11 +638,10 @@ begin
   end;
   Result := 0;
 end;
-{$ENDIF}
 
 function PosNoCase(const SubStr, S: string; Offset: LongInt): LongInt;
 begin
-  Result := PosEx(LowerCase(SubStr), LowerCase(S), Offset);
+  Result := PosEx(AnsiLowerCase(SubStr), AnsiLowerCase(S), Offset);
 end;
 
 function StrToken(var S: string; Sep: Char): string;
@@ -775,6 +684,19 @@ begin
   end;
 end;
 
+procedure StrTokensToList(const S: string; Sep: Char; Tokens: TStrings);
+var
+  Token, Str: string;
+begin
+  Tokens.Clear;
+  Str := S;
+  while Str <> '' do
+  begin
+    Token := StrToken(Str, Sep);
+    Tokens.Add(Token);
+  end;
+end;
+
 function IntToStrFmt(const I: Int64): string;
 begin
   Result := Format('%.0n', [I * 1.0]);
@@ -790,8 +712,7 @@ begin
   Result := Number;
   if Result < Min then
     Result := Min
-  else
-  if Result > Max then
+  else if Result > Max then
     Result := Max;
 end;
 
@@ -800,8 +721,7 @@ begin
   Result := Number;
   if Result < Min then
     Result := Min
-  else
-  if Result > Max then
+  else if Result > Max then
     Result := Max;
 end;
 
@@ -831,7 +751,7 @@ end;
 function NextPow2(Num: LongInt): LongInt;
 begin
   Result := Num and -Num;
-  while (Result < Num) do
+  while Result < Num do
     Result := Result shl 1;
 end;
 
@@ -1335,11 +1255,11 @@ end;
 
 function GetVolumeLevelCount(Depth, MipMaps: LongInt): LongInt;
 var
-    I: LongInt;
+  I: LongInt;
 begin
-    Result := Depth;
-    for I := 1 to MipMaps - 1 do
-      Inc(Result, ClampInt(Depth shr I, 1, Depth));
+  Result := Depth;
+  for I := 1 to MipMaps - 1 do
+    Inc(Result, ClampInt(Depth shr I, 1, Depth));
 end;
 
 function BoundsToRect(X, Y, Width, Height: LongInt): TRect;
@@ -1552,6 +1472,12 @@ initialization
   -- TODOS ----------------------------------------------------
     - nothing now
 
+  -- 0.26.1 Changes/Bug Fixes -----------------------------------
+    - Some formatting changes.
+    - Changed some string functions to work with localized strings.
+    - ASM version of PosEx had bugs, removed it.
+    - Added StrTokensToList function.
+
   -- 0.25.0 Changes/Bug Fixes -----------------------------------
     - Fixed error in ClipCopyBounds which was causing ... bad clipping!
 
@@ -1561,7 +1487,7 @@ initialization
     
   -- 0.23 Changes/Bug Fixes -----------------------------------
     - Added RectInRect and RectIntersects functions
-    - Added some string utils: StrToken, StrTokenEnd, PosEx, PosNoCase. 
+    - Added some string utils: StrToken, StrTokenEnd, PosEx, PosNoCase.
     - Moved BuildFileList here from DemoUtils.
 
   -- 0.21 Changes/Bug Fixes -----------------------------------

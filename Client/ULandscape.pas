@@ -30,11 +30,11 @@ unit ULandscape;
 interface
 
 uses
-  SysUtils, Classes, math, LCLIntf, GL, GLU, ImagingOpenGL, Imaging,
+  SysUtils, Classes, math, LCLIntf, GL, GLu, ImagingOpenGL, Imaging,
   ImagingClasses, ImagingTypes, ImagingUtility,
   UGenericIndex, UMap, UStatics, UArt, UTexture, UTiledata, UHue, UWorldItem,
   UMulBlock,
-  UVector, UEnhancedMemoryStream,
+  UVector, UEnhancedMemoryStream, UGLFont,
   UCacheManager;
 
 type
@@ -196,6 +196,19 @@ type
     procedure UpdateWriteMap(AStream: TEnhancedMemoryStream);
   end;
 
+  { TGLText }
+
+  TGLText = class
+    constructor Create(AFont: TGLFont; AText: String);
+  protected
+    FFont: TGLFont;
+    FText: String;
+    FWidth: Integer;
+    FHeight: Integer;
+  public
+    procedure Render(AScreenRect: TRect);
+  end;
+
   TScreenState = (ssNormal, ssFiltered, ssGhost);
 
   PBlockInfo = ^TBlockInfo;
@@ -212,6 +225,7 @@ type
     HueOverride: Boolean;
     CheckRealQuad: Boolean;
     Translucent: Boolean;
+    Text: TGLText;
     Next: PBlockInfo;
   end;
 
@@ -1213,6 +1227,7 @@ begin
   Result^.State := ssNormal;
   Result^.Highlighted := False;
   Result^.Translucent := False;
+  Result^.Text := nil;
   Result^.Next := nil;
 
   if FShortCuts[0] = nil then //First element
@@ -1239,6 +1254,7 @@ begin
     current^.Item.Locked := False;
     current^.Item.OnDestroy.UnregisterEvent(@OnTileRemoved);
     if current^.Normals <> nil then Dispose(current^.Normals);
+    current^.Text.Free;
     Dispose(current);
     current := next;
   end;
@@ -1266,6 +1282,7 @@ begin
       if last <> nil then last^.Next := current^.Next;
 
       if current^.Normals <> nil then Dispose(current^.Normals);
+      current^.Text.Free;
 
       Dispose(current);
       Dec(FCount);
@@ -1356,6 +1373,7 @@ begin
   Result^.State := ssNormal;
   Result^.Highlighted := False;
   Result^.Translucent := False;
+  Result^.Text := nil;
 
   if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]^.Item) < 0) then
   begin
@@ -1488,6 +1506,28 @@ end;
 procedure TScreenBuffer.OnTileRemoved(ATile: TMulBlock);
 begin
   Delete(TWorldItem(ATile));
+end;
+
+{ TGLText }
+
+constructor TGLText.Create(AFont: TGLFont; AText: String);
+var
+  i: Integer;
+begin
+  FFont := AFont;
+  FText := AText;
+  FWidth := FFont.GetTextWidth(AText);
+  FHeight := FFont.GetTextHeight('A');
+end;
+
+procedure TGLText.Render(AScreenRect: TRect);
+var
+  x, y: Integer;
+  i: Integer;
+begin
+  y := AScreenRect.Top + (AScreenRect.Bottom - AScreenRect.Top - FHeight) div 2;
+  x := AScreenRect.Left + (AScreenRect.Right - AScreenRect.Left - FWidth) div 2;
+  FFont.DrawText(x, y, FText);
 end;
 
 end.
