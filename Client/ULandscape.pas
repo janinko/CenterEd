@@ -211,6 +211,7 @@ type
     Highlighted: Boolean;
     HueOverride: Boolean;
     CheckRealQuad: Boolean;
+    Translucent: Boolean;
     Next: PBlockInfo;
   end;
 
@@ -1211,6 +1212,7 @@ begin
   Result^.Normals := nil;
   Result^.State := ssNormal;
   Result^.Highlighted := False;
+  Result^.Translucent := False;
   Result^.Next := nil;
 
   if FShortCuts[0] = nil then //First element
@@ -1353,6 +1355,7 @@ begin
   Result^.Normals := nil;
   Result^.State := ssNormal;
   Result^.Highlighted := False;
+  Result^.Translucent := False;
 
   if (FShortCuts[0] = nil) or (CompareWorldItems(AItem, FShortCuts[0]^.Item) < 0) then
   begin

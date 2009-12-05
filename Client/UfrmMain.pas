@@ -304,6 +304,7 @@ type
     function  GetSelectedRect: TRect;
     procedure InitRender;
     procedure InitSize;
+    procedure PrepareMapCell(AMapCell: TMapCell);
     procedure PrepareScreenBlock(ABlockInfo: PBlockInfo);
     procedure ProcessToolState;
     procedure ProcessAccessLevel;
@@ -1785,6 +1786,43 @@ begin
   glLoadIdentity;
 end;
 
+procedure TfrmMain.PrepareMapCell(AMapCell: TMapCell);
+var
+  current, north, east, west: PBlockInfo;
+  cell: TMapCell;
+begin
+  current := FScreenBuffer.UpdateSortOrder(AMapCell);
+  if current = nil then
+    Exit; //off-screen update
+
+  PrepareScreenBlock(current);
+  Exclude(FScreenBufferState, sbsIndexed);
+
+  //Find surrounding cells
+  current := nil;
+  north := nil;
+  east := nil;
+  west := nil;
+  while ((north = nil) or (east = nil) or (west = nil)) and
+    FScreenBuffer.Iterate(current) do
+  begin
+    if current^.Item is TMapCell then
+    begin
+      cell := TMapCell(current^.Item);
+      if (cell.X = AMapCell.X - 1) and (cell.Y = AMapCell.Y - 1) then
+        north := current
+      else if (cell.X = AMapCell.X) and (cell.Y = AMapCell.Y - 1) then
+        east := current
+      else if (cell.X = AMapCell.X - 1) and (cell.Y = AMapCell.Y) then
+        west := current;
+    end;
+  end;
+
+  if north <> nil then PrepareScreenBlock(north);
+  if east <> nil then PrepareScreenBlock(east);
+  if west <> nil then PrepareScreenBlock(west);
+end;
+
 procedure TfrmMain.InvalidateFilter;
 begin
   Exclude(FScreenBufferState, sbsFiltered);
@@ -1939,6 +1977,9 @@ begin
       ABlockInfo^.LowRes.RealWidth,
       ABlockInfo^.LowRes.RealHeight);
 
+    ABlockInfo^.Translucent := tdfTranslucent in
+      ResMan.Tiledata.StaticTiles[staticItem.TileID].Flags;
+
     south := ABlockInfo^.LowRes.RealHeight;
     east := ABlockInfo^.LowRes.RealWidth div 2;
 
@@ -1990,7 +2031,10 @@ begin
       SetDarkLights;
     end;
 
-    glColor4f(intensity, intensity, intensity, 1.0);
+    if blockInfo^.Translucent then
+      glColor4f(intensity, intensity, intensity, 0.5)
+    else
+      glColor4f(intensity, intensity, intensity, 1.0);
 
     highlight := blockInfo^.Highlighted and item.CanBeEdited;
 
@@ -2048,41 +2092,8 @@ begin
 end;
 
 procedure TfrmMain.OnMapChanged(AMapCell: TMapCell);
-var
-  current, north, east, west: PBlockInfo;
-  cell: TMapCell;
 begin
-  current := FScreenBuffer.UpdateSortOrder(AMapCell);
-  if current = nil then
-    Exit; //off-screen update
-
-  PrepareScreenBlock(current);
-  Exclude(FScreenBufferState, sbsIndexed);
-
-  //Find surrounding cells
-  current := nil;
-  north := nil;
-  east := nil;
-  west := nil;
-  while ((north = nil) or (east = nil) or (west = nil)) and
-    FScreenBuffer.Iterate(current) do
-  begin
-    if current^.Item is TMapCell then
-    begin
-      cell := TMapCell(current^.Item);
-      if (cell.X = AMapCell.X - 1) and (cell.Y = AMapCell.Y - 1) then
-        north := current
-      else if (cell.X = AMapCell.X) and (cell.Y = AMapCell.Y - 1) then
-        east := current
-      else if (cell.X = AMapCell.X - 1) and (cell.Y = AMapCell.Y) then
-        west := current;
-    end;
-  end;
-
-  if north <> nil then PrepareScreenBlock(north);
-  if east <> nil then PrepareScreenBlock(east);
-  if west <> nil then PrepareScreenBlock(west);
-
+  PrepareMapCell(AMapCell);
   ForceUpdateCurrentTile;
 end;
 
@@ -2436,7 +2447,7 @@ procedure TfrmMain.UpdateSelection;
           if frmDrawSettings.cbRandomHeight.Checked then
             cell.GhostZ := cell.GhostZ + Random(frmDrawSettings.seRandomHeight.Value);
 
-          OnMapChanged(cell);
+          PrepareMapCell(cell);
         end;
       end else
       begin
@@ -2508,7 +2519,7 @@ begin
           if (cell <> nil) and cell.IsGhost then
           begin
             cell.IsGhost := False;
-            OnMapChanged(cell);
+            PrepareMapCell(cell);
           end;
         end;
 
