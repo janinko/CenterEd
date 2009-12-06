@@ -826,7 +826,18 @@ begin
   
   FLocationsFile := FAppDir + 'Locations.dat';
   vstLocations.NodeDataSize := SizeOf(TLocationInfo);
-  if FileExists(FLocationsFile) then vstLocations.LoadFromFile(FLocationsFile);
+  try
+    if FileExists(FLocationsFile) then
+      vstLocations.LoadFromFile(FLocationsFile);
+  except
+    on E: EVirtualTreeError do
+    begin
+      MessageDlg('Warning', 'The Locations could not be loaded. Most likely it is an' + LineEnding +
+        'outdated version or the file is damaged.' + LineEnding + LineEnding +
+        'A backup will be made as "Locations.bak".', mtWarning, [mbOK], 0);
+      RenameFile(FLocationsFile, FAppDir + 'Locations.bak');
+    end;
+  end;
 
   RegisterPacketHandler($0C, TPacketHandler.Create(0, @OnClientHandlingPacket));
 
@@ -897,7 +908,22 @@ end;
 procedure TfrmMain.cbRandomPresetChange(Sender: TObject);
 begin
   if cbRandomPreset.ItemIndex > -1 then
-    vdtRandom.LoadFromFile(FRandomPresetLocation + cbRandomPreset.Text + '.dat');
+  begin
+    try
+      vdtRandom.LoadFromFile(FRandomPresetLocation + cbRandomPreset.Text + '.dat');
+    except
+      on EVirtualTreeError do
+      begin
+        if MessageDlg('Error', 'The profile could not be loaded. Most likely it is an' + LineEnding +
+          'outdated version or the file is damaged.' + LineEnding + LineEnding +
+          'Should this profile be deleted now?', mtError, [mbYes, mbNo], 0) = mrYes then
+        begin
+          DeleteFile(FRandomPresetLocation + cbRandomPreset.Text + '.dat');
+          cbRandomPreset.Items.Delete(cbRandomPreset.ItemIndex);
+        end;
+      end;
+    end;
+  end;
 end;
 
 procedure TfrmMain.btnAddRandomClick(Sender: TObject);
