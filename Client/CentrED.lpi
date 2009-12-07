@@ -319,7 +319,8 @@
       <CompilerMessages>
         <IgnoredMessages idx5024="True"/>
       </CompilerMessages>
-      <CustomOptions Value="-FE../bin/"/>
+      <CustomOptions Value="-FE../bin/
+"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>

@@ -209,6 +209,8 @@ type
     procedure mnuRegionControlClick(Sender: TObject);
     procedure mnuShutdownClick(Sender: TObject);
     procedure oglGameWindowDblClick(Sender: TObject);
+    procedure oglGameWindowKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
     procedure oglGameWindowMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure oglGameWindowMouseEnter(Sender: TObject);
@@ -309,6 +311,7 @@ type
     function  GetSelectedRect: TRect;
     procedure InitRender;
     procedure InitSize;
+    procedure MoveBy(AOffsetX, AOffsetY: Integer); inline;
     procedure PrepareMapCell(AMapCell: TMapCell);
     procedure PrepareScreenBlock(ABlockInfo: PBlockInfo);
     procedure ProcessToolState;
@@ -362,7 +365,7 @@ uses
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
   UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
-  UfrmRegionControl, Logging, LConvEncoding;
+  UfrmRegionControl, Logging, LConvEncoding, LCLType;
 
 type
   TGLArrayf4 = array[0..3] of GLfloat;
@@ -470,6 +473,29 @@ procedure TfrmMain.oglGameWindowDblClick(Sender: TObject);
 begin
   if (acSelect.Checked) and (CurrentTile <> nil) then
     btnAddRandomClick(Sender);
+end;
+
+procedure TfrmMain.oglGameWindowKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  case Key of
+    VK_W, VK_NUMPAD8, VK_UP:
+      MoveBy(-8, -8);
+    VK_S, VK_NUMPAD2, VK_DOWN:
+      MoveBy(8, 8);
+    VK_A, VK_NUMPAD4, VK_LEFT:
+      MoveBy(-8, 8);
+    VK_D, VK_NUMPAD6, VK_RIGHT:
+      MoveBy(8, -8);
+    VK_Q, VK_NUMPAD7:
+      MoveBy(-8, 0);
+    VK_E, VK_NUMPAD9:
+      MoveBy(0, -8);
+    VK_Y, VK_NUMPAD1:
+      MoveBy(0, 8);
+    VK_C, VK_NUMPAD3:
+      MoveBy(8, 0);
+  end;
 end;
 
 procedure TfrmMain.oglGameWindowMouseDown(Sender: TObject;
@@ -1345,13 +1371,6 @@ begin
 end;
 
 procedure TfrmMain.tmMovementTimer(Sender: TObject);
-
-  procedure MoveBy(AOffsetX, AOffsetY: Integer);
-  begin
-    SetPos(EnsureRange(FX + AOffsetX, 0, FLandscape.CellWidth - 1),
-           EnsureRange(FY + AOffsetY, 0, FLandscape.CellHeight - 1));
-  end;
-
 begin
   case FOverlayUI.ActiveArrow of
     0: MoveBy(-8, 0);
@@ -1830,6 +1849,13 @@ begin
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix;
   glLoadIdentity;
+end;
+
+procedure TfrmMain.MoveBy(AOffsetX, AOffsetY: Integer); inline;
+begin
+  SetPos(EnsureRange(FX + AOffsetX, 0, FLandscape.CellWidth - 1),
+         EnsureRange(FY + AOffsetY, 0, FLandscape.CellHeight - 1));
+  UpdateCurrentTile;
 end;
 
 procedure TfrmMain.PrepareMapCell(AMapCell: TMapCell);
