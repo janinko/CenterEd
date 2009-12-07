@@ -30,9 +30,9 @@ unit UfrmLargeScaleCommand;
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, CheckLst,
+  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Math,
   VirtualTrees, ExtCtrls, ImagingComponents, StdCtrls, Buttons, Spin, LCLIntf,
-  math, UPlatformTypes, UEnhancedMemoryStream;
+  UPlatformTypes, UEnhancedMemoryStream;
 
 type
 
@@ -144,6 +144,7 @@ type
     procedure vdtTerrainTilesDrawNode(Sender: TBaseVirtualTree;
       const PaintInfo: TVTPaintInfo);
     procedure vstActionsChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstActionsChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstActionsGetText(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: String);
@@ -157,7 +158,13 @@ type
     FLastX: Integer;
     FLastY: Integer;
     FAreaMove: TAreaMove;
-    procedure AddNode(AActionID: Integer; ACaption: String);
+    FAreaNode: PVirtualNode;
+    FCopyMoveNode: PVirtualNode;
+    FAltitudeNode: PVirtualNode;
+    FDrawTerrainNode: PVirtualNode;
+    FDelStaticsNode: PVirtualNode;
+    FAddStaticsNode: PVirtualNode;
+    function AddNode(AActionID: Integer; ACaption: String): PVirtualNode;
     function FindNode(AActionID: Integer): PVirtualNode;
     procedure SerializeTiles(ATileList: TVirtualDrawTree;
       AStream: TEnhancedMemoryStream);
@@ -190,12 +197,12 @@ type
 procedure TfrmLargeScaleCommand.FormCreate(Sender: TObject);
 begin
   vstActions.NodeDataSize := SizeOf(TNodeInfo);
-  AddNode(-1, 'Target Area');
-  AddNode(0, 'Copy/Move');
-  AddNode(1, 'Modify altitude');
-  AddNode(2, 'Draw terrain');
-  AddNode(3, 'Delete statics');
-  AddNode(4, 'Insert statics');
+  FAreaNode        := AddNode(-1, 'Target Area');
+  FCopyMoveNode    := AddNode( 0, 'Copy/Move');
+  FAltitudeNode    := AddNode( 1, 'Modify altitude');
+  FDrawTerrainNode := AddNode( 2, 'Draw terrain');
+  FDelStaticsNode  := AddNode( 3, 'Delete statics');
+  FAddStaticsNode  := AddNode( 4, 'Insert statics');
   vstActions.Selected[vstActions.GetFirst] := True;
 
   vstArea.NodeDataSize := SizeOf(TRect);
@@ -270,8 +277,6 @@ end;
 procedure TfrmLargeScaleCommand.pbAreaMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 var
-  node: PVirtualNode;
-  nodeInfo: ^TRect;
   offsetX, offsetY: Integer;
 begin
   if (ssLeft in Shift) and (vstArea.GetFirstSelected <> nil) then
@@ -448,10 +453,12 @@ end;
 
 procedure TfrmLargeScaleCommand.pbAreaPaint(Sender: TObject);
 var
-  i: Integer;
   node: PVirtualNode;
   nodeInfo: ^TRect;
+  showMoveTarget: Boolean;
 begin
+  showMoveTarget := FCopyMoveNode^.CheckState = csCheckedNormal;
+
   DisplayImage(pbArea.Canvas, 0, 0, frmRadarMap.Radar);
   pbArea.Canvas.Pen.Color := clRed;
   pbArea.Canvas.Brush.Color := clMaroon;
@@ -459,20 +466,34 @@ begin
   node := vstArea.GetFirst;
   while node <> nil do
   begin
+    nodeInfo := vstArea.GetNodeData(node);
     if vstArea.Selected[node] then
     begin
       pbArea.Canvas.Pen.Width := 2;
       pbArea.Canvas.Pen.Style := psSolid;
-      //pbArea.Canvas.Brush.Color := clRed;
     end else
     begin
       pbArea.Canvas.Pen.Width := 1;
       pbArea.Canvas.Pen.Style := psDot;
-      //pbArea.Canvas.Brush.Color := clMaroon;
     end;
-    nodeInfo := vstArea.GetNodeData(node);
+
+    pbArea.Canvas.Brush.Style := bsFDiagonal;
+    pbArea.Canvas.Pen.Color := clRed;
+    pbArea.Canvas.Brush.Color := clMaroon;
     pbArea.Canvas.Rectangle(nodeInfo^.Left div 8, nodeInfo^.Top div 8,
       nodeInfo^.Right div 8 + 1, nodeInfo^.Bottom div 8 + 1);
+
+    if showMoveTarget then
+    begin
+      pbArea.Canvas.Brush.Style := bsBDiagonal;
+      pbArea.Canvas.Pen.Color := clBlue;
+      pbArea.Canvas.Brush.Color := clNavy;
+      pbArea.Canvas.Rectangle((nodeInfo^.Left + seCMOffsetX.Value) div 8,
+        (nodeInfo^.Top + seCMOffsetY.Value) div 8,
+        (nodeInfo^.Right + seCMOffsetX.Value) div 8 + 1,
+        (nodeInfo^.Bottom + seCMOffsetY.Value) div 8 + 1);
+    end;
+
     node := vstArea.GetNext(node);
   end;
 end;
@@ -567,6 +588,13 @@ begin
   end;
 end;
 
+procedure TfrmLargeScaleCommand.vstActionsChecked(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+begin
+  if Node = FCopyMoveNode then
+    pbArea.Repaint;
+end;
+
 procedure TfrmLargeScaleCommand.vstActionsGetText(
   Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
   TextType: TVSTTextType; var CellText: String);
@@ -621,7 +649,8 @@ begin
     nodeInfo^.Right, nodeInfo^.Bottom]);
 end;
 
-procedure TfrmLargeScaleCommand.AddNode(AActionID: Integer; ACaption: String);
+function TfrmLargeScaleCommand.AddNode(AActionID: Integer;
+  ACaption: String): PVirtualNode;
 var
   node: PVirtualNode;
   nodeInfo: PNodeInfo;
@@ -632,6 +661,8 @@ begin
   nodeInfo^.Caption := ACaption;
   if AActionID > -1 then
     vstActions.CheckType[node] := ctCheckBox;
+
+  Result := node;
 end;
 
 function TfrmLargeScaleCommand.FindNode(AActionID: Integer): PVirtualNode;
