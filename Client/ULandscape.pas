@@ -271,9 +271,9 @@ implementation
 uses
   UGameResources, UdmNetwork, UPackets, UPacketHandlers, Logging;
 
-function GetID(AX, AY: Word): Integer;
+function GetID(AX, AY: Word): Integer; inline;
 begin
-  Result := ((AX and $7FFF) shl 15) or (AY and $7FFF);
+  Result := (AX shl 16) or AY;
 end;
 
 { TLandTextureManager }
@@ -321,7 +321,7 @@ begin
     Result := GetArtMaterial(ATileID);
   end else
   begin
-    id := ATileID or ((AHue.ID and $3FFF) shl 15) or (Byte(APartialHue) shl 29);
+    id := ATileID or ((AHue.ID and $3FFF) shl 16) or (Byte(APartialHue) shl 30);
     if not FArtCache.QueryID(id, Result) then
     begin
       artEntry := ResMan.Art.GetArt(ATileID, 0, AHue, APartialHue);
@@ -511,7 +511,7 @@ begin
 
   for i := 0 to FStaticBlock.Items.Count - 1 do
   begin
-    staticItem := TStaticItem(FStaticBlock.Items[i]);
+    staticItem := FStaticBlock.Items[i];
     staticItem.CanBeEdited := ALandscape.CanWrite(staticItem.X,
       staticItem.Y);
   end;
