@@ -33,34 +33,39 @@ uses
   SysUtils, Classes;
 
 type
-  TRemoveObjectEvent = procedure(AObject: TObject) of object;
-
-  PCacheEntry = ^TCacheEntry;
-  TCacheEntry = record
-    ID: Integer;
-    Obj: TObject;
-    Next: PCacheEntry;
-  end;
 
   { TCacheManager }
 
-  TCacheManager = class(TObject)
-    constructor Create(ASize: Integer);
-    destructor Destroy; override;
-  protected
+  generic TCacheManager<T> = class
+  type public
+    { Types }
+    TRemoveObjectEvent = procedure(AObject: T) of object;
+
+    PCacheEntry = ^TCacheEntry;
+    TCacheEntry = record
+      ID: Integer;
+      Obj: T;
+      Next: PCacheEntry;
+    end;
+  var protected
     { Members }
     FSize: Integer;
     FFirst: PCacheEntry;
     FLast: PCacheEntry;
     FOnRemoveObject: TRemoveObjectEvent;
   public
+    constructor Create(ASize: Integer);
+    destructor Destroy; override;
+
     { Fields }
-    property OnRemoveObject: TRemoveObjectEvent read FOnRemoveObject write FOnRemoveObject;
+    property OnRemoveObject: TRemoveObjectEvent read FOnRemoveObject
+      write FOnRemoveObject;
+
     { Methods }
-    function QueryID(const AID: Integer; out AObj: TObject): Boolean;
-    procedure StoreID(AID: Integer; AObj: TObject);
+    function QueryID(const AID: Integer; out AObj: T): Boolean;
+    procedure StoreID(AID: Integer; AObj: T);
     procedure DiscardID(AID: Integer);
-    procedure DiscardObj(AObj: TObject);
+    procedure DiscardObj(AObj: T);
     procedure RemoveID(AID: Integer);
     procedure Clear;
     function Iterate(var ACacheEntry: PCacheEntry): Boolean;
@@ -103,7 +108,7 @@ begin
   current := FFirst;
   for i := 1 to FSize do
   begin
-    if current^.Obj <> nil then
+    if Pointer(current^.Obj) <> nil then
     begin
       if Assigned(FOnRemoveObject) then FOnRemoveObject(current^.Obj);
       FreeAndNil(current^.Obj);
@@ -132,7 +137,7 @@ begin
   end;
 end;
 
-procedure TCacheManager.DiscardObj(AObj: TObject);
+procedure TCacheManager.DiscardObj(AObj: T);
 var
   current: PCacheEntry;
 begin
@@ -160,7 +165,7 @@ begin
     if (current^.ID = AID) then
     begin
       current^.ID := LongInt($FFFFFFFF);
-      if current^.Obj <> nil then
+      if Pointer(current^.Obj) <> nil then
         FreeAndNil(current^.Obj);
     end;
     if (current^.Next <> nil) then
@@ -176,7 +181,7 @@ begin
   current := FFirst;
   while current <> nil do
   begin
-    if current^.Obj <> nil then
+    if Pointer(current^.Obj) <> nil then
     begin
       current^.ID := LongInt($FFFFFFFF);
       if Assigned(FOnRemoveObject) then FOnRemoveObject(current^.Obj);
@@ -196,7 +201,7 @@ begin
 end;
 
 function TCacheManager.QueryID(const AID: Integer;
-  out AObj: TObject): Boolean;
+  out AObj: T): Boolean;
 var
   current: PCacheEntry;
 begin
@@ -222,7 +227,7 @@ begin
   end;
 end;
 
-procedure TCacheManager.StoreID(AID: Integer; AObj: TObject);
+procedure TCacheManager.StoreID(AID: Integer; AObj: T);
 var
   current: PCacheEntry;
 begin
@@ -231,7 +236,7 @@ begin
   current^.Next := FFirst;
   FFirst := current;
   FFirst^.ID := AID;
-  if FFirst^.Obj <> nil then //if the last cache entry did contain an object, remove it now
+  if Pointer(FFirst^.Obj) <> nil then //if the last cache entry did contain an object, remove it now
   begin
     if Assigned(FOnRemoveObject) then FOnRemoveObject(FFirst^.Obj);
     FreeAndNil(FFirst^.Obj);

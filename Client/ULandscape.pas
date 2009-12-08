@@ -66,6 +66,8 @@ type
     function HitTest(AX, AY: Integer): Boolean;
     procedure UpdateTexture;
   end;
+
+  TMaterialCache = specialize TCacheManager<TMaterial>;
   
   { TLandTextureManager }
   
@@ -73,9 +75,9 @@ type
     constructor Create;
     destructor Destroy; override;
   protected
-    FArtCache: TCacheManager;
-    FFlatLandArtCache: TCacheManager;
-    FTexCache: TCacheManager;
+    FArtCache: TMaterialCache;
+    FFlatLandArtCache: TMaterialCache;
+    FTexCache: TMaterialCache;
   public
     function GetArtMaterial(ATileID: Word): TMaterial; overload;
     function GetArtMaterial(ATileID: Word; AHue: THue;
@@ -125,6 +127,7 @@ type
   TStaticChangedEvent = procedure(AStaticItem: TStaticItem) of object;
 
   TScreenBuffer = class;
+  TBlockCache = specialize TCacheManager<TBlock>;
 
   { TLandscape }
 
@@ -137,7 +140,7 @@ type
     FHeight: Word;
     FCellWidth: Word;
     FCellHeight: Word;
-    FBlockCache: TCacheManager;
+    FBlockCache: TBlockCache;
     FOnChange: TLandscapeChangeEvent;
     FOnMapChanged: TMapChangedEvent;
     FOnNewBlock: TNewBlockEvent;
@@ -154,7 +157,7 @@ type
     function GetStaticBlock(AX, AY: Word): TSeperatedStaticBlock;
     function GetStaticList(AX, AY: Word): TStaticItemList;
     { Events }
-    procedure OnRemoveCachedObject(AObject: TObject);
+    procedure OnRemoveCachedObject(ABlock: TBlock);
     procedure OnBlocksPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnDrawMapPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnInsertStaticPacket(ABuffer: TEnhancedMemoryStream);
@@ -278,16 +281,16 @@ end;
 constructor TLandTextureManager.Create;
 begin
   inherited Create;
-  FArtCache := TCacheManager.Create(1024);
-  FFlatLandArtCache := TCacheManager.Create(128);
-  FTexCache := TCacheManager.Create(128);
+  FArtCache := TMaterialCache.Create(1024);
+  FFlatLandArtCache := TMaterialCache.Create(128);
+  FTexCache := TMaterialCache.Create(128);
 end;
 
 destructor TLandTextureManager.Destroy;
 begin
-  if FArtCache <> nil then FreeAndNil(FArtCache);
-  if FFlatLandArtCache <> nil then FreeAndNil(FFlatLandArtCache);
-  if FTexCache <> nil then FreeAndNil(FTexCache);
+  FreeAndNil(FArtCache);
+  FreeAndNil(FFlatLandArtCache);
+  FreeAndNil(FTexCache);
   inherited Destroy;
 end;
 
@@ -295,7 +298,7 @@ function TLandTextureManager.GetArtMaterial(ATileID: Word): TMaterial;
 var
   artEntry: TArt;
 begin
-  if not FArtCache.QueryID(ATileID, TObject(Result)) then
+  if not FArtCache.QueryID(ATileID, Result) then
   begin
     artEntry := TArt(ResMan.Art.Block[ATileID]);
 
@@ -319,7 +322,7 @@ begin
   end else
   begin
     id := ATileID or ((AHue.ID and $3FFF) shl 15) or (Byte(APartialHue) shl 29);
-    if not FArtCache.QueryID(id, TObject(Result)) then
+    if not FArtCache.QueryID(id, Result) then
     begin
       artEntry := ResMan.Art.GetArt(ATileID, 0, AHue, APartialHue);
 
@@ -336,7 +339,7 @@ function TLandTextureManager.GetFlatLandMaterial(ATileID: Word): TMaterial;
 var
   artEntry: TArt;
 begin
-  if not FFlatLandArtCache.QueryID(ATileID, TObject(Result)) then
+  if not FFlatLandArtCache.QueryID(ATileID, Result) then
   begin
     artEntry := ResMan.Art.GetFlatLand(ATileID);
 
@@ -372,7 +375,7 @@ var
   texEntry: TTexture;
   texID: Integer;
 begin
-  if not FTexCache.QueryID(ATileID, TObject(Result)) then
+  if not FTexCache.QueryID(ATileID, Result) then
   begin
     texID := ResMan.Tiledata.LandTiles[ATileID].TextureID;
     if texID > 0 then
@@ -525,7 +528,7 @@ begin
   FHeight := AHeight;
   FCellWidth := FWidth * 8;
   FCellHeight := FHeight * 8;
-  FBlockCache := TCacheManager.Create(256);
+  FBlockCache := TBlockCache.Create(256);
   FBlockCache.OnRemoveObject := @OnRemoveCachedObject;
 
   FOnChange := nil;
@@ -579,7 +582,7 @@ begin
   Result := nil;
   if (AX >= 0) and (AX < FWidth) and (AY >= 0) and (AY < FHeight) then
   begin
-    if FBlockCache.QueryID(GetID(AX, AY), TObject(block)) then
+    if FBlockCache.QueryID(GetID(AX, AY), block) then
       Result := block.Map;
   end;
 end;
@@ -609,7 +612,7 @@ begin
   Result := nil;
   if (AX >= 0) and (AX < FWidth) and (AY >= 0) and (AY < FHeight) then
   begin
-    if FBlockCache.QueryID(GetID(AX, AY), TObject(block)) then
+    if FBlockCache.QueryID(GetID(AX, AY), block) then
       Result := TSeperatedStaticBlock(block.Static);
   end;
 end;
@@ -627,13 +630,10 @@ begin
   end;
 end;
 
-procedure TLandscape.OnRemoveCachedObject(AObject: TObject);
-var
-  block: TBlock;
+procedure TLandscape.OnRemoveCachedObject(ABlock: TBlock);
 begin
-  block := AObject as TBlock;
-  if block <> nil then
-    dmNetwork.Send(TFreeBlockPacket.Create(block.Map.X, block.Map.Y));
+  if ABlock <> nil then
+    dmNetwork.Send(TFreeBlockPacket.Create(ABlock.Map.X, ABlock.Map.Y));
 end;
 
 procedure TLandscape.OnBlocksPacket(ABuffer: TEnhancedMemoryStream);
@@ -1071,7 +1071,7 @@ procedure TLandscape.PrepareBlocks(AX1, AY1, AX2, AY2: Word);
 var
   x, y, i: Integer;
   coords: TBlockCoordsArray;
-  obj: TObject;
+  block: TBlock;
 begin
   AX1 := EnsureRange(AX1, 0, FWidth - 1);
   AY1 := EnsureRange(AY1, 0, FHeight - 1);
@@ -1084,7 +1084,7 @@ begin
     for y := AY1 to AY2 do
     begin
       if (not FOpenRequests[y * FWidth + x]) and
-         (not FBlockCache.QueryID(GetID(x, y), obj)) then
+         (not FBlockCache.QueryID(GetID(x, y), block)) then
       begin
         SetLength(coords, Length(coords) + 1);
         i := High(coords);
@@ -1100,12 +1100,12 @@ end;
 
 procedure TLandscape.UpdateBlockAccess;
 var
-  cacheEntry: PCacheEntry;
+  cacheEntry: TBlockCache.PCacheEntry;
 begin
   cacheEntry := nil;
   while FBlockCache.Iterate(cacheEntry) do
     if cacheEntry^.Obj <> nil then
-      TBlock(cacheEntry^.Obj).UpdateBlockAcess(Self);
+      cacheEntry^.Obj.UpdateBlockAcess(Self);
 end;
 
 procedure TLandscape.UpdateWriteMap(AStream: TEnhancedMemoryStream);
