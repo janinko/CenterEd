@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UMulManager;
 
@@ -29,16 +29,20 @@ interface
 
 uses
   SysUtils, UMulProvider, UTileDataProvider, UArtProvider, UGumpProvider,
-  UTexmapProvider, UHueProvider, URadarProvider;
+  UTexmapProvider, UHueProvider, URadarProvider, UAnimDataProvider;
 
 type
-  TMulManager = class(TObject)
+
+  { TMulManager }
+
+  TMulManager = class
     destructor Destroy; override;
   protected
     FArtProvider: TArtProvider;
     FGumpProvider: TGumpProvider;
     FTexmapProvider: TTexmapProvider;
     FTileDataProvider: TTileDataProvider;
+    FAnimDataProvider: TAnimDataProvider;
     FHueProvider: THueProvider;
     FRadarProvider: TRadarProvider;
   public
@@ -46,12 +50,14 @@ type
     procedure RegisterGumpProvider(AGumpProvider: TGumpProvider);
     procedure RegisterTexmapProvider(ATexmapProvider: TTexmapProvider);
     procedure RegisterTileDataProvider(ATileDataProvider: TTileDataProvider);
+    procedure RegisterAnimDataProvider(AAnimDataProvider: TAnimDataProvider);
     procedure RegisterHueProvider(AHueProvider: THueProvider);
     procedure RegisterRadarProvider(ARadarProvider: TRadarProvider);
     property ArtProvider: TArtProvider read FArtProvider;
     property GumpProvider:  TGumpProvider read FGumpProvider;
     property TexmapProvider: TTexmapProvider read FTexmapProvider;
     property TileDataProvider: TTileDataProvider read FTileDataProvider;
+    property AnimDataProvider: TAnimDataProvider read FAnimDataProvider;
     property HueProvider: THueProvider read FHueProvider;
     property RadarProvider: TRadarPRovider read FRadarProvider;
   end;
@@ -68,44 +74,56 @@ begin
   RegisterTileDataProvider(nil);
   RegisterHueProvider(nil);
   RegisterRadarProvider(nil);
-  inherited;
+  inherited Destroy;
 end;
 
-procedure TMulManager.RegisterArtProvider(AArtProvider: TArtProvider);
+procedure TMulManager.RegisterArtProvider(
+  AArtProvider: TArtProvider);
 begin
-  if Assigned(FArtProvider) then FreeAndNil(FArtProvider);
+  FreeAndNil(FArtProvider);
   FArtProvider := AArtProvider;
 end;
 
-procedure TMulManager.RegisterGumpProvider(AGumpProvider: TGumpProvider);
+procedure TMulManager.RegisterGumpProvider(
+  AGumpProvider: TGumpProvider);
 begin
-  if Assigned(FGumpProvider) then FreeAndNil(FGumpProvider);
+  FreeAndNil(FGumpProvider);
   FGumpProvider := AGumpProvider;
 end;
 
-procedure TMulManager.RegisterHueProvider(AHueProvider: THueProvider);
+procedure TMulManager.RegisterHueProvider(
+  AHueProvider: THueProvider);
 begin
-  if Assigned(FHueProvider) then FreeAndNil(FHueProvider);
+  FreeAndNil(FHueProvider);
   FHueProvider := AHueProvider;
 end;
 
-procedure TMulManager.RegisterRadarProvider(ARadarProvider: TRadarProvider);
+procedure TMulManager.RegisterRadarProvider(
+  ARadarProvider: TRadarProvider);
 begin
-  if Assigned(FRadarProvider) then FreeAndNil(FRadarProvider);
+  FreeAndNil(FRadarProvider);
   FRadarProvider := ARadarProvider;
 end;
 
-procedure TMulManager.RegisterTexmapProvider(ATexmapProvider: TTexmapProvider);
+procedure TMulManager.RegisterTexmapProvider(
+  ATexmapProvider: TTexmapProvider);
 begin
-  if Assigned(FTexmapProvider) then FreeAndNil(FTexmapProvider);
+  FreeAndNil(FTexmapProvider);
   FTexmapProvider := ATexmapProvider;
 end;
 
 procedure TMulManager.RegisterTileDataProvider(
   ATileDataProvider: TTileDataProvider);
 begin
-  if Assigned(FTileDataProvider) then FreeAndNil(FTileDataProvider);
+  FreeAndNil(FTileDataProvider);
   FTileDataProvider := ATileDataProvider;
+end;
+
+procedure TMulManager.RegisterAnimDataProvider(
+  AAnimDataProvider: TAnimDataProvider);
+begin
+  FreeAndNil(FAnimDataProvider);
+  FTileDataProvider := AAnimDataProvider;
 end;
 
 end.

@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UTileDataProvider;
 
@@ -79,8 +79,8 @@ var
 begin
   for i := $0 to $3FFF do
   begin
-    if Assigned(FLandTiles[i]) then FreeAndNil(FLandTiles[i]);
-    if Assigned(FStaticTiles[i]) then FreeAndNil(FStaticTiles[i]);
+    FreeAndNil(FLandTiles[i]);
+    FreeAndNil(FStaticTiles[i]);
   end;
 
   inherited;
@@ -124,11 +124,11 @@ procedure TTiledataProvider.SetData(AID, AOffset: Integer;
 begin
   if AID < $4000 then
   begin
-    if Assigned(FLandTiles[AID]) then FreeAndNil(FLandTiles[AID]);
+    FreeAndNil(FLandTiles[AID]);
     FLandTiles[AID] := TLandTileData(ABlock.Clone);
   end else
   begin
-    if Assigned(FStaticTiles[AID - $4000]) then FreeAndNil(FStaticTiles[AID - $4000]);
+    FreeAndNil(FStaticTiles[AID - $4000]);
     FStaticTiles[AID - $4000] := TStaticTileData(ABlock.Clone);
   end;
 

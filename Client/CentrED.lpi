@@ -56,7 +56,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="36">
+    <Units Count="40">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -278,6 +278,26 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UGLFont"/>
       </Unit35>
+      <Unit36>
+        <Filename Value="../UOLib/UAnimData.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UAnimData"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="../MulProvider/UTileDataProvider.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UTileDataProvider"/>
+      </Unit37>
+      <Unit38>
+        <Filename Value="../MulProvider/UAnimDataProvider.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UAnimDataProvider"/>
+      </Unit38>
+      <Unit39>
+        <Filename Value="../MulProvider/UMulManager.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UMulManager"/>
+      </Unit39>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -150,7 +150,8 @@ begin
     group := ABlock div 32;
     tile := ABlock mod 32;
 
-    Result := 512 * LandTileGroupSize + group * StaticTileGroupSize + 4 + tile * StaticTileDataSize;
+    Result := 512 * LandTileGroupSize + group * StaticTileGroupSize + 4
+      + tile * StaticTileDataSize;
   end else
   begin
     group := ABlock div 32;

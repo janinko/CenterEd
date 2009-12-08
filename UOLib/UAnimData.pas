@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UAnimData;
 
@@ -35,37 +35,37 @@ const
   AnimDataGroupSize = 4 + (8 * AnimDataSize);
 
 type
+
+  { TAnimData }
+
   TAnimData = class(TMulBlock)
-    constructor Create(Data: TStream);
+    constructor Create(AData: TStream);
     function GetSize: Integer; override;
-    procedure Write(Data: TStream); override;
-  private
-    FOffset: Int64;
+    procedure Write(AData: TStream); override;
+    function Clone: TAnimData; override;
+  protected
     FUnknown: Byte;
     FFrameCount: Byte;
     FFrameInterval: Byte;
     FFrameStart: Byte;
   public
-    FrameData: array[0..63] of ShortInt;
-  published
-    property Offset: Int64 read FOffset write FOffset;
+    FrameData: array[0..63] of Byte;
     property Unknown: Byte read FUnknown write FUnknown;
     property FrameCount: Byte read FFrameCount write FFrameCount;
     property FrameInterval: Byte read FFrameInterval write FFrameInterval;
     property FrameStart: Byte read FFrameStart write FFrameStart;
   end;
+
+  { TAnimDataGroup }
+
   TAnimDataGroup = class(TMulBlock)
-    constructor Create(Data: TStream);
+    constructor Create(AData: TStream);
     destructor Destroy; override;
     function GetSize: Integer; override;
-    procedure Write(Data: TStream); override;
-  private
-    FOffset: Int64;
+    procedure Write(AData: TStream); override;
+  protected
     FUnknown: LongInt;
-  public
     AnimData: array[0..7] of TAnimData;
-  published
-    property Offset: Int64 read FOffset write FOffset;
     property Unknown: LongInt read FUnknown write FUnknown;
   end;
 
@@ -73,7 +73,7 @@ function GetAnimDataOffset(Block: Integer): Integer;
 
 implementation
 
-function GetAnimDataOffset;
+function GetAnimDataOffset(Block: Integer): Integer;
 var
   group, tile: Integer;
 begin
@@ -83,44 +83,59 @@ begin
   Result := group * AnimDataGroupSize + 4 + tile * AnimDataSize;
 end;
 
-constructor TAnimData.Create;
+{ TAnimData }
+
+constructor TAnimData.Create(AData: TStream);
 begin
-  if assigned(Data) then
+  if AData <> nil then
   begin
-    FOffset := Data.Position;
-    Data.Read(FrameData, 64);
-    Data.Read(FUnknown, SizeOf(Byte));
-    Data.Read(FFrameCount, SizeOf(Byte));
-    Data.Read(FFrameInterval, SizeOf(Byte));
-    Data.Read(FFrameStart, SizeOf(Byte));
+    AData.Read(FrameData, SizeOf(FrameData[0]) * Length(FrameData));
+    AData.Read(FUnknown, SizeOf(FUnknown));
+    AData.Read(FFrameCount, SizeOf(FFrameCount));
+    AData.Read(FFrameInterval, SizeOf(FFrameInterval));
+    AData.Read(FFrameStart, SizeOf(FFrameStart));
   end;
 end;
 
-procedure TAnimData.Write;
+procedure TAnimData.Write(AData: TStream);
 begin
-  Data.Write(FrameData, 64);
-  Data.Write(FUnknown, SizeOf(Byte));
-  Data.Write(FFrameCount, SizeOf(Byte));
-  Data.Write(FFrameInterval, SizeOf(Byte));
-  Data.Write(FFrameStart, SizeOf(Byte));
+  AData.Write(FrameData, SizeOf(FrameData[0]) * Length(FrameData));
+  AData.Write(FUnknown, SizeOf(FUnknown));
+  AData.Write(FFrameCount, SizeOf(FFrameCount));
+  AData.Write(FFrameInterval, SizeOf(FFrameInterval));
+  AData.Write(FFrameStart, SizeOf(FFrameStart));
 end;
 
-function TAnimData.GetSize;
-begin
-  GetSize := AnimDataSize;
-end;
-
-constructor TAnimDataGroup.Create;
+function TAnimData.Clone: TAnimData;
 var
   i: Integer;
 begin
-  if assigned(Data) then
+  Result := TAnimData.Create(nil);
+  Result.FUnknown := FUnknown;
+  Result.FFrameCount := FFrameCount;
+  Result.FFrameInterval := FFrameInterval;
+  Result.FFrameStart := FFrameStart;
+  for i := 0 to 63 do
+    Result.FrameData[i] := FrameData[i];
+end;
+
+function TAnimData.GetSize: Integer;
+begin
+  Result := AnimDataSize;
+end;
+
+{ TAnimDataGroup }
+
+constructor TAnimDataGroup.Create(AData: TStream);
+var
+  i: Integer;
+begin
+  if AData <> nil then
   begin
-    FOffset := Data.Position;
-    Data.Read(FUnknown, SizeOf(LongInt));
+    AData.Read(FUnknown, SizeOf(FUnknown));
   end;
   for i := 0 to 7 do
-    AnimData[i] := TAnimData.Create(Data);
+    AnimData[i] := TAnimData.Create(AData);
 end;
 
 destructor TAnimDataGroup.Destroy;
@@ -131,18 +146,18 @@ begin
     AnimData[i].Free;
 end;
 
-procedure TAnimDataGroup.Write;
+procedure TAnimDataGroup.Write(AData: TStream);
 var
   i: Integer;
 begin
-  Data.Write(FUnknown, SizeOf(LongInt));
+  AData.Write(FUnknown, SizeOf(FUnknown));
   for i := 0 to 7 do
-    AnimData[i].Write(Data);
+    AnimData[i].Write(AData);
 end;
 
-function TAnimDataGroup.GetSize;
+function TAnimDataGroup.GetSize: Integer;
 begin
-  GetSize := AnimDataGroupSize;
+  Result := AnimDataGroupSize;
 end;
 
 end.
