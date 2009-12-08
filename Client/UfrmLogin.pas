@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmLogin;
 
@@ -48,7 +48,7 @@ type
     gbConnection: TGroupBox;
     gbData: TGroupBox;
     gbActions: TGroupBox;
-    GroupBox1: TGroupBox;
+    gbProfiles: TGroupBox;
     imgHost: TImage;
     imgUsername: TImage;
     imgPassword: TImage;
@@ -108,12 +108,13 @@ begin
      (not FileExists(path + 'artidx.mul')) or
      (not FileExists(path + 'hues.mul')) or
      (not FileExists(path + 'tiledata.mul')) or
+     (not FileExists(path + 'animdata.mul')) or
      (not FileExists(path + 'texmaps.mul')) or
      (not FileExists(path + 'texidx.mul')) then
   begin
-    MessageDlg('Incorrect directory', 'The data path you specified does not seem to be correct.', mtWarning, [mbOK], 0);
+    MessageDlg('Incorrect directory', 'The data path you specified does not '
+      + 'seem to be correct.', mtWarning, [mbOK], 0);
     edData.SetFocus;
-    Exit;
   end else
     ModalResult := mrOK;
 end;
@@ -168,9 +169,11 @@ procedure TfrmLogin.FormCreate(Sender: TObject);
 var
   searchRec: TSearchRec;
 begin
-  lblCopyright.Caption := Format('UO CentrED Client Version %s (c) %s', [ProductVersion, Copyright]);
+  lblCopyright.Caption := Format('UO CentrED Client Version %s (c) %s',
+    [ProductVersion, Copyright]);
 
-  FProfilePath := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + 'Profiles' + PathDelim;
+  FProfilePath := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))
+    + 'Profiles' + PathDelim;
   ForceDirectories(FProfilePath);
   if FindFirst(FProfilePath + '*.ini', faAnyFile, searchRec) = 0 then
   begin

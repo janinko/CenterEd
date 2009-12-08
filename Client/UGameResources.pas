@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, UArtProvider, UTileDataProvider, UTexmapProvider,
-  ULandscape, UHueProvider;
+  ULandscape, UHueProvider, UAnimDataProvider;
   
 type
 
@@ -45,6 +45,7 @@ type
     FDataDir: string;
     FArtProvider: TArtProvider;
     FTiledataProvider: TTiledataProvider;
+    FAnimdataProvider: TAnimdataProvider;
     FTexmapProvider: TTexmapProvider;
     FHueProvider: THueProvider;
     FLandscape: TLandscape;
@@ -54,6 +55,7 @@ type
     property Hue: THueProvider read FHueProvider;
     property Landscape: TLandscape read FLandscape;
     property Tiledata: TTiledataProvider read FTiledataProvider;
+    property Animdata: TAnimDataProvider read FAnimdataProvider;
     property Texmaps: TTexmapProvider read FTexmapProvider;
 
     { Methods }
@@ -84,6 +86,7 @@ begin
   
   FArtProvider := TArtProvider.Create(GetFile('art.mul'), GetFile('artidx.mul'), True);
   FTiledataProvider := TTiledataProvider.Create(GetFile('tiledata.mul'), True);
+  FAnimdataProvider := TAnimDataProvider.Create(GetFile('animdata.mul'), True);
   FTexmapProvider := TTexmapProvider.Create(GetFile('texmaps.mul'), GetFile('texidx.mul'), True);
   FHueProvider := THueProvider.Create(GetFile('hues.mul'), True);
 end;
@@ -92,6 +95,7 @@ destructor TGameResourceManager.Destroy;
 begin
   FreeAndNil(FArtProvider);
   FreeAndNil(FTiledataProvider);
+  FreeAndNil(FAnimdataProvider);
   FreeAndNil(FTexmapProvider);
   FreeAndNil(FHueProvider);
   FreeAndNil(FLandscape);

@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UdmNetwork;
 
@@ -95,9 +95,9 @@ end;
 
 procedure TdmNetwork.DataModuleDestroy(Sender: TObject);
 begin
-  if FSendQueue <> nil then FreeAndNil(FSendQueue);
-  if FReceiveQueue <> nil then FreeAndNil(FReceiveQueue);
-  if PacketHandlers[$02] <> nil then FreeAndNil(PacketHandlers[$02]);
+  FreeAndNil(FSendQueue);
+  FreeAndNil(FReceiveQueue);
+  FreeAndNil(PacketHandlers[$02]);
 end;
 
 procedure TdmNetwork.TCPClientConnect(aSocket: TLSocket);
@@ -290,28 +290,33 @@ procedure TdmNetwork.DoLogin;
 begin
   tmNoOp.Enabled := False;
   frmLogin := TfrmLogin.Create(dmNetwork);
-  if frmInitialize = nil then frmInitialize := TfrmInitialize.Create(dmNetwork);
-  if frmTileInfo <> nil then FreeAndNil(frmTileInfo);
-  if frmEditAccount <> nil then FreeAndNil(frmEditAccount);
-  if frmAccountControl <> nil then FreeAndNil(frmAccountControl);
-  if frmConfirmation <> nil then FreeAndNil(frmConfirmation);
-  if frmDrawSettings <> nil then FreeAndNil(frmDrawSettings);
-  if frmMoveSettings <> nil then FreeAndNil(frmMoveSettings);
-  if frmElevateSettings <> nil then FreeAndNil(frmElevateSettings);
-  if frmHueSettings <> nil then FreeAndNil(frmHueSettings);
-  if frmBoundaries <> nil then FreeAndNil(frmBoundaries);
-  if frmFilter <> nil then FreeAndNil(frmFilter);
-  if frmVirtualLayer <> nil then FreeAndNil(frmVirtualLayer);
-  if frmAbout <> nil then FreeAndNil(frmAbout);
-  if frmRegionControl <> nil then FreeAndNil(frmRegionControl);
-  if frmLargeScaleCommand <> nil then FreeAndNil(frmLargeScaleCommand);
-  if frmRadarMap <> nil then FreeAndNil(frmRadarMap);
+  if frmInitialize = nil then
+    frmInitialize := TfrmInitialize.Create(dmNetwork);
+
+  FreeAndNil(frmTileInfo);
+  FreeAndNil(frmEditAccount);
+  FreeAndNil(frmAccountControl);
+  FreeAndNil(frmConfirmation);
+  FreeAndNil(frmDrawSettings);
+  FreeAndNil(frmMoveSettings);
+  FreeAndNil(frmElevateSettings);
+  FreeAndNil(frmHueSettings);
+  FreeAndNil(frmBoundaries);
+  FreeAndNil(frmFilter);
+  FreeAndNil(frmVirtualLayer);
+  FreeAndNil(frmAbout);
+  FreeAndNil(frmRegionControl);
+  FreeAndNil(frmLargeScaleCommand);
+  FreeAndNil(frmRadarMap);
+
   if frmMain <> nil then
   begin
     frmMain.ApplicationProperties1.OnIdle := nil;
     FreeAndNil(frmMain);
   end;
-  if GameResourceManager <> nil then FreeAndNil(GameResourceManager);
+
+  FreeAndNil(GameResourceManager);
+
   frmInitialize.Hide;
   while frmLogin.ShowModal = mrOK do
   begin

@@ -22,7 +22,7 @@ object dmNetwork: TdmNetwork
     Interval = 30000
     OnTimer = tmNoOpTimer
     OnStartTimer = tmNoOpStartTimer
-    left = 72
+    left = 112
     top = 24
   end
 end

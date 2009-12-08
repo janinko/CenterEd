@@ -123,7 +123,7 @@ procedure TMulManager.RegisterAnimDataProvider(
   AAnimDataProvider: TAnimDataProvider);
 begin
   FreeAndNil(FAnimDataProvider);
-  FTileDataProvider := AAnimDataProvider;
+  FAnimDataProvider := AAnimDataProvider;
 end;
 
 end.

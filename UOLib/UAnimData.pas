@@ -69,16 +69,16 @@ type
     property Unknown: LongInt read FUnknown write FUnknown;
   end;
 
-function GetAnimDataOffset(Block: Integer): Integer;
+function GetAnimDataOffset(AID: Integer): Integer;
 
 implementation
 
-function GetAnimDataOffset(Block: Integer): Integer;
+function GetAnimDataOffset(AID: Integer): Integer;
 var
   group, tile: Integer;
 begin
-  group := Block div 8;
-  tile := Block mod 8;
+  group := AID div 8;
+  tile := AID mod 8;
 
   Result := group * AnimDataGroupSize + 4 + tile * AnimDataSize;
 end;

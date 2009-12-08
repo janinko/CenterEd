@@ -48,6 +48,7 @@ type
     FAnimData: TAnimDataArray;
     function CalculateOffset(AID: Integer): Integer; override;
     function GetData(AID, AOffset: Integer): TAnimData; override;
+    procedure InitArray;
     procedure SetData(AID, AOffset: Integer; ABlock: TMulBlock); override;
   public
     property AnimData: TAnimDataArray read FAnimData;
@@ -61,15 +62,22 @@ implementation
 constructor TAnimDataProvider.Create(AData: TStream; AReadOnly: Boolean);
 begin
   inherited Create(AData, AReadOnly);
+  InitArray;
 end;
 
 constructor TAnimDataProvider.Create(AData: string; AReadOnly: Boolean);
 begin
   inherited Create(AData, AReadOnly);
+  InitArray;
 end;
 
 destructor TAnimDataProvider.Destroy;
+var
+  i: Integer;
 begin
+  for i := 0 to Length(FAnimData) - 1 do
+    FreeAndNil(FAnimData[i]);
+
   inherited Destroy;
 end;
 
@@ -81,6 +89,17 @@ end;
 function TAnimDataProvider.GetData(AID, AOffset: Integer): TAnimData;
 begin
   Result := FAnimData[AID];
+end;
+
+procedure TAnimDataProvider.InitArray;
+var
+  i: Integer;
+begin
+  for i := 0 to Length(FAnimData) - 1 do
+  begin
+    FData.Position := GetAnimDataOffset(i);
+    FAnimData[i] := TAnimData.Create(FData);
+  end;
 end;
 
 procedure TAnimDataProvider.SetData(AID, AOffset: Integer; ABlock: TMulBlock);

@@ -1,14 +1,14 @@
 object frmLogin: TfrmLogin
   Left = 290
-  Height = 265
+  Height = 246
   Top = 171
-  Width = 489
-  ActiveControl = edHost
+  Width = 481
+  ActiveControl = btnOK
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'UO CentrED'
-  ClientHeight = 265
-  ClientWidth = 489
+  ClientHeight = 246
+  ClientWidth = 481
   Font.Height = -11
   OnClose = FormClose
   OnCreate = FormCreate
@@ -16,53 +16,85 @@ object frmLogin: TfrmLogin
   ShowInTaskBar = stAlways
   LCLVersion = '0.9.29'
   object lblCopyright: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 14
-    Top = 251
-    Width = 489
-    Align = alBottom
+    Height = 15
+    Top = 231
+    Width = 481
     Alignment = taCenter
+    Anchors = [akLeft, akRight, akBottom]
     ParentColor = False
   end
   object gbConnection: TGroupBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = gbActions
+    AnchorSideBottom.Side = asrCenter
     Left = 8
     Height = 128
-    Top = 8
-    Width = 321
+    Top = 4
+    Width = 314
+    Anchors = [akTop, akLeft, akRight]
+    AutoSize = True
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 4
     Caption = 'Connection'
-    ClientHeight = 110
-    ClientWidth = 317
+    ClientHeight = 114
+    ClientWidth = 312
     TabOrder = 0
     object lblHost: TLabel
-      Left = 30
+      AnchorSideLeft.Control = imgHost
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = edHost
+      AnchorSideTop.Side = asrCenter
+      Left = 32
       Height = 14
-      Top = 9
+      Top = 10
       Width = 28
+      BorderSpacing.Left = 8
       Caption = 'Host:'
       ParentColor = False
     end
     object lblUsername: TLabel
-      Left = 30
+      AnchorSideLeft.Control = imgUsername
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = edUsername
+      AnchorSideTop.Side = asrCenter
+      Left = 32
       Height = 14
-      Top = 43
-      Width = 55
+      Top = 46
+      Width = 58
+      BorderSpacing.Left = 8
       Caption = 'Username:'
       ParentColor = False
     end
     object lblPassword: TLabel
-      Left = 30
+      AnchorSideLeft.Control = imgPassword
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = edPassword
+      AnchorSideTop.Side = asrCenter
+      Left = 32
       Height = 14
-      Top = 77
-      Width = 53
+      Top = 81
+      Width = 54
+      BorderSpacing.Left = 8
       Caption = 'Password:'
       ParentColor = False
     end
     object imgHost: TImage
-      Left = 6
+      AnchorSideLeft.Control = gbConnection
+      AnchorSideTop.Control = lblHost
+      AnchorSideTop.Side = asrCenter
+      Left = 8
       Height = 16
       Top = 9
       Width = 16
       AutoSize = True
+      BorderSpacing.Left = 8
       Picture.Data = {
         07545069786D61702E0A00002F2A2058504D202A2F0A73746174696320636861
         72202A64756D6D795B5D3D7B0A223136203136203132342032222C0A22517420
@@ -150,9 +182,12 @@ object frmLogin: TfrmLogin
       Transparent = True
     end
     object imgUsername: TImage
-      Left = 6
+      AnchorSideLeft.Control = imgHost
+      AnchorSideTop.Control = lblUsername
+      AnchorSideTop.Side = asrCenter
+      Left = 8
       Height = 16
-      Top = 43
+      Top = 45
       Width = 16
       AutoSize = True
       Picture.Data = {
@@ -242,9 +277,12 @@ object frmLogin: TfrmLogin
       Transparent = True
     end
     object imgPassword: TImage
-      Left = 6
+      AnchorSideLeft.Control = imgUsername
+      AnchorSideTop.Control = lblPassword
+      AnchorSideTop.Side = asrCenter
+      Left = 8
       Height = 16
-      Top = 77
+      Top = 80
       Width = 16
       AutoSize = True
       Picture.Data = {
@@ -324,34 +362,66 @@ object frmLogin: TfrmLogin
       Transparent = True
     end
     object edHost: TEdit
-      Left = 101
-      Height = 21
-      Top = 5
-      Width = 137
+      AnchorSideLeft.Control = lblUsername
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = gbConnection
+      AnchorSideRight.Control = edPort
+      Left = 98
+      Height = 19
+      Top = 8
+      Width = 143
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 8
+      BorderSpacing.Top = 8
       TabOrder = 0
       Text = 'localhost'
     end
     object edUsername: TEdit
-      Left = 101
-      Height = 21
-      Top = 39
-      Width = 201
+      AnchorSideLeft.Control = edHost
+      AnchorSideTop.Control = edHost
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = edPort
+      AnchorSideRight.Side = asrBottom
+      Left = 98
+      Height = 19
+      Top = 44
+      Width = 206
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 17
       TabOrder = 2
     end
     object edPassword: TEdit
-      Left = 101
-      Height = 21
-      Top = 73
-      Width = 201
+      AnchorSideLeft.Control = edUsername
+      AnchorSideTop.Control = edUsername
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = edUsername
+      AnchorSideRight.Side = asrBottom
+      Left = 98
+      Height = 19
+      Top = 79
+      Width = 206
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 16
+      BorderSpacing.Bottom = 16
       EchoMode = emPassword
       PasswordChar = '*'
       TabOrder = 3
     end
     object edPort: TSpinEdit
-      Left = 246
-      Height = 21
-      Top = 5
-      Width = 56
+      AnchorSideLeft.Control = edHost
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = edHost
+      AnchorSideRight.Control = gbConnection
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = edHost
+      AnchorSideBottom.Side = asrBottom
+      Left = 249
+      Height = 19
+      Top = 8
+      Width = 55
+      Anchors = [akTop, akRight, akBottom]
+      BorderSpacing.Left = 8
+      BorderSpacing.Right = 8
       MaxValue = 65565
       MinValue = 1024
       TabOrder = 1
@@ -359,18 +429,33 @@ object frmLogin: TfrmLogin
     end
   end
   object gbActions: TGroupBox
-    Left = 336
-    Height = 96
-    Top = 8
-    Width = 145
-    ClientHeight = 78
+    AnchorSideLeft.Control = gbConnection
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = gbConnection
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 330
+    Height = 76
+    Top = 12
+    Width = 143
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    ClientHeight = 74
     ClientWidth = 141
     TabOrder = 2
     object btnOK: TButton
-      Left = 6
+      AnchorSideLeft.Control = gbActions
+      AnchorSideTop.Control = gbActions
+      AnchorSideRight.Control = gbActions
+      AnchorSideRight.Side = asrBottom
+      Left = 8
       Height = 25
-      Top = 5
-      Width = 128
+      Top = 8
+      Width = 125
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Around = 8
       BorderSpacing.InnerBorder = 4
       Caption = '&OK'
       Default = True
@@ -378,10 +463,17 @@ object frmLogin: TfrmLogin
       TabOrder = 0
     end
     object btnCancel: TButton
-      Left = 6
+      AnchorSideLeft.Control = btnOK
+      AnchorSideTop.Control = btnOK
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = btnOK
+      AnchorSideRight.Side = asrBottom
+      Left = 8
       Height = 25
-      Top = 39
-      Width = 128
+      Top = 41
+      Width = 125
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Bottom = 8
       BorderSpacing.InnerBorder = 4
       Caption = '&Cancel'
       ModalResult = 2
@@ -390,51 +482,83 @@ object frmLogin: TfrmLogin
     end
   end
   object gbData: TGroupBox
+    AnchorSideLeft.Control = gbConnection
+    AnchorSideTop.Control = gbConnection
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = gbConnection
+    AnchorSideRight.Side = asrBottom
     Left = 8
-    Height = 97
-    Top = 144
-    Width = 321
+    Height = 95
+    Top = 136
+    Width = 314
+    Anchors = [akTop, akLeft, akRight]
+    AutoSize = True
+    BorderSpacing.Top = 4
     Caption = 'Data files'
-    ClientHeight = 79
-    ClientWidth = 317
+    ClientHeight = 81
+    ClientWidth = 312
     TabOrder = 1
     object lblData: TLabel
-      Left = 7
-      Height = 32
-      Top = 8
-      Width = 304
-      AutoSize = False
-      Caption = 'Select the directory containing art.mul, artidx.mul, hues.mul, tiledata.mul, texmaps.mul and texidx.mul.'
+      AnchorSideLeft.Control = gbData
+      AnchorSideTop.Control = gbData
+      AnchorSideRight.Control = gbData
+      AnchorSideRight.Side = asrBottom
+      Left = 8
+      Height = 46
+      Top = 4
+      Width = 296
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 8
+      BorderSpacing.Top = 4
+      BorderSpacing.Right = 8
+      Caption = 'Select the directory containing art.mul, artidx.mul, hues.mul, tiledata.mul, animdata.mul, texmaps.mul and texidx.mul.'
       ParentColor = False
       WordWrap = True
     end
     object edData: TDirectoryEdit
-      Left = 7
-      Height = 21
-      Top = 48
-      Width = 280
+      AnchorSideLeft.Control = lblData
+      AnchorSideTop.Control = lblData
+      AnchorSideTop.Side = asrBottom
+      Left = 8
+      Height = 19
+      Top = 54
+      Width = 272
       ShowHidden = False
       ButtonWidth = 23
       NumGlyphs = 1
+      BorderSpacing.Top = 4
+      BorderSpacing.Bottom = 8
       MaxLength = 0
       TabOrder = 0
     end
   end
-  object GroupBox1: TGroupBox
-    Left = 336
-    Height = 88
-    Top = 112
-    Width = 145
+  object gbProfiles: TGroupBox
+    AnchorSideLeft.Control = gbActions
+    AnchorSideTop.Control = gbActions
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = gbActions
+    AnchorSideRight.Side = asrBottom
+    Left = 330
+    Height = 85
+    Top = 96
+    Width = 143
+    Anchors = [akTop, akLeft, akRight]
+    AutoSize = True
+    BorderSpacing.Top = 8
     Caption = 'Profiles'
-    ClientHeight = 70
+    ClientHeight = 71
     ClientWidth = 141
     TabOrder = 3
     object btnSaveProfile: TSpeedButton
-      Left = 86
+      AnchorSideTop.Control = btnDeleteProfile
+      AnchorSideRight.Control = btnDeleteProfile
+      Left = 81
       Height = 22
       Hint = 'Save profile'
-      Top = 40
-      Width = 23
+      Top = 41
+      Width = 22
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 8
       Color = clBtnFace
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
@@ -479,11 +603,18 @@ object frmLogin: TfrmLogin
       ParentShowHint = False
     end
     object btnDeleteProfile: TSpeedButton
+      AnchorSideTop.Control = cbProfile
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = cbProfile
+      AnchorSideRight.Side = asrBottom
       Left = 111
       Height = 22
       Hint = 'Delete profile'
-      Top = 40
-      Width = 23
+      Top = 41
+      Width = 22
+      Anchors = [akTop, akRight]
+      BorderSpacing.Top = 8
+      BorderSpacing.Bottom = 8
       Color = clBtnFace
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
@@ -528,11 +659,19 @@ object frmLogin: TfrmLogin
       ParentShowHint = False
     end
     object cbProfile: TComboBox
-      Left = 6
-      Height = 21
-      Top = 8
-      Width = 128
-      ItemHeight = 13
+      AnchorSideLeft.Control = gbProfiles
+      AnchorSideTop.Control = gbProfiles
+      AnchorSideRight.Control = gbProfiles
+      AnchorSideRight.Side = asrBottom
+      Left = 8
+      Height = 29
+      Top = 4
+      Width = 125
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 8
+      BorderSpacing.Top = 4
+      BorderSpacing.Right = 8
+      ItemHeight = 0
       OnChange = cbProfileChange
       Style = csDropDownList
       TabOrder = 0
