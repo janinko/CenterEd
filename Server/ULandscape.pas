@@ -73,6 +73,8 @@ type
     property Static: TSeperatedStaticBlock read FStaticBlock;
   end;
 
+  TBlockCache = specialize TCacheManager<TBlock>;
+
   { TLandscape }
 
   TLandscape = class(TObject)
@@ -93,10 +95,10 @@ type
     FTiledataProvider: TTiledataProvider;
     FOwnsStreams: Boolean;
     FRadarMap: TRadarMap;
-    FBlockCache: TCacheManager;
+    FBlockCache: TBlockCache;
     FBlockSubscriptions: TBlockSubscriptions;
     procedure OnBlockChanged(ABlock: TMulBlock);
-    procedure OnRemoveCachedObject(AObject: TObject);
+    procedure OnRemoveCachedObject(ABlock: TBlock);
     function GetMapCell(AX, AY: Word): TMapCell;
     function GetStaticList(AX, AY: Word): TStaticItemList;
     function GetBlockSubscriptions(AX, AY: Word): TLinkedList;
@@ -312,7 +314,7 @@ begin
   if AValid then
   begin
     Write(TimeStamp, 'Creating Cache');
-    FBlockCache := TCacheManager.Create(256);
+    FBlockCache := TBlockCache.Create(256);
     FBlockCache.OnRemoveObject := @OnRemoveCachedObject;
     Write(', Tiledata');
     FTiledataProvider := TTiledataProvider.Create(ATiledata);
@@ -481,15 +483,12 @@ begin
   // Do nothing for now
 end;
 
-procedure TLandscape.OnRemoveCachedObject(AObject: TObject);
-var
-  block: TBlock;
+procedure TLandscape.OnRemoveCachedObject(ABlock: TBlock);
 begin
-  block := AObject as TBlock;
-  if block <> nil then
+  if ABlock <> nil then
   begin
-    if block.Map.Changed then SaveBlock(block.Map);
-    if block.Static.Changed then SaveBlock(block.Static);
+    if ABlock.Map.Changed then SaveBlock(ABlock.Map);
+    if ABlock.Static.Changed then SaveBlock(ABlock.Static);
   end;
 end;
 
@@ -500,7 +499,7 @@ begin
   Result := nil;
   if (AX >= 0) and (AX < FWidth) and (AY >= 0) and (AY < FHeight) then
   begin
-    if FBlockCache.QueryID(GetID(AX, AY), TObject(block)) then
+    if FBlockCache.QueryID(GetID(AX, AY), block) then
       Result := block.Map
     else
       Result := LoadBlock(AX, AY).Map;
@@ -514,7 +513,7 @@ begin
   Result := nil;
   if (AX >= 0) and (AX < FWidth) and (AY >= 0) and (AY < FHeight) then
   begin
-    if FBlockCache.QueryID(GetID(AX, AY), TObject(block)) then
+    if FBlockCache.QueryID(GetID(AX, AY), block) then
       Result := TSeperatedStaticBlock(block.Static)
     else
       Result := TSeperatedStaticBlock(LoadBlock(AX, AY).Static);
