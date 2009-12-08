@@ -5,6 +5,7 @@ object frmRadarMap: TfrmRadarMap
   Width = 479
   HorzScrollBar.Page = 478
   VertScrollBar.Page = 359
+  ActiveControl = sbMain
   Caption = 'Radar Map (1:8)'
   ClientHeight = 360
   ClientWidth = 479
@@ -14,7 +15,9 @@ object frmRadarMap: TfrmRadarMap
   OnResize = FormResize
   Position = poOwnerFormCenter
   ShowInTaskBar = stAlways
+  LCLVersion = '0.9.29'
   object pnlBottom: TPanel
+    Left = 0
     Height = 21
     Top = 339
     Width = 479
@@ -26,7 +29,8 @@ object frmRadarMap: TfrmRadarMap
     object lblPosition: TLabel
       Left = 8
       Height = 21
-      Width = 38
+      Top = 0
+      Width = 39
       Align = alLeft
       BorderSpacing.Left = 8
       Layout = tlCenter
@@ -34,16 +38,18 @@ object frmRadarMap: TfrmRadarMap
     end
   end
   object sbMain: TScrollBox
+    Left = 0
     Height = 339
+    Top = 0
     Width = 479
-    HorzScrollBar.Page = 474
-    HorzScrollBar.Range = 292
-    VertScrollBar.Page = 334
-    VertScrollBar.Range = 202
     Align = alClient
+    ClientHeight = 335
+    ClientWidth = 475
     TabOrder = 1
     object pbRadar: TPaintBox
+      Left = 0
       Height = 202
+      Top = 0
       Width = 292
       OnMouseDown = pbRadarMouseDown
       OnMouseMove = pbRadarMouseMove

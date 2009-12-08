@@ -172,8 +172,7 @@ begin
   lblCopyright.Caption := Format('UO CentrED Client Version %s (c) %s',
     [ProductVersion, Copyright]);
 
-  FProfilePath := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))
-    + 'Profiles' + PathDelim;
+  FProfilePath := GetAppConfigDir(False) + 'Profiles' + PathDelim;
   ForceDirectories(FProfilePath);
   if FindFirst(FProfilePath + '*.ini', faAnyFile, searchRec) = 0 then
   begin

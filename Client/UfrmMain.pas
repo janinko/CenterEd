@@ -275,6 +275,7 @@ type
   protected
     { Members }
     FAppDir: String;
+    FConfigDir: String;
     FX: Integer;
     FY: Integer;
     FDrawDistance: Integer;
@@ -821,6 +822,8 @@ var
   searchRec: TSearchRec;
 begin
   FAppDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  FConfigDir := GetAppConfigDir(False);
+  ForceDirectories(FConfigDir);
 
   FLandscape := ResMan.Landscape;
   FLandscape.OnChange := @OnLandscapeChanged;
@@ -850,7 +853,7 @@ begin
   vstChat.NodeDataSize := SizeOf(TChatInfo);
   pnlChatHeader.AnchorSide[akBottom].Control := pnlBottom;
   
-  FLocationsFile := FAppDir + 'Locations.dat';
+  FLocationsFile := FConfigDir + 'Locations.dat';
   vstLocations.NodeDataSize := SizeOf(TLocationInfo);
   try
     if FileExists(FLocationsFile) then
@@ -879,7 +882,7 @@ begin
   FVirtualTiles := TWorldItemList.Create(True);
   FUndoList := TPacketList.Create(True);
   
-  FRandomPresetLocation := FAppDir + 'RandomPresets' + PathDelim;
+  FRandomPresetLocation := FConfigDir + 'RandomPresets' + PathDelim;
   if not DirectoryExists(FRandomPresetLocation) then
     CreateDir(FRandomPresetLocation);
 

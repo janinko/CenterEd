@@ -31,6 +31,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
+  SysUtils,
   Interfaces, // this includes the LCL widgetset
   Forms, LResources, lnetvisual, LazOpenGLContext, UdmNetwork, UfrmMain,
   UfrmLogin, UfrmInitialize, UfrmAccountControl, virtualtreeview_package,
@@ -45,8 +46,14 @@ uses
 
 {$IFDEF WINDOWS}{$R CentrED.rc}{$ENDIF}
 
+function GetApplicationName: String;
+begin
+  Result := 'CentrED';
+end;
+
 begin
   {$I CentrED.lrs}
+  OnGetApplicationName := @GetApplicationName;
   Application.Initialize;
   Application.CreateForm(TdmNetwork, dmNetwork);
   Application.Run;

@@ -22,8 +22,8 @@ object frmLogin: TfrmLogin
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 15
-    Top = 231
+    Height = 16
+    Top = 230
     Width = 481
     Alignment = taCenter
     Anchors = [akLeft, akRight, akBottom]

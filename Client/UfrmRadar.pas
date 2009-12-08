@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmRadar;
 
@@ -179,8 +179,7 @@ begin
       begin
         checksum := ABuffer.ReadCardinal;
         realChecksum := crc32(0, nil, 0);
-        radarMapFileName := IncludeTrailingPathDelimiter(ExtractFilePath(
-          Application.ExeName)) + 'RadarMap.cache';
+        radarMapFileName := GetAppConfigDir(False) + 'RadarMap.cache';
         if FileExists(radarMapFileName) then
         begin
           radarMapFile := TFileStream.Create(radarMapFileName, fmOpenRead);
