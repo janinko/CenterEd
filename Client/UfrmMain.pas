@@ -983,9 +983,9 @@ end;
 procedure TfrmMain.ApplicationProperties1Idle(Sender: TObject; var Done: Boolean);
 begin
   if (FScreenBufferState <> CScreenBufferValid) or
-     (FRepaintNeeded and (MilliSecondsBetween(Now, FLastDraw) > 50)) then
+     ({FRepaintNeeded and }(MilliSecondsBetween(Now, FLastDraw) > 50)) then
   begin
-    Logger.Send([lcClient, lcDebug], 'Repainting Game Window');
+    //Logger.Send([lcClient, lcDebug], 'Repainting Game Window');
     oglGameWindow.Repaint;
     FLastDraw := Now;
     FRepaintNeeded := False;

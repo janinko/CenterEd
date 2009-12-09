@@ -33,7 +33,7 @@ uses
   SysUtils, Classes, math, LCLIntf, GL, GLu, ImagingOpenGL, Imaging,
   ImagingClasses, ImagingTypes, ImagingUtility,
   UGenericIndex, UMap, UStatics, UArt, UTexture, UTiledata, UHue, UWorldItem,
-  UMulBlock,
+  UMulBlock, UAnimData,
   UVector, UEnhancedMemoryStream, UGLFont,
   UCacheManager;
 
@@ -72,6 +72,17 @@ type
     constructor Create(AGraphic: TBaseImage);
   end;
 
+  { TAnimMaterial }
+
+  TAnimMaterial = class(TMaterial)
+    constructor Create(ABaseID: Word; AAnimData: TAnimData; AHue: THue = nil;
+      APartialHue: Boolean = False);
+  protected
+    FNextChange: DWord;
+    FAnimData: TAnimData;
+    function GetTexture: GLuint; override;
+  end;
+
   TMaterialCache = specialize TCacheManager<TMaterial>;
   
   { TLandTextureManager }
@@ -83,6 +94,7 @@ type
     FArtCache: TMaterialCache;
     FFlatLandArtCache: TMaterialCache;
     FTexCache: TMaterialCache;
+    FAnimations: TMaterialCache;
   public
     function GetArtMaterial(ATileID: Word): TMaterial; overload;
     function GetArtMaterial(ATileID: Word; AHue: THue;
@@ -289,6 +301,7 @@ begin
   FArtCache := TMaterialCache.Create(1024);
   FFlatLandArtCache := TMaterialCache.Create(128);
   FTexCache := TMaterialCache.Create(128);
+  FAnimations := TMaterialCache.Create(128);
 end;
 
 destructor TLandTextureManager.Destroy;
@@ -296,14 +309,28 @@ begin
   FreeAndNil(FArtCache);
   FreeAndNil(FFlatLandArtCache);
   FreeAndNil(FTexCache);
+  FreeAndNil(FAnimations);
   inherited Destroy;
 end;
 
 function TLandTextureManager.GetArtMaterial(ATileID: Word): TMaterial;
 var
   artEntry: TArt;
+  animData: TAnimData;
 begin
-  if not FArtCache.QueryID(ATileID, Result) then
+  Result := nil;
+
+  if ATileID >= $4000 then
+  begin
+    animData := ResMan.Animdata.AnimData[ATileID - $4000];
+    if (animData.FrameCount > 0) and not FAnimations.QueryID(ATileID, Result) then
+    begin
+      Result := TAnimMaterial.Create(ATileID, animData);
+      FAnimations.StoreID(ATileID, Result);
+    end;
+  end;
+
+  if (Result = nil) and not FArtCache.QueryID(ATileID, Result) then
   begin
     artEntry := TArt(ResMan.Art.Block[ATileID]);
 
@@ -318,6 +345,7 @@ function TLandTextureManager.GetArtMaterial(ATileID: Word; AHue: THue;
   APartialHue: Boolean): TMaterial;
 var
   artEntry: TArt;
+  animData: TAnimData;
   id: Integer;
 begin
   if AHue = nil then
@@ -325,8 +353,20 @@ begin
     Result := GetArtMaterial(ATileID);
   end else
   begin
+    Result := nil;
     id := ATileID or ((AHue.ID and $3FFF) shl 16) or (Byte(APartialHue) shl 30);
-    if not FArtCache.QueryID(id, Result) then
+
+    if ATileID >= $4000 then
+    begin
+      animData := ResMan.Animdata.AnimData[ATileID - $4000];
+      if (animData.FrameCount > 0) and not FAnimations.QueryID(id, Result) then
+      begin
+        Result := TAnimMaterial.Create(ATileID, animData, AHue, APartialHue);
+        FAnimations.StoreID(id, Result);
+      end;
+    end;
+
+    if (Result = nil) and not FArtCache.QueryID(id, Result) then
     begin
       artEntry := ResMan.Art.GetArt(ATileID, 0, AHue, APartialHue);
 
@@ -1523,6 +1563,64 @@ begin
   FRealWidth := FGraphic.Width;
   FRealHeight := FGraphic.Height;
   UpdateTexture;
+end;
+
+{ TAnimMaterial }
+
+constructor TAnimMaterial.Create(ABaseID: Word; AAnimData: TAnimData;
+  AHue: THue = nil; APartialHue: Boolean = False);
+var
+  i: Integer;
+  art: TArt;
+begin
+  //Logger.EnterMethod([lcLandscape, lcClient, lcDebug], 'TAnimMaterial.Create');
+  FAnimData := AAnimData;
+  FGraphic := TMultiImage.Create;
+
+  FRealWidth := 0;
+  FRealHeight := 0;
+
+  for i := 0 to AAnimData.FrameCount - 1 do
+  begin
+    {Logger.Send([lcLandscape, lcClient, lcDebug], 'Processing frame', i);
+    Logger.Send([lcLandscape, lcClient, lcDebug], 'FrameData', AAnimData.FrameData[i]);}
+
+    art := ResMan.Art.GetArt(ABaseID + AAnimData.FrameData[i], 0, AHue,
+      APartialHue);
+
+    if (art.Graphic.Width > FRealWidth) or
+       (art.Graphic.Height > FRealHeight) then
+    begin
+      FRealWidth := art.Graphic.Width;
+      FRealHeight := art.Graphic.Height;
+    end;
+
+    FGraphic.AddImage(art.Graphic);
+    art.Free;
+  end;
+
+  FGraphic.DeleteImage(0); //Delete the image that was created during TMultiImage.Create
+
+  FGraphic.ActiveImage := 0;
+  FNextChange := GetTickCount + AAnimData.FrameStart * 100;
+  UpdateTexture;
+  //Logger.ExitMethod([lcLandscape, lcClient, lcDebug], 'TAnimMaterial.Create');
+end;
+
+function TAnimMaterial.GetTexture: GLuint;
+begin
+  if FNextChange <= GetTickCount then
+  begin
+    FGraphic.ActiveImage := (FGraphic.ActiveImage + 1) mod FAnimData.FrameCount;
+    if FGraphic.ActiveImage = 0 then
+      FNextChange := GetTickCount + FAnimData.FrameStart * 100
+    else
+      FNextChange:= GetTickCount + FAnimData.FrameInterval * 100;
+
+    UpdateTexture;
+  end;
+
+  Result := FTexture;
 end;
 
 end.

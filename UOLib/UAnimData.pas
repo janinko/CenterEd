@@ -49,7 +49,7 @@ type
     FFrameInterval: Byte;
     FFrameStart: Byte;
   public
-    FrameData: array[0..63] of Byte;
+    FrameData: array[0..63] of ShortInt;
     property Unknown: Byte read FUnknown write FUnknown;
     property FrameCount: Byte read FFrameCount write FFrameCount;
     property FrameInterval: Byte read FFrameInterval write FFrameInterval;
