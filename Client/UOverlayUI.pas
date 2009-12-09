@@ -30,8 +30,8 @@ unit UOverlayUI;
 interface
 
 uses
-  Classes, SysUtils, Gl, GLU, ImagingTypes, ImagingClasses, ImagingOpenGL,
-  OpenGLContext, ImagingUtility;
+  Classes, SysUtils, Gl, GLU, Imaging, ImagingTypes, ImagingClasses,
+  ImagingOpenGL, OpenGLContext, ImagingUtility;
   
 type
 
@@ -93,7 +93,7 @@ begin
   GetGLTextureCaps(caps);
   if caps.NonPowerOfTwo then
   begin
-    FWidth := FRealHeight;
+    FWidth := FRealWidth;
     FHeight := FRealHeight;
   end else
   begin
@@ -127,10 +127,13 @@ begin
 end;
 
 function TGLArrow.HitTest(AX, AY: Integer): Boolean;
+var
+  pixel: TColor32Rec;
 begin
   if (AX > -1) and (AX < FRealWidth) and (AY > -1) and (AY < FRealHeight) then
   begin
-    Result := (FGraphic <> nil) and (Cardinal(PIntegerArray(FGraphic.Bits)^[AY * FWidth + AX] and $FF000000) > 0);
+    pixel := GetPixel32(FGraphic.ImageDataPointer^, AX, AY);
+    Result := pixel.A > 0;
   end else
     Result := False;
 end;
@@ -178,14 +181,17 @@ begin
   for i := 0 to 3 do
   begin
     FArrows[2*i] := TGLArrow.Create(arrow);
-    arrow.Rotate(-90);
+    if i < 3 then
+      arrow.Rotate(-90);
   end;
   arrow.Free;
+
   arrow := TSingleImage.CreateFromStream(ResourceManager.GetResource(1));
   for i := 0 to 3 do
   begin
     FArrows[2*i+1] := TGLArrow.Create(arrow);
-    arrow.Rotate(-90);
+    if i < 3 then
+      arrow.Rotate(-90);
   end;
   arrow.Free;
 end;
