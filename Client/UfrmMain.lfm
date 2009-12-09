@@ -16,6 +16,7 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
+  SessionProperties = 'Height;Left;Top;Width;WindowState;acFlat.Checked;acNoDraw.Checked;tbStatics.Down;tbTerrain.Down;mnuFlatShowHeight.Checked'
   ShowInTaskBar = stAlways
   LCLVersion = '0.9.29'
   WindowState = wsMaximized
@@ -2621,5 +2622,12 @@ object frmMain: TfrmMain
       Caption = 'Show Height'
       OnClick = mnuFlatShowHeightClick
     end
+  end
+  object XMLPropStorage1: TXMLPropStorage
+    StoredValues = <>
+    RootNodePath = 'Forms/frmMain'
+    Active = False
+    left = 368
+    top = 208
   end
 end

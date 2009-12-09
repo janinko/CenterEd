@@ -33,8 +33,9 @@ uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Menus,
   ComCtrls, OpenGLContext, GL, GLu, UGameResources, ULandscape, ExtCtrls,
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
-  LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList, fgl,
-  ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket, UGLFont;
+  LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
+  XMLPropStorage, fgl, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
+  UGLFont;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -160,6 +161,7 @@ type
     vdtRandom: TVirtualDrawTree;
     vstChat: TVirtualStringTree;
     vstLocations: TVirtualStringTree;
+    XMLPropStorage1: TXMLPropStorage;
     procedure acBoundariesExecute(Sender: TObject);
     procedure acDeleteExecute(Sender: TObject);
     procedure acDrawExecute(Sender: TObject);
@@ -825,6 +827,9 @@ begin
   FAppDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
   FConfigDir := GetAppConfigDir(False);
   ForceDirectories(FConfigDir);
+
+  XMLPropStorage1.FileName := FConfigDir + 'CentrED.xml';
+  XMLPropStorage1.Active := True;
 
   FLandscape := ResMan.Landscape;
   FLandscape.OnChange := @OnLandscapeChanged;
