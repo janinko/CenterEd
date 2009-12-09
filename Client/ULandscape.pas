@@ -46,25 +46,30 @@ type
   { TMaterial }             //TODO : add ref counting
   
   TMaterial = class
-    constructor Create(AWidth, AHeight: Integer; AGraphic: TSingleImage);
     destructor Destroy; override;
   protected
     FWidth: Integer;
     FHeight: Integer;
     FRealWidth: Integer;
     FRealHeight: Integer;
-    FTexture: GLuint;
-    FGraphic: TSingleImage;
+    FTexture: TGLuint;
+    FGraphic: TMultiImage;
+    function GetTexture: GLuint; virtual;
+    procedure UpdateTexture;
   public
     property Width: Integer read FWidth;
     property Height: Integer read FHeight;
     property RealWidth: Integer read FRealWidth;
     property RealHeight: Integer read FRealHeight;
-    property Texture: GLuint read FTexture;
-    property Graphic: TSingleImage read FGraphic;
+    property Texture: GLuint read GetTexture;
     
     function HitTest(AX, AY: Integer): Boolean;
-    procedure UpdateTexture;
+  end;
+
+  { TSimpleMaterial }
+
+  TSimpleMaterial = class(TMaterial)
+    constructor Create(AGraphic: TBaseImage);
   end;
 
   TMaterialCache = specialize TCacheManager<TMaterial>;
@@ -302,8 +307,7 @@ begin
   begin
     artEntry := TArt(ResMan.Art.Block[ATileID]);
 
-    Result := TMaterial.Create(artEntry.Graphic.Width, artEntry.Graphic.Height,
-      artEntry.Graphic);
+    Result := TSimpleMaterial.Create(artEntry.Graphic);
     FArtCache.StoreID(ATileID, Result);
 
     artEntry.Free;
@@ -326,8 +330,7 @@ begin
     begin
       artEntry := ResMan.Art.GetArt(ATileID, 0, AHue, APartialHue);
 
-      Result := TMaterial.Create(artEntry.Graphic.Width, artEntry.Graphic.Height,
-        artEntry.Graphic);
+      Result := TSimpleMaterial.Create(artEntry.Graphic);
       FArtCache.StoreID(id, Result);
 
       artEntry.Free;
@@ -343,8 +346,7 @@ begin
   begin
     artEntry := ResMan.Art.GetFlatLand(ATileID);
 
-    Result := TMaterial.Create(artEntry.Graphic.Width, artEntry.Graphic.Height,
-      artEntry.Graphic);
+    Result := TSimpleMaterial.Create(artEntry.Graphic);
     FFlatLandArtCache.StoreID(ATileID, Result);
 
     artEntry.Free;
@@ -382,8 +384,7 @@ begin
     begin
       texEntry := TTexture(ResMan.Texmaps.Block[texID]);
 
-      Result := TMaterial.Create(texEntry.Graphic.Width, texEntry.Graphic.Height,
-        texEntry.Graphic);
+      Result := TSimpleMaterial.Create(texEntry.Graphic);
       FTexCache.StoreID(ATileID, Result);
 
       texEntry.Free;
@@ -1143,34 +1144,29 @@ end;
 
 { TMaterial }
 
-constructor TMaterial.Create(AWidth, AHeight: Integer;
-  AGraphic: TSingleImage);
-var
-  caps: TGLTextureCaps;
-begin
-  inherited Create;
-  FRealWidth := AWidth;
-  FRealHeight := AHeight;
-  GetGLTextureCaps(caps);
-  if caps.NonPowerOfTwo then
-  begin
-    FWidth := AWidth;
-    FHeight := AHeight;
-  end else
-  begin
-    if IsPow2(AWidth) then FWidth := AWidth else FWidth := NextPow2(AWidth);
-    if IsPow2(AHeight) then FHeight := AHeight else FHeight := NextPow2(AHeight);
-  end;
-  FGraphic := TSingleImage.CreateFromParams(FWidth, FHeight, ifA8R8G8B8);
-  AGraphic.CopyTo(0, 0, AWidth, AHeight, FGraphic, 0, 0);
-  UpdateTexture;
-end;
-
 destructor TMaterial.Destroy;
 begin
-  if FGraphic <> nil then FreeAndNil(FGraphic);
   if FTexture <> 0 then glDeleteTextures(1, @FTexture);
+  FreeAndNil(FGraphic);
   inherited Destroy;
+end;
+
+function TMaterial.GetTexture: GLuint;
+begin
+  Result := FTexture;
+end;
+
+procedure TMaterial.UpdateTexture;
+begin
+  if FTexture <> 0 then glDeleteTextures(1, @FTexture);
+
+  FTexture := CreateGLTextureFromImage(FGraphic.ImageDataPointer^, 0, 0, False,
+    ifUnknown, @FWidth, @FHeight);
+  glBindTexture(GL_TEXTURE_2D, FTexture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 end;
 
 function TMaterial.HitTest(AX, AY: Integer): Boolean;
@@ -1185,18 +1181,6 @@ begin
     if pixel.A > 0 then
       Result := True;
   end;
-end;
-
-procedure TMaterial.UpdateTexture;
-begin
-  if FTexture <> 0 then glDeleteTextures(1, @FTexture);
-
-  FTexture := CreateGLTextureFromImage(FGraphic.ImageDataPointer^, 0, 0, False, ifUnknown, @FWidth, @FHeight);
-  glBindTexture(GL_TEXTURE_2D, FTexture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 end;
 
 { TScreenBuffer }
@@ -1528,6 +1512,17 @@ begin
   y := AScreenRect.Top + (AScreenRect.Bottom - AScreenRect.Top - FHeight) div 2;
   x := AScreenRect.Left + (AScreenRect.Right - AScreenRect.Left - FWidth) div 2;
   FFont.DrawText(x, y, FText);
+end;
+
+{ TSimpleMaterial }
+
+constructor TSimpleMaterial.Create(AGraphic: TBaseImage);
+begin
+  inherited Create;
+  FGraphic := TMultiImage.CreateFromImage(AGraphic);
+  FRealWidth := FGraphic.Width;
+  FRealHeight := FGraphic.Height;
+  UpdateTexture;
 end;
 
 end.

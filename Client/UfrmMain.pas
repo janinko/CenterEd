@@ -292,6 +292,7 @@ type
     FCurrentTile: TWorldItem;
     FSelectedTile: TWorldItem;
     FVirtualTiles: TWorldItemList;
+    FVLayerImage: TSingleImage;
     FVLayerMaterial: TMaterial;
     FOverlayUI: TOverlayUI;
     FLocationsFile: string;
@@ -781,6 +782,7 @@ begin
   begin
     frmVirtualLayer.seZ.Value := EnsureRange(frmVirtualLayer.seZ.Value +
       WheelDelta, -128, 127);
+    frmVirtualLayer.seZChange(frmVirtualLayer.seZ);
     cursorNeedsUpdate := True;
     Handled := True;
   end else if not (ssCtrl in Shift) then
@@ -818,7 +820,6 @@ end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 var
-  virtualLayerGraphic: TSingleImage;
   searchRec: TSearchRec;
 begin
   FAppDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
@@ -870,10 +871,7 @@ begin
 
   RegisterPacketHandler($0C, TPacketHandler.Create(0, @OnClientHandlingPacket));
 
-  virtualLayerGraphic := TSingleImage.CreateFromStream(ResourceManager.GetResource(2));
-  FVLayerMaterial := TMaterial.Create(virtualLayerGraphic.Width,
-    virtualLayerGraphic.Height, virtualLayerGraphic);
-  virtualLayerGraphic.Free;
+  FVLayerImage := TSingleImage.CreateFromStream(ResourceManager.GetResource(2));
 
   FGLFont := TGLFont.Create;
   FGLFont.LoadImage(ResourceManager.GetResource(3));
@@ -1182,6 +1180,7 @@ begin
   FreeAndNil(FTextureManager);
   FreeAndNil(FScreenBuffer);
   FreeAndNil(FOverlayUI);
+  FreeAndNil(FVLayerImage);
   FreeAndNil(FVLayerMaterial);
   FreeAndNil(FVirtualTiles);
   FreeAndNil(FUndoList);
@@ -1321,9 +1320,6 @@ begin
 
   InitRender;
   InitSize;
-  
-  if FVLayerMaterial.Texture = 0 then
-    FVLayerMaterial.UpdateTexture;
 
   glDisable(GL_DEPTH_TEST);
   Render;
@@ -2352,6 +2348,10 @@ begin
   if frmVirtualLayer.cbShowLayer.Checked then
   begin
     Logger.Send([lcClient, lcDebug], 'Preparing Virtual Layer');
+
+    if FVLayerMaterial = nil then
+      FVLayerMaterial := TSimpleMaterial.Create(FVLayerImage);
+
     i := 0;
     for tileX := FX + FLowOffsetX to FX + FHighOffsetX do
     begin
