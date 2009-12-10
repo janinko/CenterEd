@@ -881,7 +881,7 @@ begin
       MessageDlg('Warning', 'The Locations could not be loaded. Most likely it is an' + LineEnding +
         'outdated version or the file is damaged.' + LineEnding + LineEnding +
         'A backup will be made as "Locations.bak".', mtWarning, [mbOK], 0);
-      RenameFile(FLocationsFile, FAppDir + 'Locations.bak');
+      RenameFile(FLocationsFile, FConfigDir + 'Locations.bak');
     end;
   end;
 
