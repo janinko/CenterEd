@@ -52,10 +52,11 @@ type
     FHeight: Integer;
     FRealWidth: Integer;
     FRealHeight: Integer;
-    FTexture: TGLuint;
     FGraphic: TMultiImage;
-    function GetTexture: GLuint; virtual;
-    procedure UpdateTexture;
+    procedure CalculateTextureDimensions(ACaps: TGLTextureCaps; ARealWidth,
+      ARealHeight: Integer; out AWidth, AHeight: Integer);
+    function GenerateTexture(AImage: TBaseImage): TGLuint;
+    function GetTexture: GLuint; virtual; abstract;
   public
     property Width: Integer read FWidth;
     property Height: Integer read FHeight;
@@ -70,6 +71,10 @@ type
 
   TSimpleMaterial = class(TMaterial)
     constructor Create(AGraphic: TBaseImage);
+    destructor Destroy; override;
+  protected
+    FTexture: TGLuint;
+    function GetTexture: GLuint; override;
   end;
 
   { TAnimMaterial }
@@ -77,9 +82,12 @@ type
   TAnimMaterial = class(TMaterial)
     constructor Create(ABaseID: Word; AAnimData: TAnimData; AHue: THue = nil;
       APartialHue: Boolean = False);
+    destructor Destroy; override;
   protected
+    FActiveFrame: Byte;
     FNextChange: DWord;
     FAnimData: TAnimData;
+    FTextures: array of TGLuint;
     function GetTexture: GLuint; override;
   end;
 
@@ -1188,23 +1196,35 @@ end;
 
 destructor TMaterial.Destroy;
 begin
-  if FTexture <> 0 then glDeleteTextures(1, @FTexture);
   FreeAndNil(FGraphic);
   inherited Destroy;
 end;
 
-function TMaterial.GetTexture: GLuint;
+procedure TMaterial.CalculateTextureDimensions(ACaps: TGLTextureCaps;
+  ARealWidth, ARealHeight: Integer; out AWidth, AHeight: Integer);
 begin
-  Result := FTexture;
+  if ACaps.NonPowerOfTwo then
+  begin
+    AWidth := ARealWidth;
+    AHeight := ARealHeight;
+  end else
+  begin
+    if IsPow2(ARealWidth) then
+      AWidth := ARealWidth
+    else
+      AWidth := NextPow2(ARealWidth);
+
+    if IsPow2(ARealHeight) then
+      AHeight := ARealHeight
+    else
+      AHeight := NextPow2(ARealHeight);
+  end;
 end;
 
-procedure TMaterial.UpdateTexture;
+function TMaterial.GenerateTexture(AImage: TBaseImage): TGLuint;
 begin
-  if FTexture <> 0 then glDeleteTextures(1, @FTexture);
-
-  FTexture := CreateGLTextureFromImage(FGraphic.ImageDataPointer^, 0, 0, False,
-    ifUnknown, @FWidth, @FHeight);
-  glBindTexture(GL_TEXTURE_2D, FTexture);
+  Result := CreateGLTextureFromImage(AImage.ImageDataPointer^);
+  glBindTexture(GL_TEXTURE_2D, Result);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -1559,12 +1579,29 @@ end;
 { TSimpleMaterial }
 
 constructor TSimpleMaterial.Create(AGraphic: TBaseImage);
+var
+  caps: TGLTextureCaps;
 begin
   inherited Create;
-  FGraphic := TMultiImage.CreateFromImage(AGraphic);
-  FRealWidth := FGraphic.Width;
-  FRealHeight := FGraphic.Height;
-  UpdateTexture;
+  FRealWidth := AGraphic.Width;
+  FRealHeight := AGraphic.Height;
+
+  GetGLTextureCaps(caps);
+  CalculateTextureDimensions(caps, FRealWidth, FRealHeight, FWidth, FHeight);
+  FGraphic := TMultiImage.CreateFromParams(FWidth, FHeight, ifA8R8G8B8, 1);
+  AGraphic.CopyTo(0, 0, FRealWidth, FRealHeight, FGraphic, 0, 0);
+  FTexture := GenerateTexture(FGraphic);
+end;
+
+destructor TSimpleMaterial.Destroy;
+begin
+  if FTexture <> 0 then glDeleteTextures(1, @FTexture);
+  inherited Destroy;
+end;
+
+function TSimpleMaterial.GetTexture: GLuint;
+begin
+  Result := FTexture;
 end;
 
 { TAnimMaterial }
@@ -1573,56 +1610,67 @@ constructor TAnimMaterial.Create(ABaseID: Word; AAnimData: TAnimData;
   AHue: THue = nil; APartialHue: Boolean = False);
 var
   i: Integer;
-  art: TArt;
+  art: array of TArt;
+  caps: TGLTextureCaps;
 begin
-  //Logger.EnterMethod([lcLandscape, lcClient, lcDebug], 'TAnimMaterial.Create');
   FAnimData := AAnimData;
-  FGraphic := TMultiImage.Create;
 
   FRealWidth := 0;
   FRealHeight := 0;
 
+  SetLength(FTextures, AAnimData.FrameCount);
+  SetLength(art, AAnimData.FrameCount);
+
   for i := 0 to AAnimData.FrameCount - 1 do
   begin
-    {Logger.Send([lcLandscape, lcClient, lcDebug], 'Processing frame', i);
-    Logger.Send([lcLandscape, lcClient, lcDebug], 'FrameData', AAnimData.FrameData[i]);}
-
-    art := ResMan.Art.GetArt(ABaseID + AAnimData.FrameData[i], 0, AHue,
+    art[i] := ResMan.Art.GetArt(ABaseID + AAnimData.FrameData[i], 0, AHue,
       APartialHue);
 
-    if (art.Graphic.Width > FRealWidth) or
-       (art.Graphic.Height > FRealHeight) then
-    begin
-      FRealWidth := art.Graphic.Width;
-      FRealHeight := art.Graphic.Height;
-    end;
-
-    FGraphic.AddImage(art.Graphic);
-    art.Free;
+    if art[i].Graphic.Width > FRealWidth then
+      FRealWidth := art[i].Graphic.Width;
+    if art[i].Graphic.Height > FRealHeight then
+      FRealHeight := art[i].Graphic.Height;
   end;
 
-  FGraphic.DeleteImage(0); //Delete the image that was created during TMultiImage.Create
+  GetGLTextureCaps(caps);
+  CalculateTextureDimensions(caps, FRealWidth, FRealHeight, FWidth, FHeight);
+  FGraphic := TMultiImage.CreateFromParams(FWidth, FHeight, ifA8R8G8B8,
+    AAnimData.FrameCount);
+
+  for i := 0 to AAnimData.FrameCount - 1 do
+  begin
+    FGraphic.ActiveImage := i;
+    art[i].Graphic.CopyTo(0, 0, art[i].Graphic.Width, art[i].Graphic.Height,
+      FGraphic, 0, 0);
+    FTextures[i] := GenerateTexture(FGraphic);
+    art[i].Free;
+  end;
 
   FGraphic.ActiveImage := 0;
+  FActiveFrame := 0;
   FNextChange := GetTickCount + AAnimData.FrameStart * 100;
-  UpdateTexture;
-  //Logger.ExitMethod([lcLandscape, lcClient, lcDebug], 'TAnimMaterial.Create');
+end;
+
+destructor TAnimMaterial.Destroy;
+begin
+  glDeleteTextures(Length(FTextures), @FTextures[0]);
+  inherited Destroy;
 end;
 
 function TAnimMaterial.GetTexture: GLuint;
 begin
   if FNextChange <= GetTickCount then
   begin
-    FGraphic.ActiveImage := (FGraphic.ActiveImage + 1) mod FAnimData.FrameCount;
-    if FGraphic.ActiveImage = 0 then
+    FActiveFrame := (FActiveFrame + 1) mod FAnimData.FrameCount;
+    FGraphic.ActiveImage := FActiveFrame;
+
+    if FActiveFrame = 0 then
       FNextChange := GetTickCount + FAnimData.FrameStart * 100
     else
       FNextChange:= GetTickCount + FAnimData.FrameInterval * 100;
-
-    UpdateTexture;
   end;
 
-  Result := FTexture;
+  Result := FTextures[FActiveFrame];
 end;
 
 end.
