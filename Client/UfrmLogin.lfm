@@ -25,7 +25,7 @@ object frmLogin: TfrmLogin
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 17
+    Height = 18
     Top = 239
     Width = 481
     Alignment = taCenter
@@ -443,6 +443,7 @@ object frmLogin: TfrmLogin
     Top = 12
     Width = 143
     Anchors = [akTop, akLeft, akRight]
+    AutoSize = True
     BorderSpacing.Left = 8
     BorderSpacing.Top = 8
     BorderSpacing.Right = 8
@@ -458,7 +459,6 @@ object frmLogin: TfrmLogin
       Height = 25
       Top = 8
       Width = 125
-      Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Around = 8
       BorderSpacing.InnerBorder = 4
       Caption = '&OK'
