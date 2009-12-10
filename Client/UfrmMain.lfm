@@ -16,7 +16,7 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
-  SessionProperties = 'Height;Left;Top;Width;WindowState;acFlat.Checked;acNoDraw.Checked;tbStatics.Down;tbTerrain.Down;mnuFlatShowHeight.Checked'
+  SessionProperties = 'acFlat.Checked;acNoDraw.Checked;Height;Left;mnuFlatShowHeight.Checked;tbStatics.Down;tbTerrain.Down;Top;Width;WindowState;mnuShowAnimations.Checked;mnuSecurityQuestion.Checked'
   ShowInTaskBar = stAlways
   LCLVersion = '0.9.29'
   WindowState = wsMaximized
@@ -1423,6 +1423,22 @@ object frmMain: TfrmMain
         OnClick = mnuLargeScaleCommandsClick
       end
     end
+    object mnuSettings: TMenuItem
+      Caption = '&Settings'
+      object mnuShowAnimations: TMenuItem
+        AutoCheck = True
+        Caption = '&Animations'
+        Checked = True
+        Hint = 'Toggles whether to animate tiles or not.'
+        OnClick = mnuShowAnimationsClick
+      end
+      object mnuSecurityQuestion: TMenuItem
+        AutoCheck = True
+        Caption = '&Security question'
+        Checked = True
+        Hint = 'Ask for permission before processing area commands.'
+      end
+    end
     object mnuHelp: TMenuItem
       Caption = '&?'
       object mnuAbout: TMenuItem
@@ -2627,6 +2643,7 @@ object frmMain: TfrmMain
     StoredValues = <>
     RootNodePath = 'Forms/frmMain'
     Active = False
+    OnRestoreProperties = XMLPropStorage1RestoreProperties
     left = 368
     top = 208
   end

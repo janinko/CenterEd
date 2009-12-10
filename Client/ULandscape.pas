@@ -102,8 +102,10 @@ type
     FArtCache: TMaterialCache;
     FFlatLandArtCache: TMaterialCache;
     FTexCache: TMaterialCache;
-    FAnimations: TMaterialCache;
+    FAnimCache: TMaterialCache;
+    FUseAnims: Boolean;
   public
+    property UseAnims: Boolean read FUseAnims write FUseAnims;
     function GetArtMaterial(ATileID: Word): TMaterial; overload;
     function GetArtMaterial(ATileID: Word; AHue: THue;
       APartialHue: Boolean): TMaterial; overload;
@@ -309,7 +311,8 @@ begin
   FArtCache := TMaterialCache.Create(1024);
   FFlatLandArtCache := TMaterialCache.Create(128);
   FTexCache := TMaterialCache.Create(128);
-  FAnimations := TMaterialCache.Create(128);
+  FAnimCache := TMaterialCache.Create(128);
+  FUseAnims := True;
 end;
 
 destructor TLandTextureManager.Destroy;
@@ -317,7 +320,7 @@ begin
   FreeAndNil(FArtCache);
   FreeAndNil(FFlatLandArtCache);
   FreeAndNil(FTexCache);
-  FreeAndNil(FAnimations);
+  FreeAndNil(FAnimCache);
   inherited Destroy;
 end;
 
@@ -328,14 +331,14 @@ var
 begin
   Result := nil;
 
-  if (ATileID >= $4000) and (tdfAnimation in
+  if FUseAnims and (ATileID >= $4000) and (tdfAnimation in
       ResMan.Tiledata.StaticTiles[ATileID -$4000].Flags) then
   begin
     animData := ResMan.Animdata.AnimData[ATileID - $4000];
-    if (animData.FrameCount > 0) and not FAnimations.QueryID(ATileID, Result) then
+    if (animData.FrameCount > 0) and not FAnimCache.QueryID(ATileID, Result) then
     begin
       Result := TAnimMaterial.Create(ATileID, animData);
-      FAnimations.StoreID(ATileID, Result);
+      FAnimCache.StoreID(ATileID, Result);
     end;
   end;
 
@@ -365,14 +368,14 @@ begin
     Result := nil;
     id := ATileID or ((AHue.ID and $3FFF) shl 16) or (Byte(APartialHue) shl 30);
 
-    if (ATileID >= $4000) and (tdfAnimation in
+    if FUseAnims and (ATileID >= $4000) and (tdfAnimation in
       ResMan.Tiledata.StaticTiles[ATileID -$4000].Flags) then
     begin
       animData := ResMan.Animdata.AnimData[ATileID - $4000];
-      if (animData.FrameCount > 0) and not FAnimations.QueryID(id, Result) then
+      if (animData.FrameCount > 0) and not FAnimCache.QueryID(id, Result) then
       begin
         Result := TAnimMaterial.Create(ATileID, animData, AHue, APartialHue);
-        FAnimations.StoreID(id, Result);
+        FAnimCache.StoreID(id, Result);
       end;
     end;
 

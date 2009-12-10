@@ -88,6 +88,9 @@ type
     lblY: TLabel;
     lbClients: TListBox;
     MainMenu1: TMainMenu;
+    mnuSecurityQuestion: TMenuItem;
+    mnuShowAnimations: TMenuItem;
+    mnuSettings: TMenuItem;
     mnuFlatShowHeight: TMenuItem;
     mnuGrabHue: TMenuItem;
     mnuGrabTileID: TMenuItem;
@@ -209,6 +212,7 @@ type
     procedure mnuGrabTileIDClick(Sender: TObject);
     procedure mnuLargeScaleCommandsClick(Sender: TObject);
     procedure mnuRegionControlClick(Sender: TObject);
+    procedure mnuShowAnimationsClick(Sender: TObject);
     procedure mnuShutdownClick(Sender: TObject);
     procedure oglGameWindowDblClick(Sender: TObject);
     procedure oglGameWindowKeyDown(Sender: TObject; var Key: Word;
@@ -274,6 +278,7 @@ type
       Column: TColumnIndex; const NewText: String);
     procedure vstLocationsSaveNode(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Stream: TStream);
+    procedure XMLPropStorage1RestoreProperties(Sender: TObject);
   protected
     { Members }
     FAppDir: String;
@@ -466,6 +471,12 @@ end;
 procedure TfrmMain.mnuRegionControlClick(Sender: TObject);
 begin
   frmRegionControl.Show;
+end;
+
+procedure TfrmMain.mnuShowAnimationsClick(Sender: TObject);
+begin
+  FTextureManager.UseAnims := mnuShowAnimations.Checked;
+  RebuildScreenBuffer;
 end;
 
 procedure TfrmMain.mnuShutdownClick(Sender: TObject);
@@ -1691,6 +1702,11 @@ begin
   Stream.Write(locationInfo^.Name[1], stringLength);
 end;
 
+procedure TfrmMain.XMLPropStorage1RestoreProperties(Sender: TObject);
+begin
+  FTextureManager.UseAnims := mnuShowAnimations.Checked;
+end;
+
 procedure TfrmMain.SetX(const AValue: Integer);
 begin
   SetPos(AValue, FY);
@@ -2774,6 +2790,10 @@ begin
   if acMove.Checked and frmMoveSettings.cbAsk.Checked then
   begin
     Result := frmMoveSettings.ShowModal = mrYes;
+  end else
+  if not mnuSecurityQuestion.Checked then
+  begin
+    Result := True;
   end else
   begin
     frmConfirmation.Left := Mouse.CursorPos.x - frmConfirmation.btnYes.Left - frmConfirmation.btnYes.Width div 2;
