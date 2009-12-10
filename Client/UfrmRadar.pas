@@ -115,8 +115,8 @@ begin
     for y := 0 to FRadar.Height - 1 do
       radarMap[x * FRadar.Height + y] := EncodeUOColor(PInteger(FRadar.PixelPointers[x, y])^);
 
-  radarMapFile := TFileStream.Create(IncludeTrailingPathDelimiter(
-    ExtractFilePath(Application.ExeName)) + 'RadarMap.cache', fmCreate);
+  radarMapFile := TFileStream.Create(GetAppConfigDir(False) + 'RadarMap.cache',
+    fmCreate);
   radarMapFile.Write(radarMap[0], Length(radarMap) * SizeOf(Word));
   radarMapFile.Free;
 

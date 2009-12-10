@@ -1000,7 +1000,8 @@ end;
 procedure TfrmMain.ApplicationProperties1Idle(Sender: TObject; var Done: Boolean);
 begin
   if (FScreenBufferState <> CScreenBufferValid) or
-     ({FRepaintNeeded and }(MilliSecondsBetween(Now, FLastDraw) > 50)) then
+     ((FRepaintNeeded or mnuShowAnimations.Checked) and
+      (MilliSecondsBetween(Now, FLastDraw) > 50)) then
   begin
     //Logger.Send([lcClient, lcDebug], 'Repainting Game Window');
     oglGameWindow.Repaint;
@@ -1895,11 +1896,9 @@ procedure TfrmMain.InitSize;
 begin
   glViewport(0, 0, oglGameWindow.Width, oglGameWindow.Height);
   glMatrixMode(GL_PROJECTION);
-  glPushMatrix;
   glLoadIdentity;
   gluOrtho2D(0, oglGameWindow.Width, oglGameWindow.Height, 0);
   glMatrixMode(GL_MODELVIEW);
-  glPushMatrix;
   glLoadIdentity;
 end;
 
@@ -1998,6 +1997,9 @@ begin
     z := item.Z;
     rawZ := item.RawZ;
   end;
+
+  if ABlockInfo^.HighRes <> nil then ABlockInfo^.HighRes.DelRef;
+  if ABlockInfo^.LowRes <> nil then ABlockInfo^.LowRes.DelRef;
 
   ABlockInfo^.HighRes := nil;
   ABlockInfo^.CheckRealQuad := False;
@@ -2181,7 +2183,6 @@ begin
       if not highlight then
         glEnable(GL_LIGHTING);
 
-      glLoadName(PtrInt(item));
       glBegin(GL_QUADS);
         glNormal3fv(@blockInfo^.Normals^[0]);
         glTexCoord2i(0, 0); glVertex2iv(@blockInfo^.DrawQuad[0]);
@@ -2198,7 +2199,6 @@ begin
     end else
     begin
       glBindTexture(GL_TEXTURE_2D, blockInfo^.LowRes.Texture);
-      glLoadName(PtrInt(item));
       glBegin(GL_QUADS);
         glTexCoord2i(0, 0); glVertex2iv(@blockInfo^.DrawQuad[0]);
         glTexCoord2i(1, 0); glVertex2iv(@blockInfo^.DrawQuad[1]);

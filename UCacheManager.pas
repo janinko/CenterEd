@@ -26,6 +26,7 @@
 unit UCacheManager;
 
 {$mode objfpc}{$H+}
+{$interfaces corba}
 
 interface
 
@@ -33,6 +34,11 @@ uses
   SysUtils, Classes;
 
 type
+
+  ICacheable = interface['{0ABAA4DE-8128-47B3-ABFE-5250A74A0428}']
+    function CanBeRemoved: Boolean;
+    procedure RemoveFromCache;
+  end;
 
   { TCacheManager }
 
@@ -53,6 +59,7 @@ type
     FFirst: PCacheEntry;
     FLast: PCacheEntry;
     FOnRemoveObject: TRemoveObjectEvent;
+    procedure DoRemoveObject(var AObject: T; ANotify: Boolean = True);
   public
     constructor Create(ASize: Integer);
     destructor Destroy; override;
@@ -73,7 +80,23 @@ type
 
 implementation
 
+uses
+  Logging;
+
 { TCacheManager }
+
+procedure TCacheManager.DoRemoveObject(var AObject: T; ANotify: Boolean = True);
+var
+  cacheable: ICacheable;
+begin
+  if ANotify and Assigned(FOnRemoveObject) then FOnRemoveObject(AObject);
+
+  if TObject(AObject).GetInterface(ICacheable, cacheable) then
+    cacheable.RemoveFromCache
+  else
+    TObject(AObject).Free;
+  TObject(AObject) := nil;
+end;
 
 constructor TCacheManager.Create(ASize: Integer);
 var
@@ -109,10 +132,7 @@ begin
   for i := 1 to FSize do
   begin
     if Pointer(current^.Obj) <> nil then
-    begin
-      if Assigned(FOnRemoveObject) then FOnRemoveObject(current^.Obj);
-      FreeAndNil(current^.Obj);
-    end;
+      DoRemoveObject(current^.Obj);
     last := current;
     current := current^.Next;
     Dispose(last);
@@ -166,7 +186,7 @@ begin
     begin
       current^.ID := LongInt($FFFFFFFF);
       if Pointer(current^.Obj) <> nil then
-        FreeAndNil(current^.Obj);
+        DoRemoveObject(current^.Obj, False);
     end;
     if (current^.Next <> nil) then
       FLast := current;
@@ -184,8 +204,7 @@ begin
     if Pointer(current^.Obj) <> nil then
     begin
       current^.ID := LongInt($FFFFFFFF);
-      if Assigned(FOnRemoveObject) then FOnRemoveObject(current^.Obj);
-      FreeAndNil(current^.Obj);
+      DoRemoveObject(current^.Obj);
     end;
     current := current^.Next;
   end;
@@ -230,17 +249,37 @@ end;
 procedure TCacheManager.StoreID(AID: Integer; AObj: T);
 var
   current: PCacheEntry;
+  cacheable: ICacheable;
+  i: Integer;
 begin
   current := FLast^.Next; //well, FLast is not really the last, but the one before the last ;)
   FLast^.Next := nil;
   current^.Next := FFirst;
   FFirst := current;
-  FFirst^.ID := AID;
-  if Pointer(FFirst^.Obj) <> nil then //if the last cache entry did contain an object, remove it now
+  if Pointer(FFirst^.Obj) <> nil then //if the last cache entry did contain an object, remove it now or grow
   begin
-    if Assigned(FOnRemoveObject) then FOnRemoveObject(FFirst^.Obj);
-    FreeAndNil(FFirst^.Obj);
+    if TObject(FFirst^.Obj).GetInterface(ICacheable, cacheable) and
+      not cacheable.CanBeRemoved then
+    begin
+      Logger.Send([lcInfo], 'Cache growing (%s)', [ClassName]);
+      New(FLast^.Next);
+      current := FLast^.Next;
+      current^.ID := FFirst^.ID;
+      current^.Obj := FFirst^.Obj;
+      for i := 2 to FSize do
+      begin
+        New(current^.Next);
+        FLast := current;
+        current := current^.Next;
+        current^.ID := LongInt($FFFFFFFF);
+        current^.Obj := nil;
+      end;
+      current^.Next := nil;
+      FSize := FSize * 2;
+    end else
+      DoRemoveObject(current^.Obj);
   end;
+  FFirst^.ID := AID;
   FFirst^.Obj := AObj;
 end;
 

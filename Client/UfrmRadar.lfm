@@ -30,7 +30,7 @@ object frmRadarMap: TfrmRadarMap
       Left = 8
       Height = 21
       Top = 0
-      Width = 39
+      Width = 41
       Align = alLeft
       BorderSpacing.Left = 8
       Layout = tlCenter

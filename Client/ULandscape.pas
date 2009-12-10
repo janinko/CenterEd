@@ -43,11 +43,13 @@ type
   PRadarBlock = ^TRadarBlock;
   TRadarBlock = array[0..7, 0..7] of Word;
   
-  { TMaterial }             //TODO : add ref counting
+  { TMaterial }
   
-  TMaterial = class
+  TMaterial = class(ICacheable)
+    constructor Create;
     destructor Destroy; override;
   protected
+    FRefCount: Integer;
     FWidth: Integer;
     FHeight: Integer;
     FRealWidth: Integer;
@@ -63,8 +65,14 @@ type
     property RealWidth: Integer read FRealWidth;
     property RealHeight: Integer read FRealHeight;
     property Texture: GLuint read GetTexture;
-    
+
+    procedure AddRef;
+    procedure DelRef;
     function HitTest(AX, AY: Integer): Boolean;
+
+    {ICacheable}
+    function CanBeRemoved: Boolean;
+    procedure RemoveFromCache;
   end;
 
   { TSimpleMaterial }
@@ -100,7 +108,6 @@ type
     destructor Destroy; override;
   protected
     FArtCache: TMaterialCache;
-    FFlatLandArtCache: TMaterialCache;
     FTexCache: TMaterialCache;
     FAnimCache: TMaterialCache;
     FUseAnims: Boolean;
@@ -109,7 +116,6 @@ type
     function GetArtMaterial(ATileID: Word): TMaterial; overload;
     function GetArtMaterial(ATileID: Word; AHue: THue;
       APartialHue: Boolean): TMaterial; overload;
-    function GetFlatLandMaterial(ATileID: Word): TMaterial;
     function GetStaticMaterial(AStaticItem: TStaticItem;
       AOverrideHue: Integer = -1): TMaterial;
     function GetTexMaterial(ATileID: Word): TMaterial;
@@ -309,7 +315,6 @@ constructor TLandTextureManager.Create;
 begin
   inherited Create;
   FArtCache := TMaterialCache.Create(1024);
-  FFlatLandArtCache := TMaterialCache.Create(128);
   FTexCache := TMaterialCache.Create(128);
   FAnimCache := TMaterialCache.Create(128);
   FUseAnims := True;
@@ -318,7 +323,6 @@ end;
 destructor TLandTextureManager.Destroy;
 begin
   FreeAndNil(FArtCache);
-  FreeAndNil(FFlatLandArtCache);
   FreeAndNil(FTexCache);
   FreeAndNil(FAnimCache);
   inherited Destroy;
@@ -351,6 +355,8 @@ begin
 
     artEntry.Free;
   end;
+
+  Result.AddRef;
 end;
 
 function TLandTextureManager.GetArtMaterial(ATileID: Word; AHue: THue;
@@ -388,21 +394,7 @@ begin
 
       artEntry.Free;
     end;
-  end;
-end;
-
-function TLandTextureManager.GetFlatLandMaterial(ATileID: Word): TMaterial;
-var
-  artEntry: TArt;
-begin
-  if not FFlatLandArtCache.QueryID(ATileID, Result) then
-  begin
-    artEntry := ResMan.Art.GetFlatLand(ATileID);
-
-    Result := TSimpleMaterial.Create(artEntry.Graphic);
-    FFlatLandArtCache.StoreID(ATileID, Result);
-
-    artEntry.Free;
+    Result.AddRef;
   end;
 end;
 
@@ -417,7 +409,7 @@ begin
     AOverrideHue := AStaticItem.Hue;
 
   if AOverrideHue > 0 then
-    hue := ResMan.Hue.Hues[AOverrideHue]
+    hue := ResMan.Hue.Hues[AOverrideHue - 1]
   else
     hue := nil;
 
@@ -444,6 +436,9 @@ begin
     end else
       Result := nil;
   end;
+
+  if Result <> nil then
+    Result.AddRef;
 end;
 
 { TSeperatedStaticBlock }
@@ -1197,6 +1192,11 @@ end;
 
 { TMaterial }
 
+constructor TMaterial.Create;
+begin
+  FRefCount := 1;
+end;
+
 destructor TMaterial.Destroy;
 begin
   FreeAndNil(FGraphic);
@@ -1234,6 +1234,18 @@ begin
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 end;
 
+procedure TMaterial.AddRef;
+begin
+  Inc(FRefCount);
+end;
+
+procedure TMaterial.DelRef;
+begin
+  Dec(FRefCount);
+  if FRefCount < 1 then
+    Free;
+end;
+
 function TMaterial.HitTest(AX, AY: Integer): Boolean;
 var
   pixel: TColor32Rec;
@@ -1246,6 +1258,16 @@ begin
     if pixel.A > 0 then
       Result := True;
   end;
+end;
+
+function TMaterial.CanBeRemoved: Boolean;
+begin
+  Result := FRefCount <= 1;
+end;
+
+procedure TMaterial.RemoveFromCache;
+begin
+  DelRef;
 end;
 
 { TScreenBuffer }
@@ -1303,6 +1325,8 @@ begin
     current^.Item.Locked := False;
     current^.Item.OnDestroy.UnregisterEvent(@OnTileRemoved);
     if current^.Normals <> nil then Dispose(current^.Normals);
+    if current^.HighRes <> nil then current^.HighRes.DelRef;
+    if current^.LowRes <> nil then current^.LowRes.DelRef;
     current^.Text.Free;
     Dispose(current);
     current := next;
@@ -1331,6 +1355,8 @@ begin
       if last <> nil then last^.Next := current^.Next;
 
       if current^.Normals <> nil then Dispose(current^.Normals);
+      if current^.HighRes <> nil then current^.HighRes.DelRef;
+      if current^.LowRes <> nil then current^.LowRes.DelRef;
       current^.Text.Free;
 
       Dispose(current);
@@ -1616,6 +1642,8 @@ var
   art: array of TArt;
   caps: TGLTextureCaps;
 begin
+  inherited Create;
+
   FAnimData := AAnimData;
 
   FRealWidth := 0;
