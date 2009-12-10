@@ -16,7 +16,7 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
-  SessionProperties = 'acFlat.Checked;acNoDraw.Checked;Height;Left;mnuFlatShowHeight.Checked;tbStatics.Down;tbTerrain.Down;Top;Width;WindowState;mnuShowAnimations.Checked;mnuSecurityQuestion.Checked'
+  SessionProperties = 'acFlat.Checked;acNoDraw.Checked;Height;Left;mnuFlatShowHeight.Checked;mnuSecurityQuestion.Checked;mnuShowAnimations.Checked;tbStatics.Down;tbTerrain.Down;Top;Width;WindowState;spTileList.Top'
   ShowInTaskBar = stAlways
   LCLVersion = '0.9.29'
   WindowState = wsMaximized
@@ -507,6 +507,7 @@ object frmMain: TfrmMain
           TabOrder = 0
           TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
           TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
+          OnClick = vdtRandomClick
           OnDragOver = vdtRandomDragOver
           OnDragDrop = vdtRandomDragDrop
           OnDrawNode = vdtTilesDrawNode

@@ -238,6 +238,7 @@ type
     procedure tmGrabTileInfoTimer(Sender: TObject);
     procedure tmMovementTimer(Sender: TObject);
     procedure tmTileHintTimer(Sender: TObject);
+    procedure vdtRandomClick(Sender: TObject);
     procedure vdtRandomDragDrop(Sender: TBaseVirtualTree; Source: TObject;
       DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState;
       Pt: TPoint; var Effect: Integer; Mode: TDropMode);
@@ -1403,6 +1404,37 @@ procedure TfrmMain.tmTileHintTimer(Sender: TObject);
 begin
   frmTileInfo.Show;
   tmTileHint.Enabled := False;
+end;
+
+procedure TfrmMain.vdtRandomClick(Sender: TObject);
+var
+  node: PVirtualNode;
+  tileInfo: PTileInfo;
+  selectedID: Integer;
+begin
+  if vdtRandom.SelectedCount = 1 then
+  begin
+    node := vdtRandom.GetFirstSelected;
+    if node <> nil then
+    begin
+      tileInfo := vdtRandom.GetNodeData(node);
+      selectedID := tileInfo^.ID;
+
+      node := vdtTiles.GetFirst;
+      while node <> nil do
+      begin
+        tileInfo := vdtTiles.GetNodeData(node);
+        if tileInfo^.ID = selectedID then
+        begin
+          vdtTiles.ClearSelection;
+          vdtTiles.Selected[node] := True;
+          vdtTiles.FocusedNode := node;
+          node := nil;
+        end else
+          node := vdtTiles.GetNext(node);
+      end;
+    end;
+  end;
 end;
 
 procedure TfrmMain.vdtRandomDragDrop(Sender: TBaseVirtualTree; Source: TObject;
