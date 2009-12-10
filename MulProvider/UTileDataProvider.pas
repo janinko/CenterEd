@@ -35,6 +35,9 @@ uses
 type
   TLandTileDataArray = array[$0..$3FFF] of TLandTileData;
   TStaticTileDataArray = array[$0..$3FFF] of TStaticTileData;
+
+  { TTiledataProvider }
+
   TTiledataProvider = class(TMulProvider)
     constructor Create(AData: TStream; AReadOnly: Boolean = False); overload; override;
     constructor Create(AData: string; AReadOnly: Boolean = False); overload; override;
@@ -46,10 +49,12 @@ type
     function CalculateOffset(AID: Integer): Integer; override;
     function GetData(AID, AOffset: Integer): TMulBlock; override;
     procedure SetData(AID, AOffset: Integer; ABlock: TMulBlock); override;
+    function GetTileData(AID: Integer): TTiledata;
   public
     function GetBlock(AID: Integer): TMulBlock; override;
     property LandTiles: TLandTileDataArray read FLandTiles;
     property StaticTiles: TStaticTileDataArray read FStaticTiles;
+    property TileData[AID: Integer]: TTiledata read GetTileData; //all tiles, no cloning
   end;
 
 implementation
@@ -137,6 +142,14 @@ begin
     FData.Position := AOffset;
     ABlock.Write(FData);
   end;
+end;
+
+function TTiledataProvider.GetTileData(AID: Integer): TTiledata;
+begin
+  if AID < $4000 then
+    Result := FLandTiles[AID]
+  else
+    Result := FStaticTiles[AID - $4000];
 end;
 
 end.

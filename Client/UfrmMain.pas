@@ -2297,7 +2297,7 @@ var
 begin
   if cbTerrain.Checked then minID := $0 else minID := $4000;
   if cbStatics.Checked then maxID := $7FFF else maxID := $3FFF;
-  filter := AnsiLowerCase(edFilter.Text);
+  filter := AnsiLowerCase(UTF8ToISO_8859_1(edFilter.Text));
   
   node := vdtTiles.GetFirstSelected;
   if node <> nil then
@@ -2314,8 +2314,8 @@ begin
   begin
     if ResMan.Art.Exists(i) then
     begin
-      if (filter <> '') and (Pos(filter, AnsiLowerCase(TTileData(
-        ResMan.Tiledata.Block[i]).TileName)) = 0) then Continue;
+      if (filter <> '') and (Pos(filter, AnsiLowerCase(
+        ResMan.Tiledata.TileData[i].TileName)) = 0) then Continue;
       node := vdtTiles.AddChild(nil);
       tileInfo := vdtTiles.GetNodeData(node);
       tileInfo^.ID := i;
