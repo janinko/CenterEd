@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UMulProvider;
 
@@ -34,7 +34,10 @@ uses
 
 type
   TOnProgressEvent = procedure(Total, Current: Integer) of object;
-  TMulEventHandler = class(TObject)
+
+  { TMulEventHandler }
+
+  TMulEventHandler = class
     constructor Create;
     destructor Destroy; override;
   protected
@@ -44,7 +47,10 @@ type
     procedure UnregisterEvent(AEvent: TMulBlockChanged);
     procedure FireEvents(ABlock: TMulBlock);
   end;
-  TMulProvider = class(TObject)
+
+  { TMulProvider }
+
+  TMulProvider = class
     constructor Create; overload; virtual;
     constructor Create(AData: TStream; AReadOnly: Boolean = False); overload; virtual;
     constructor Create(AData: string; AReadOnly: Boolean = False); overload; virtual;
@@ -70,6 +76,9 @@ type
     property Block[ID: Integer]: TMulBlock read GetBlock write SetBlock;
     property Data: TStream read FData;
   end;
+
+  { TIndexedMulProvider }
+
   TIndexedMulProvider = class(TMulProvider)
     constructor Create(AData, AIndex: TStream; AReadOnly: Boolean = False); overload; virtual;
     constructor Create(AData, AIndex: string; AReadOnly: Boolean = False); overload; virtual;
@@ -308,7 +317,7 @@ var
 begin
   FIndex.Position := CalculateIndexOffset(AID);
   genericIndex := TGenericIndex.Create(FIndex);
-  Result := genericIndex.Lookup <> LongInt($FFFFFFFF);
+  Result := (genericIndex.Lookup > -1) and (genericIndex.Size > 0);
   genericIndex.Free;
 end;
 

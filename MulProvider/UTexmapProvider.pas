@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UTexmapProvider;
 
@@ -44,7 +44,7 @@ implementation
 
 function TTexmapProvider.GetData(AID: Integer; AIndex: TGenericIndex): TMulBlock;
 begin
-  if AIndex.Lookup <> LongInt($FFFFFFFF) then
+  if (AIndex.Lookup > -1) and (AIndex.Size > 0) then
     Result := TTexture.Create(FData, AIndex)
   else
     Result := TTexture.Create(-1);

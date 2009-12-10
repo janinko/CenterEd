@@ -42,7 +42,7 @@ uses
   UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
   UPacketHandlers, UAdminHandling, UGameResources, ULandscape, UfrmToolWindow,
   Logging, UTileDataProvider, UMap, UWorldItem, UStatics, UTiledata, UAnimData,
-  UGLFont, UAnimDataProvider, UMulManager;
+  UGLFont, UAnimDataProvider, UMulManager, UArtProvider, UTexmapProvider;
 
 {$IFDEF WINDOWS}{$R CentrED.rc}{$ENDIF}
 

@@ -37,7 +37,7 @@ type
 
   { TGameResourceManager }
 
-  TGameResourceManager = class(TObject)
+  TGameResourceManager = class
     constructor Create(ADataDir: string);
     destructor Destroy; override;
   protected

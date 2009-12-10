@@ -56,7 +56,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="40">
+    <Units Count="42">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -298,6 +298,16 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UMulManager"/>
       </Unit39>
+      <Unit40>
+        <Filename Value="../MulProvider/UArtProvider.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UArtProvider"/>
+      </Unit40>
+      <Unit41>
+        <Filename Value="../MulProvider/UTexmapProvider.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UTexmapProvider"/>
+      </Unit41>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

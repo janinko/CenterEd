@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UArtProvider;
 
@@ -54,7 +54,7 @@ end;
 function TArtProvider.GetArtData(AID: Integer; AIndex: TGenericIndex;
   AColor: Word; AHue: THue; APartialHue: Boolean): TArt;
 begin
-  if AIndex.Lookup <> LongInt($FFFFFFFF) then
+  if (AIndex.Lookup > -1) and (AIndex.Size > 0) then
   begin
     if AID < $4000 then
       Result := TArt.Create(FData, AIndex, atLand, AColor, AHue, APartialHue)
