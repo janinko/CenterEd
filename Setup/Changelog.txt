@@ -1,6 +1,21 @@
 Changelog:
 [C] = Client, [S] = Server, [-] = Both/Unrelated
 
+Version 0.5
+===========
+[C] Completely reworked rendering (should be much faster now)
+[C] Added one-step UnDo
+[C] Added support for animated tiles
+[C] Added optional height information to flat mode
+[C] Added keyboard movement (NumPad, Arrow Keys, WSAD)
+[C] Added live-preview for drawing operations
+[C] Changed config path to be within the home directory
+[C] Added options to toggle animations and security questions
+[C] Added (re)storing of options on start/exit
+[C] Added highlight of target regions to the LargeScaleCommand window
+[C] Optimized memory handling to adjust for larger requirements
+[-] Several internal fixes and cleanups
+
 Version 0.4.1
 =============
 [C] Added random altitude to the elevate tool

@@ -15,10 +15,9 @@
     <LazDoc Paths="../doc"/>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <CurrentMajorRevNr Value="4"/>
-      <CurrentMinorRevNr Value="5"/>
-      <CurrentBuildNr Value="141"/>
-      <ProjectVersion Value="0.4.5.141"/>
+      <CurrentMajorRevNr Value="5"/>
+      <CurrentBuildNr Value="162"/>
+      <ProjectVersion Value="0.5.0.162"/>
       <CompanyName Value="AKS DataBasis"/>
       <FileDescription Value="UO CentrED"/>
       <LegalCopyright Value="Andreas Schneider"/>
@@ -56,7 +55,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="42">
+    <Units Count="43">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -308,6 +307,10 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UTexmapProvider"/>
       </Unit41>
+      <Unit42>
+        <Filename Value="../version.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit42>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -330,13 +333,13 @@
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
       <Optimizations>
-        <OptimizationLevel Value="0"/>
+        <OptimizationLevel Value="3"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>
-        <GenerateDebugInfo Value="True"/>
-        <UseHeaptrc Value="True"/>
+        <UseLineInfoUnit Value="False"/>
+        <StripSymbols Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>
       <Options>
@@ -350,7 +353,7 @@
         <IgnoredMessages idx5024="True"/>
       </CompilerMessages>
       <CustomOptions Value="-FE../bin/
-"/>
+-dNoLogging"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>

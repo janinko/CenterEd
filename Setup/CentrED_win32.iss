@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=CentrED
-AppVerName=CentrED 0.4.1
+AppVerName=CentrED 0.5
 AppPublisher=AKS DataBasis
 AppPublisherURL=http://www.aksdb.de/CentrED
 AppSupportURL=http://www.aksdb.de/CentrED
@@ -13,13 +13,17 @@ DefaultGroupName=AKS DataBasis\CentrED
 OutputBaseFilename=CentrED_win32
 Compression=lzma
 SolidCompression=true
-VersionInfoVersion=0.4.1
+VersionInfoVersion=0.5
 VersionInfoCompany=AKS DataBasis
 VersionInfoDescription=Client/Server based multiuser map editor
-VersionInfoTextVersion=0.4.1
+VersionInfoTextVersion=0.5
 VersionInfoCopyright=Andreas Schneider
 AppCopyright=Andreas Schneider
 InfoBeforeFile=Changelog.txt
+SignTool=defsign $f
+AppVersion=0.5
+AppID={{77BCACC0-C2D9-470D-858F-A3D94A5F27A5}
+SignedUninstaller=true
 
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl
@@ -31,7 +35,6 @@ Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:Ad
 Source: ..\bin\CentrED.exe; DestDir: {app}; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 Source: ..\bin\CentrED.dat; DestDir: {app}
-Source: ..\bin\Profiles\README; DestDir: {app}\Profiles
 
 [Icons]
 Name: {group}\CentrED; Filename: {app}\CentrED.exe
@@ -40,4 +43,4 @@ Name: {commondesktop}\CentrED; Filename: {app}\CentrED.exe; Tasks: desktopicon
 [Run]
 Filename: {app}\CentrED.exe; Description: {cm:LaunchProgram,CentrED}; Flags: nowait postinstall skipifsilent
 [Messages]
-BeveledLabel=Copyright 2008 Andreas Schneider
+BeveledLabel=Copyright 2009 Andreas Schneider
