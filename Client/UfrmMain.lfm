@@ -3,7 +3,7 @@ object frmMain: TfrmMain
   Height = 603
   Top = 135
   Width = 766
-  ActiveControl = oglGameWindow
+  ActiveControl = cbTerrain
   Caption = 'UO CentrED'
   ClientHeight = 580
   ClientWidth = 766
@@ -140,7 +140,7 @@ object frmMain: TfrmMain
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = spTileList
         Left = 4
-        Height = 250
+        Height = 242
         Top = 56
         Width = 210
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -193,13 +193,13 @@ object frmMain: TfrmMain
         AnchorSideBottom.Control = tsTiles
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 181
-        Top = 311
+        Height = 189
+        Top = 303
         Width = 218
         Align = alBottom
         Anchors = [akTop, akLeft, akRight, akBottom]
         Caption = 'Random pool'
-        ClientHeight = 167
+        ClientHeight = 175
         ClientWidth = 216
         TabOrder = 1
         object btnAddRandom: TSpeedButton
@@ -363,7 +363,7 @@ object frmMain: TfrmMain
           Left = 164
           Height = 22
           Hint = 'Save Preset'
-          Top = 134
+          Top = 142
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -417,7 +417,7 @@ object frmMain: TfrmMain
           Left = 190
           Height = 22
           Hint = 'Delete Preset'
-          Top = 134
+          Top = 142
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -474,7 +474,7 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = cbRandomPreset
           Cursor = 63
           Left = 4
-          Height = 106
+          Height = 114
           Top = 24
           Width = 208
           Anchors = [akTop, akLeft, akRight, akBottom]
@@ -505,6 +505,7 @@ object frmMain: TfrmMain
           Header.ParentFont = True
           Header.Style = hsFlatButtons
           TabOrder = 0
+          TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
           TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
           TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
           OnClick = vdtRandomClick
@@ -522,7 +523,7 @@ object frmMain: TfrmMain
           AnchorSideBottom.Side = asrBottom
           Left = 4
           Height = 29
-          Top = 134
+          Top = 142
           Width = 156
           Anchors = [akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
@@ -541,7 +542,7 @@ object frmMain: TfrmMain
         Cursor = crVSplit
         Left = 0
         Height = 5
-        Top = 306
+        Top = 298
         Width = 218
         Align = alNone
         Anchors = [akLeft, akRight, akBottom]
@@ -555,7 +556,7 @@ object frmMain: TfrmMain
         Left = 110
         Height = 19
         Hint = 'Append S or T to restrict the search to Statics or Terrain.'
-        Top = 279
+        Top = 271
         Width = 96
         Anchors = [akRight, akBottom]
         BorderSpacing.Right = 8
@@ -640,10 +641,10 @@ object frmMain: TfrmMain
         AnchorSideLeft.Control = btnDeleteLocation
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = btnDeleteLocation
-        Left = 128
+        Left = 125
         Height = 22
         Hint = 'Clear'
-        Top = 450
+        Top = 466
         Width = 23
         BorderSpacing.Left = 4
         Color = clBtnFace
@@ -693,10 +694,10 @@ object frmMain: TfrmMain
         AnchorSideLeft.Side = asrCenter
         AnchorSideBottom.Control = tsLocations
         AnchorSideBottom.Side = asrBottom
-        Left = 101
+        Left = 98
         Height = 22
         Hint = 'Delete'
-        Top = 450
+        Top = 466
         Width = 23
         Anchors = [akLeft, akBottom]
         BorderSpacing.Bottom = 4
@@ -745,10 +746,10 @@ object frmMain: TfrmMain
       object btnAddLocation: TSpeedButton
         AnchorSideTop.Control = btnDeleteLocation
         AnchorSideRight.Control = btnDeleteLocation
-        Left = 74
+        Left = 71
         Height = 22
         Hint = 'Add'
-        Top = 450
+        Top = 466
         Width = 23
         Anchors = [akTop, akRight]
         BorderSpacing.Right = 4
@@ -802,8 +803,8 @@ object frmMain: TfrmMain
         AnchorSideBottom.Control = btnDeleteLocation
         Cursor = 63
         Left = 4
-        Height = 428
-        Top = 18
+        Height = 458
+        Top = 4
         Width = 210
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Around = 4
@@ -819,7 +820,7 @@ object frmMain: TfrmMain
           item
             Position = 1
             Text = 'Name'
-            Width = 131
+            Width = 133
           end>
         Header.DefaultHeight = 17
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]

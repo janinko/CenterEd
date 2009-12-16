@@ -35,7 +35,7 @@ uses
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
   XMLPropStorage, fgl, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
-  UGLFont;
+  UGLFont, DOM, XMLRead, XMLWrite;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -321,6 +321,7 @@ type
     function  GetSelectedRect: TRect;
     procedure InitRender;
     procedure InitSize;
+    procedure LoadLocations;
     procedure MoveBy(AOffsetX, AOffsetY: Integer); inline;
     procedure PrepareMapCell(AMapCell: TMapCell);
     procedure PrepareScreenBlock(ABlockInfo: PBlockInfo);
@@ -328,6 +329,7 @@ type
     procedure ProcessAccessLevel;
     procedure RebuildScreenBuffer;
     procedure Render;
+    procedure SaveLocations;
     procedure SetCurrentTile(const AValue: TWorldItem);
     procedure SetDarkLights; inline;
     procedure SetNormalLights; inline;
@@ -871,20 +873,9 @@ begin
   vstChat.NodeDataSize := SizeOf(TChatInfo);
   pnlChatHeader.AnchorSide[akBottom].Control := pnlBottom;
   
-  FLocationsFile := FConfigDir + 'Locations.dat';
+  FLocationsFile := FConfigDir + 'Locations.xml';
   vstLocations.NodeDataSize := SizeOf(TLocationInfo);
-  try
-    if FileExists(FLocationsFile) then
-      vstLocations.LoadFromFile(FLocationsFile);
-  except
-    on E: EVirtualTreeError do
-    begin
-      MessageDlg('Warning', 'The Locations could not be loaded. Most likely it is an' + LineEnding +
-        'outdated version or the file is damaged.' + LineEnding + LineEnding +
-        'A backup will be made as "Locations.bak".', mtWarning, [mbOK], 0);
-      RenameFile(FLocationsFile, FConfigDir + 'Locations.bak');
-    end;
-  end;
+  LoadLocations;
 
   RegisterPacketHandler($0C, TPacketHandler.Create(0, @OnClientHandlingPacket));
 
@@ -1192,8 +1183,8 @@ procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
   CurrentTile := nil;
   SelectedTile := nil;
-  
-  vstLocations.SaveToFile(FLocationsFile);
+
+  SaveLocations;
 
   FreeAndNil(FTextureManager);
   FreeAndNil(FScreenBuffer);
@@ -1676,7 +1667,7 @@ var
   locationInfo: PLocationInfo;
 begin
   locationInfo := Sender.GetNodeData(Node);
-  locationInfo^.Name := '';
+  locationInfo^.Name := EmptyStr;
 end;
 
 procedure TfrmMain.vstLocationsGetText(Sender: TBaseVirtualTree;
@@ -1900,6 +1891,46 @@ begin
   gluOrtho2D(0, oglGameWindow.Width, oglGameWindow.Height, 0);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity;
+end;
+
+procedure TfrmMain.LoadLocations;
+var
+  xmlDoc: TXMLDocument;
+  location: TDOMElement;
+  locationNode: PVirtualNode;
+  locationInfo: PLocationInfo;
+  locations: TDOMNodeList;
+  i, j: Integer;
+begin
+  vstLocations.Clear;
+
+  if FileExists(FLocationsFile) then
+  begin
+    ReadXMLFile(xmlDoc, FLocationsFile);
+    if xmlDoc.DocumentElement.NodeName = 'Locations' then
+    begin
+      locations := xmlDoc.DocumentElement.ChildNodes;
+      for i := 0 to locations.Count - 1 do
+      begin
+        location := TDOMElement(locations[i]);
+        locationNode := vstLocations.AddChild(nil);
+        locationInfo := vstLocations.GetNodeData(locationNode);
+        locationInfo^.Name := location.AttribStrings['Name'];
+
+        if TryStrToInt(location.AttribStrings['X'], j) then
+          locationInfo^.X := j
+        else
+          locationInfo^.X := 0;
+
+        if TryStrToInt(location.AttribStrings['Y'], j) then
+          locationInfo^.Y := j
+        else
+          locationInfo^.Y := 0;
+      end;
+    end;
+
+    xmlDoc.Free;
+  end;
 end;
 
 procedure TfrmMain.MoveBy(AOffsetX, AOffsetY: Integer); inline;
@@ -2216,6 +2247,33 @@ begin
   end;
 
   FOverlayUI.Draw(oglGameWindow);
+end;
+
+procedure TfrmMain.SaveLocations;
+var
+  xmlDoc: TXMLDocument;
+  location: TDOMElement;
+  locationNode: PVirtualNode;
+  locationInfo: PLocationInfo;
+begin
+  xmlDoc := TXMLDocument.Create;
+  xmlDoc.AppendChild(xmlDoc.CreateElement('Locations'));
+
+  locationNode := vstLocations.GetFirst;
+  while locationNode <> nil do
+  begin
+    locationInfo := vstLocations.GetNodeData(locationNode);
+    location := xmlDoc.CreateElement('Location');
+    location.AttribStrings['Name'] := locationInfo^.Name;
+    location.AttribStrings['X'] := IntToStr(locationInfo^.X);
+    location.AttribStrings['Y'] := IntToStr(locationInfo^.Y);
+    xmlDoc.DocumentElement.AppendChild(location);
+
+    locationNode := vstLocations.GetNext(locationNode);
+  end;
+
+  WriteXMLFile(xmlDoc, FLocationsFile);
+  xmlDoc.Free;
 end;
 
 procedure TfrmMain.OnLandscapeChanged;
