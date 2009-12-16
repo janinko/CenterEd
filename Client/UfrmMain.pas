@@ -793,6 +793,9 @@ var
   cursorNeedsUpdate: Boolean;
   newZ: ShortInt;
 begin
+  if CurrentTile = nil then
+    Exit;
+
   //We want single steps ...
   WheelDelta := WheelDelta div WHEEL_DELTA;
 
