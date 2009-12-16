@@ -304,7 +304,8 @@ type
     FVLayerMaterial: TMaterial;
     FOverlayUI: TOverlayUI;
     FLocationsFile: string;
-    FRandomPresetLocation: string;
+    FRandomPresetsFile: string;
+    FRandomPresetsDoc: TXMLDocument;
     FLastDraw: TDateTime;
     FAccessChangedListeners: array of TAccessChangedListener;
     FRepaintNeeded: Boolean;
@@ -314,6 +315,7 @@ type
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
+    function  FindRandomPreset(AName: String): TDOMElement;
     procedure ForceUpdateCurrentTile;
     procedure GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
       DrawY: Integer); inline;
@@ -322,6 +324,7 @@ type
     procedure InitRender;
     procedure InitSize;
     procedure LoadLocations;
+    procedure LoadRandomPresets;
     procedure MoveBy(AOffsetX, AOffsetY: Integer); inline;
     procedure PrepareMapCell(AMapCell: TMapCell);
     procedure PrepareScreenBlock(ABlockInfo: PBlockInfo);
@@ -330,6 +333,7 @@ type
     procedure RebuildScreenBuffer;
     procedure Render;
     procedure SaveLocations;
+    procedure SaveRandomPresets;
     procedure SetCurrentTile(const AValue: TWorldItem);
     procedure SetDarkLights; inline;
     procedure SetNormalLights; inline;
@@ -835,8 +839,6 @@ begin
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
-var
-  searchRec: TSearchRec;
 begin
   FAppDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
   FConfigDir := GetAppConfigDir(False);
@@ -887,18 +889,9 @@ begin
 
   FVirtualTiles := TWorldItemList.Create(True);
   FUndoList := TPacketList.Create(True);
-  
-  FRandomPresetLocation := FConfigDir + 'RandomPresets' + PathDelim;
-  if not DirectoryExists(FRandomPresetLocation) then
-    CreateDir(FRandomPresetLocation);
 
-  if FindFirst(FRandomPresetLocation + '*.dat', faAnyFile, searchRec) = 0 then
-  begin
-    repeat
-      cbRandomPreset.Items.Add(ChangeFileExt(searchRec.Name, ''));
-    until FindNext(searchRec) <> 0;
-  end;
-  FindClose(searchRec);
+  FRandomPresetsFile := FConfigDir + 'RandomPresets.xml';
+  LoadRandomPresets;
 
   DoubleBuffered := True;
   pnlBottom.DoubleBuffered := True;
@@ -912,10 +905,13 @@ begin
 end;
 
 procedure TfrmMain.btnRandomPresetDeleteClick(Sender: TObject);
+var
+  preset: TDOMElement;
 begin
   if cbRandomPreset.ItemIndex > -1 then
   begin
-    DeleteFile(FRandomPresetLocation + cbRandomPreset.Text + '.dat');
+    preset := TDOMElement(cbRandomPreset.Items.Objects[cbRandomPreset.ItemIndex]);
+    FRandomPresetsDoc.DocumentElement.RemoveChild(preset);
     cbRandomPreset.Items.Delete(cbRandomPreset.ItemIndex);
     cbRandomPreset.ItemIndex := -1;
   end;
@@ -923,39 +919,65 @@ end;
 
 procedure TfrmMain.btnRandomPresetSaveClick(Sender: TObject);
 var
-  fileName: string;
-  index: Integer;
+  presetName: string;
+  i, index: Integer;
+  preset, tile: TDOMElement;
+  children: TDOMNodeList;
+  tileNode: PVirtualNode;
+  tileInfo: PTileInfo;
 begin
-  fileName := cbRandomPreset.Text;
-  if InputQuery('Save Preset', 'Enter the name of the preset:', fileName) then
+  presetName := cbRandomPreset.Text;
+  if InputQuery('Save Preset', 'Enter the name of the preset:', presetName) then
   begin
-    vdtRandom.SaveToFile(FRandomPresetLocation + fileName + '.dat');;
-    index := cbRandomPreset.Items.IndexOf(fileName);
-    if index = -1 then
+    preset := FindRandomPreset(presetName);
+    if preset = nil then
     begin
-      cbRandomPreset.Items.Add(fileName);
-      index := cbRandomPreset.Items.Count - 1;
+      preset := FRandomPresetsDoc.CreateElement('Preset');
+      preset.AttribStrings['Name'] := presetName;
+      FRandomPresetsDoc.DocumentElement.AppendChild(preset);
+      cbRandomPreset.Items.AddObject(presetName, preset);
+    end else
+    begin
+      children := preset.ChildNodes;
+      for i := children.Count - 1 downto 0 do
+        preset.RemoveChild(children[i]);
     end;
-    cbRandomPreset.ItemIndex := index;
+
+    tileNode := vdtRandom.GetFirst;
+    while tileNode <> nil do
+    begin
+      tileInfo := vdtRandom.GetNodeData(tileNode);
+      tile := FRandomPresetsDoc.CreateElement('Tile');
+      tile.AttribStrings['ID'] := IntToStr(tileInfo^.ID);
+      preset.AppendChild(tile);
+      tileNode := vdtRandom.GetNext(tileNode);
+    end;
+
+    cbRandomPreset.ItemIndex := cbRandomPreset.Items.IndexOfObject(preset);
   end;
 end;
 
 procedure TfrmMain.cbRandomPresetChange(Sender: TObject);
+var
+  preset, tile: TDOMElement;
+  tiles: TDOMNodeList;
+  tileNode: PVirtualNode;
+  tileInfo: PTileInfo;
+  i: Integer;
 begin
   if cbRandomPreset.ItemIndex > -1 then
   begin
-    try
-      vdtRandom.LoadFromFile(FRandomPresetLocation + cbRandomPreset.Text + '.dat');
-    except
-      on EVirtualTreeError do
+    vdtRandom.Clear;
+    preset := TDOMElement(cbRandomPreset.Items.Objects[cbRandomPreset.ItemIndex]);
+    tiles := preset.ChildNodes;
+    for i := 0 to tiles.Count - 1 do
+    begin
+      tile := TDOMElement(tiles[i]);
+      if tile.NodeName = 'Tile' then
       begin
-        if MessageDlg('Error', 'The profile could not be loaded. Most likely it is an' + LineEnding +
-          'outdated version or the file is damaged.' + LineEnding + LineEnding +
-          'Should this profile be deleted now?', mtError, [mbYes, mbNo], 0) = mrYes then
-        begin
-          DeleteFile(FRandomPresetLocation + cbRandomPreset.Text + '.dat');
-          cbRandomPreset.Items.Delete(cbRandomPreset.ItemIndex);
-        end;
+        tileNode := vdtRandom.AddChild(nil);
+        tileInfo := vdtRandom.GetNodeData(tileNode);
+        tileInfo^.ID := StrToInt(tile.AttribStrings['ID']);
       end;
     end;
   end;
@@ -1185,6 +1207,7 @@ begin
   SelectedTile := nil;
 
   SaveLocations;
+  SaveRandomPresets;
 
   FreeAndNil(FTextureManager);
   FreeAndNil(FScreenBuffer);
@@ -1194,6 +1217,7 @@ begin
   FreeAndNil(FVirtualTiles);
   FreeAndNil(FUndoList);
   FreeAndNil(FGLFont);
+  FreeAndNil(FRandomPresetsDoc);
   
   RegisterPacketHandler($0C, nil);
 end;
@@ -1913,23 +1937,53 @@ begin
       for i := 0 to locations.Count - 1 do
       begin
         location := TDOMElement(locations[i]);
-        locationNode := vstLocations.AddChild(nil);
-        locationInfo := vstLocations.GetNodeData(locationNode);
-        locationInfo^.Name := location.AttribStrings['Name'];
+        if location.NodeName = 'Location' then
+        begin
+          locationNode := vstLocations.AddChild(nil);
+          locationInfo := vstLocations.GetNodeData(locationNode);
+          locationInfo^.Name := location.AttribStrings['Name'];
 
-        if TryStrToInt(location.AttribStrings['X'], j) then
-          locationInfo^.X := j
-        else
-          locationInfo^.X := 0;
+          if TryStrToInt(location.AttribStrings['X'], j) then
+            locationInfo^.X := j
+          else
+            locationInfo^.X := 0;
 
-        if TryStrToInt(location.AttribStrings['Y'], j) then
-          locationInfo^.Y := j
-        else
-          locationInfo^.Y := 0;
+          if TryStrToInt(location.AttribStrings['Y'], j) then
+            locationInfo^.Y := j
+          else
+            locationInfo^.Y := 0;
+        end;
       end;
     end;
 
     xmlDoc.Free;
+  end;
+end;
+
+procedure TfrmMain.LoadRandomPresets;
+var
+  presets: TDOMNodeList;
+  i: Integer;
+begin
+  cbRandomPreset.Clear;
+
+  FreeAndNil(FRandomPresetsDoc);
+  if FileExists(FRandomPresetsFile) then
+  begin
+    ReadXMLFile(FRandomPresetsDoc, FRandomPresetsFile);
+    presets := FRandomPresetsDoc.DocumentElement.ChildNodes;
+    for i := 0 to presets.Count - 1 do
+    begin
+      if presets[i].NodeName = 'Preset' then
+      begin
+        cbRandomPreset.Items.AddObject(TDOMElement(presets[i]).AttribStrings['Name'],
+          presets[i]);
+      end;
+    end;
+  end else
+  begin
+    FRandomPresetsDoc := TXMLDocument.Create;
+    FRandomPresetsDoc.AppendChild(FRandomPresetsDoc.CreateElement('RandomPresets'));
   end;
 end;
 
@@ -2274,6 +2328,11 @@ begin
 
   WriteXMLFile(xmlDoc, FLocationsFile);
   xmlDoc.Free;
+end;
+
+procedure TfrmMain.SaveRandomPresets;
+begin
+  WriteXMLFile(FRandomPresetsDoc, FRandomPresetsFile);
 end;
 
 procedure TfrmMain.OnLandscapeChanged;
@@ -2894,6 +2953,25 @@ begin
 
   if not oglGameWindow.MouseEntered then
     oglGameWindowMouseLeave(nil);
+end;
+
+function TfrmMain.FindRandomPreset(AName: String): TDOMElement;
+var
+  preset: TDOMElement;
+  presets: TDOMNodeList;
+  i: Integer;
+begin
+  presets := FRandomPresetsDoc.DocumentElement.ChildNodes;
+  Result := nil;
+  i := 0;
+  while (i < presets.Count) and (Result = nil) do
+  begin
+    preset := TDOMElement(presets[i]);
+    if SameText(preset.AttribStrings['Name'], AName) then
+      Result := preset
+    else
+      Inc(i);
+  end;
 end;
 
 procedure TfrmMain.ForceUpdateCurrentTile;

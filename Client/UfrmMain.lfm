@@ -3,7 +3,7 @@ object frmMain: TfrmMain
   Height = 603
   Top = 135
   Width = 766
-  ActiveControl = cbTerrain
+  ActiveControl = oglGameWindow
   Caption = 'UO CentrED'
   ClientHeight = 580
   ClientWidth = 766
@@ -531,6 +531,7 @@ object frmMain: TfrmMain
           BorderSpacing.Bottom = 4
           ItemHeight = 0
           OnChange = cbRandomPresetChange
+          Sorted = True
           Style = csDropDownList
           TabOrder = 1
         end
@@ -820,7 +821,7 @@ object frmMain: TfrmMain
           item
             Position = 1
             Text = 'Name'
-            Width = 133
+            Width = 131
           end>
         Header.DefaultHeight = 17
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
