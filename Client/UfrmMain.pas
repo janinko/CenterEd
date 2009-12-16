@@ -2088,6 +2088,7 @@ begin
   if item is TVirtualTile then
   begin
     ABlockInfo^.LowRes := FVLayerMaterial;
+    ABlockInfo^.LowRes.AddRef;
     ABlockInfo^.ScreenRect := Bounds(Trunc(drawX - 22), Trunc(drawY - z * 4),
       44, 44);
     ABlockInfo^.DrawQuad[0][0] := drawX - 22;
