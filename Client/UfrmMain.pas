@@ -955,6 +955,8 @@ begin
     end;
 
     cbRandomPreset.ItemIndex := cbRandomPreset.Items.IndexOfObject(preset);
+
+    SaveRandomPresets;
   end;
 end;
 
@@ -2491,7 +2493,8 @@ begin
   acElevate.Enabled := (dmNetwork.AccessLevel >= alNormal);
   acDelete.Enabled := (dmNetwork.AccessLevel >= alNormal);
   acHue.Enabled := (dmNetwork.AccessLevel >= alNormal);
-  Caption := Format('UO CentrED - [%s (%s)]', [dmNetwork.Username, GetAccessLevelString(dmNetwork.AccessLevel)]);
+  Caption := Format('UO CentrED - [%s (%s)]', [dmNetwork.Username,
+    GetAccessLevelString(dmNetwork.AccessLevel)]);
 end;
 
 procedure TfrmMain.RebuildScreenBuffer;
@@ -2502,7 +2505,8 @@ var
 begin
   Logger.EnterMethod([lcClient], 'RebuildScreenBuffer');
 
-  FDrawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width + oglGamewindow.Height * oglGamewindow.Height) / 44);
+  FDrawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width +
+    oglGamewindow.Height * oglGamewindow.Height) / 44);
   Logger.Send([lcClient], 'DrawDistance', FDrawDistance);
 
   {$HINTS off}{$WARNINGS off}
@@ -2515,7 +2519,8 @@ begin
   FRangeX := FHighOffsetX - FLowOffsetX;
   FRangeY := FHighOffsetY - FLowOffsetY;
 
-  FLandscape.PrepareBlocks((FX + FLowOffsetX) div 8, (FY + FLowOffsetY) div 8, (FX + FHighOffsetX) div 8 + 1, (FY + FHighOffsetY) div 8 + 1);
+  FLandscape.PrepareBlocks((FX + FLowOffsetX) div 8, (FY + FLowOffsetY) div 8,
+    (FX + FHighOffsetX) div 8 + 1, (FY + FHighOffsetY) div 8 + 1);
 
   if frmVirtualLayer.cbShowLayer.Checked then
   begin
