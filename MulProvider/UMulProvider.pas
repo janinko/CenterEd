@@ -85,6 +85,7 @@ type
     destructor Destroy; override;
   protected
     FIndex: TBufferedReader;
+    FEntryCount: Cardinal;
     function CalculateIndexOffset(AID: Integer): Integer; virtual;
     function GetData(AID: Integer; AIndex: TGenericIndex): TMulBlock; reintroduce; virtual; abstract;
     procedure SetData(AID: Integer; AIndex: TGenericIndex; ABlock: TMulBlock); reintroduce; virtual;
@@ -96,6 +97,7 @@ type
     function Exists(AID: Integer): Boolean; virtual;
     procedure Defragment(ATempStream: TStream; AOnProgress: TOnProgressEvent = nil); virtual;
     property Index: TBufferedReader read FIndex;
+    property EntryCount: Cardinal read FEntryCount;
   end;
 
 implementation
@@ -121,7 +123,7 @@ begin
       Dispose(PMethod(FEvents.Items[i]));
     FreeAndNil(FEvents);
   end;
-  inherited;
+  inherited Destroy;
 end;
 
 procedure TMulEventHandler.FireEvents(ABlock: TMulBlock);
@@ -262,6 +264,7 @@ constructor TIndexedMulProvider.Create(AData, AIndex: TStream; AReadOnly: Boolea
 begin
   inherited Create(AData, AReadOnly);
   FIndex := TBufferedReader.Create(AIndex);
+  FEntryCount := AIndex.Size div 12;
 end;
 
 constructor TIndexedMulProvider.Create(AData, AIndex: string; AReadOnly: Boolean = False);
@@ -274,6 +277,7 @@ begin
   else
     mode := fmOpenReadWrite or fmShareDenyWrite;
   FIndex := TBufferedReader.Create(TFileStream.Create(AIndex, mode), True);
+  FEntryCount := FIndex.Size div 12;
 end;
 
 procedure TIndexedMulProvider.Defragment(ATempStream: TStream; AOnProgress: TOnProgressEvent = nil);
@@ -287,7 +291,7 @@ begin
   while FIndex.Position < FIndex.Size do
   begin
     genericIndex := TGenericIndex.Create(FIndex);
-    if genericIndex.Lookup <> LongInt($FFFFFFFF) then
+    if genericIndex.Lookup > -1 then
     begin
       FData.Position := genericIndex.Lookup;
       genericIndex.Lookup := ATempStream.Position;
@@ -307,8 +311,8 @@ end;
 
 destructor TIndexedMulProvider.Destroy;
 begin
-  if Assigned(FIndex) then FreeAndNil(FIndex);
-  inherited;
+  FreeAndNil(FIndex);
+  inherited Destroy;
 end;
 
 function TIndexedMulProvider.Exists(AID: Integer): Boolean;
@@ -368,9 +372,9 @@ begin
   size := ABlock.GetSize;
   if size = 0 then
   begin
-    AIndex.Lookup := LongInt($FFFFFFFF);
-    AIndex.Various := LongInt($FFFFFFFF);
-  end else if (size > AIndex.Size) or (AIndex.Lookup = LongInt($FFFFFFFF)) then
+    AIndex.Lookup := -1;
+    AIndex.Various := -1;
+  end else if (size > AIndex.Size) or (AIndex.Lookup < 0) then
   begin
     FData.Position := FData.Size;
     AIndex.Lookup := FData.Position;

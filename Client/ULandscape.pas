@@ -183,6 +183,7 @@ type
     FOnStaticHued: TStaticChangedEvent;
     FOpenRequests: TBits;
     FWriteMap: TBits;
+    FMaxStaticID: Cardinal;
     { Methods }
     function GetMapBlock(AX, AY: Word): TMapBlock;
     function GetMapCell(AX, AY: Word): TMapCell;
@@ -207,6 +208,7 @@ type
     property MapCell[X, Y: Word]: TMapCell read GetMapCell;
     property StaticList[X, Y: Word]: TStaticItemList read GetStaticList;
     property Normals[X, Y: Word]: TNormals read GetNormals;
+    property MaxStaticID: Cardinal read FMaxStaticID;
     property OnChange: TLandscapeChangeEvent read FOnChange write FOnChange;
     property OnMapChanged: TMapChangedEvent read FOnMapChanged write FOnMapChanged;
     property OnNewBlock: TNewBlockEvent read FOnNewBlock write FOnNewBlock;
@@ -593,6 +595,11 @@ begin
   FWriteMap := TBits.Create(FCellWidth * FCellHeight);
   for i := 0 to FWriteMap.Size - 1 do
     FWriteMap[i] := True;
+
+  FMaxStaticID := Min(Min(ResMan.Animdata.AnimCount, ResMan.Tiledata.StaticCount),
+    ResMan.Art.EntryCount - $4000);
+  Logger.Send([lcClient, lcInfo], 'Landscape recognizes $%x StaticTile IDs.',
+    [FMaxStaticId]);
 
   RegisterPacketHandler($04, TPacketHandler.Create(0, @OnBlocksPacket));
   RegisterPacketHandler($06, TPacketHandler.Create(8, @OnDrawMapPacket));

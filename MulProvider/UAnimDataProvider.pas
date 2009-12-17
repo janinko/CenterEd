@@ -34,7 +34,7 @@ uses
 
 type
 
-  TAnimDataArray = array[$0..$3FFF] of TAnimData;
+  TAnimDataArray = array of TAnimData;
 
   { TAnimDataProvider }
 
@@ -46,16 +46,21 @@ type
     destructor Destroy; override;
   protected
     FAnimData: TAnimDataArray;
+    FAnimCount: Cardinal;
     function CalculateOffset(AID: Integer): Integer; override;
     function GetData(AID, AOffset: Integer): TAnimData; override;
     procedure InitArray;
     procedure SetData(AID, AOffset: Integer; ABlock: TMulBlock); override;
   public
     property AnimData: TAnimDataArray read FAnimData;
+    property AnimCount: Cardinal read FAnimCount;
     function GetBlock(AID: Integer): TAnimData; override;
   end;
 
 implementation
+
+uses
+  Logging;
 
 { TAnimDataProvider }
 
@@ -95,9 +100,14 @@ procedure TAnimDataProvider.InitArray;
 var
   i: Integer;
 begin
-  for i := 0 to Length(FAnimData) - 1 do
+  FData.Position := 0;
+  FAnimCount := (FData.Size div AnimDataGroupSize) * 8;
+  Logger.Send([lcInfo], 'Loading $%x AnimData entries.', [FAnimCount]);
+  SetLength(FAnimData, FAnimCount);
+  for i := 0 to FAnimCount - 1 do
   begin
-    FData.Position := GetAnimDataOffset(i);
+    if i mod 8 = 0 then
+      FData.Seek(4, soFromCurrent);
     FAnimData[i] := TAnimData.Create(FData);
   end;
 end;

@@ -33,6 +33,9 @@ uses
   SysUtils, Classes, UEnhancedMemoryStream;
 
 type
+
+  { TBufferedStream }
+
   TBufferedStream = class(TEnhancedMemoryStream)
     constructor Create(ABaseStream: TStream; AOwnsBaseStream: Boolean = false); virtual;
     destructor Destroy; override;
@@ -42,6 +45,7 @@ type
   public
     procedure Refresh; virtual;
     procedure Flush; virtual;
+    function GetSize: Int64; override;
   end;
   TBufferedReader = class(TBufferedStream)
     constructor Create(ABaseStream: TStream; AOwnsBaseStream: Boolean = false); override;
@@ -80,6 +84,11 @@ begin
   FBaseStream.Size := Size;
   FBaseStream.Position := 0;
   FBaseStream.CopyFrom(Self, 0);
+end;
+
+function TBufferedStream.GetSize: Int64;
+begin
+  Result := FBaseStream.Size;
 end;
 
 procedure TBufferedStream.Refresh;

@@ -141,7 +141,7 @@
     </Linking>
     <Other>
       <CustomOptions Value="-FE../bin/
-"/>
+-dNoLogging"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
