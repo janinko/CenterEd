@@ -34,7 +34,7 @@ uses
 
 type
   TLandTileDataArray = array[$0..$3FFF] of TLandTileData;
-  TStaticTileDataArray = array[$0..$3FFF] of TStaticTileData;
+  TStaticTileDataArray = array of TStaticTileData;
 
   { TTiledataProvider }
 
@@ -45,6 +45,7 @@ type
   protected
     FLandTiles: TLandTileDataArray;
     FStaticTiles: TStaticTileDataArray;
+    FStaticCount: Cardinal;
     procedure InitArray;
     function CalculateOffset(AID: Integer): Integer; override;
     function GetData(AID, AOffset: Integer): TMulBlock; override;
@@ -55,9 +56,13 @@ type
     property LandTiles: TLandTileDataArray read FLandTiles;
     property StaticTiles: TStaticTileDataArray read FStaticTiles;
     property TileData[AID: Integer]: TTiledata read GetTileData; //all tiles, no cloning
+    property StaticCount: Cardinal read FStaticCount;
   end;
 
 implementation
+
+uses
+  Logging;
 
 { TTiledataProvider }
 
@@ -83,12 +88,11 @@ var
   i: Integer;
 begin
   for i := $0 to $3FFF do
-  begin
     FreeAndNil(FLandTiles[i]);
+  for i := 0 to FStaticCount - 1 do
     FreeAndNil(FStaticTiles[i]);
-  end;
 
-  inherited;
+  inherited Destroy;
 end;
 
 function TTiledataProvider.GetBlock(AID: Integer): TMulBlock;
@@ -111,15 +115,23 @@ procedure TTiledataProvider.InitArray;
 var
   i: Integer;
 begin
+  FData.Position := 0;
+  Logger.Send([lcInfo], 'Loading $4000 LandTiledata Entries');
   for i := $0 to $3FFF do
   begin
-    FData.Position := GetTileDataOffset(i);
+    if i mod 32 = 0 then
+      FData.Seek(4, soFromCurrent);
     FLandTiles[i] := TLandTileData.Create(FData);
   end;
 
-  for i := $0 to $3FFF do
+  FStaticCount := ((FData.Size - FData.Position) div StaticTileGroupSize) * 32;
+  Logger.Send([lcInfo], 'Loading $%x StaticTiledata Entries', [FStaticCount]);
+  SetLength(FStaticTiles, FStaticCount);
+
+  for i := 0 to FStaticCount - 1 do
   begin
-    FData.Position := GetTileDataOffset($4000 + i);
+    if i mod 32 = 0 then
+      FData.Seek(4, soFromCurrent);
     FStaticTiles[i] := TStaticTileData.Create(FData);
   end;
 end;
@@ -127,6 +139,9 @@ end;
 procedure TTiledataProvider.SetData(AID, AOffset: Integer;
   ABlock: TMulBlock);
 begin
+  if AID >= $4000 + FStaticCount then
+    Exit;
+
   if AID < $4000 then
   begin
     FreeAndNil(FLandTiles[AID]);

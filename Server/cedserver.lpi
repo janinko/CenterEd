@@ -140,7 +140,8 @@
       <LinkSmart Value="True"/>
     </Linking>
     <Other>
-      <CustomOptions Value="-FE../bin/"/>
+      <CustomOptions Value="-FE../bin/
+"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>

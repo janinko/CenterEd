@@ -211,7 +211,7 @@ end;
 constructor TStaticTiledata.Create(AData: TStream);
 begin
   SetLength(FTileName, 20);
-  if assigned(AData) then
+  if AData <> nil then
   begin
     AData.Read(FFlags, SizeOf(LongWord));
     AData.Read(FWeight, SizeOf(Byte));

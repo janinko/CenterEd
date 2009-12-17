@@ -28,7 +28,7 @@ unit UPacketHandlers;
 interface
 
 uses
-  Classes, SysUtils, dzlib, math, UConfig, UNetState, UEnhancedMemoryStream, UEnums,
+  Classes, SysUtils, dzlib, UConfig, UNetState, UEnhancedMemoryStream, UEnums,
   ULinkedList, URegions;
 
 type

@@ -30,8 +30,7 @@ unit ULandscape;
 interface
 
 uses
-  SysUtils, Classes, math, UGenericIndex, UMap, UStatics, UTiledata,
-  UWorldItem, UMulBlock,
+  SysUtils, Classes, math, UGenericIndex, UMap, UStatics, UWorldItem, UMulBlock,
   UTileDataProvider, URadarMap,
   UCacheManager, ULinkedList, UBufferedStreams,
   UEnhancedMemoryStream, UPacketHandlers, UPackets, UNetState, UEnums;
@@ -52,7 +51,8 @@ type
   public
     { Fields }
     Cells: array[0..63] of TStaticItemList;
-    property TiledataProvider: TTiledataProvider read FTiledataProvider write FTiledataProvider;
+    property TiledataProvider: TTiledataProvider read FTiledataProvider
+      write FTiledataProvider;
 
     { Methods }
     function Clone: TSeperatedStaticBlock; override;
@@ -62,7 +62,7 @@ type
   
   { TBlock }
 
-  TBlock = class(TObject)
+  TBlock = class
     constructor Create(AMap: TMapBlock; AStatics: TSeperatedStaticBlock);
     destructor Destroy; override;
   protected
@@ -77,7 +77,7 @@ type
 
   { TLandscape }
 
-  TLandscape = class(TObject)
+  TLandscape = class
     constructor Create(AMap, AStatics, AStaIdx, ATiledata, ARadarCol: string;
       AWidth, AHeight: Word; var AValid: Boolean);
     constructor Create(AMap, AStatics, AStaIdx, ATiledata: TStream;
@@ -164,7 +164,7 @@ function PointInArea(AArea: TAreaInfo; AX, AY: Word): Boolean; inline;
 implementation
 
 uses
-  UCEDServer, UConnectionHandling, UConfig, ULargeScaleOperations;
+  UCEDServer, UConnectionHandling, UConfig, ULargeScaleOperations, Logging;
 
 function GetID(AX, AY: Word): Integer;
 begin
@@ -217,7 +217,7 @@ end;
 
 destructor TSeperatedStaticBlock.Destroy;
 var
-  i, j: Integer;
+  i: Integer;
 begin
   FreeAndNil(FItems);
 
@@ -230,6 +230,7 @@ end;
 function TSeperatedStaticBlock.Clone: TSeperatedStaticBlock;
 begin
   raise Exception.Create('TSeperatedStaticBlock.Clone is not implemented (yet).');
+  Result := nil;
 end;
 
 function TSeperatedStaticBlock.GetSize: Integer;
@@ -251,8 +252,13 @@ begin
       for j := 0 to Cells[i].Count - 1 do
       begin
         FItems.Add(Cells[i].Items[j]);
-        Cells[i].Items[j].UpdatePriorities(
-          FTiledataProvider.StaticTiles[Cells[i].Items[j].TileID], solver);
+        if Cells[i].Items[j].TileID < FTiledataProvider.StaticCount then
+        begin
+          Cells[i].Items[j].UpdatePriorities(
+            FTiledataProvider.StaticTiles[Cells[i].Items[j].TileID], solver);
+        end else
+          Logger.Send([lcLandscape, lcServer, lcError], 'Cannot find Tiledata ' +
+            'for the Static Item with ID $%x.', [Cells[i].Items[j].TileID]);
         Inc(solver);
       end;
     end;
@@ -431,9 +437,14 @@ begin
       end;
       for i := 0 to staticItems.Count - 1 do
       begin
-        staticItems[i].UpdatePriorities(
-          FTiledataProvider.StaticTiles[staticItems[i].TileID],
-          i + 1);
+        if staticItems[i].TileID < FTiledataProvider.StaticCount then
+        begin
+          staticItems[i].UpdatePriorities(
+            FTiledataProvider.StaticTiles[staticItems[i].TileID],
+            i + 1);
+        end else
+          Logger.Send([lcLandscape, lcServer, lcError], 'Cannot find Tiledata ' +
+            'for the Static Item with ID $%x.', [staticItems[i].TileID]);
         tiles.Add(staticItems[i]);
       end;
       tiles.Sort(@CompareWorldItems);
@@ -457,9 +468,14 @@ var
   i: Integer;
 begin
   for i := 0 to AStatics.Count - 1 do
-    AStatics[i].UpdatePriorities(
-      FTiledataProvider.StaticTiles[AStatics[i].TileID],
-      i + 1);
+    if AStatics[i].TileID < FTiledataProvider.StaticCount then
+    begin
+      AStatics[i].UpdatePriorities(
+        FTiledataProvider.StaticTiles[AStatics[i].TileID],
+        i + 1);
+    end else
+      Logger.Send([lcLandscape, lcServer, lcError], 'Cannot find Tiledata ' +
+        'for the Static Item with ID $%x.', [AStatics[i].TileID]);
   AStatics.Sort(@CompareStaticItems);
 end;
 
