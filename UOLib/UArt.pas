@@ -156,7 +156,9 @@ begin
         block.Position := lookup[iCurrentHeight];
         iCurrentWidth := 0;
         P := FGraphic.Bits + iCurrentHeight * width * 2;
-        while (block.Read(offset, SizeOf(Word)) = SizeOf(Word)) and (block.Read(run, SizeOf(Word)) = SizeOf(Word)) and (offset + run <> 0) do
+        while (block.Read(offset, SizeOf(Word)) = SizeOf(Word)) and
+              (block.Read(run, SizeOf(Word)) = SizeOf(Word)) and
+              (offset + run <> 0) do
         begin
           inc(iCurrentWidth, offset);
           for i := 0 to run - 1 do
@@ -231,7 +233,7 @@ end;
 procedure TArt.RefreshBuffer;
 var
   argbGraphic: TSingleImage;
-  i, j, x, y, lineWidth, start: Integer;
+  i, x, y, lineWidth, start: Integer;
   iCurrentHeight, iCurrentWidth: Integer;
   width, height: SmallInt;
   color, run, offset: Word;
@@ -251,14 +253,14 @@ begin
     for i := 1 to 22 do
     begin
       Dec(x);
-      FBuffer.Write(PWordArray(argbGraphic.Bits + y * 44 * 2)^[x + j], lineWidth);
+      FBuffer.Write(PWordArray(argbGraphic.Bits + y * 44 * 2)^[x + i], lineWidth);
       Inc(y);
       Inc(lineWidth, 2);
     end;
     for i := 1 to 22 do
     begin
       Dec(lineWidth, 2);
-      FBuffer.Write(PWordArray(argbGraphic.Bits + y * 44 * 2)^[x + j], lineWidth);
+      FBuffer.Write(PWordArray(argbGraphic.Bits + y * 44 * 2)^[x + i], lineWidth);
       Inc(x);
       Inc(y);
     end;

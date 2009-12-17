@@ -607,8 +607,6 @@ end;
 procedure TfrmMain.oglGameWindowMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  node: PVirtualNode;
-  tileInfo: PTileInfo;
   map: TMapCell;
   i: Integer;
   z: ShortInt;
@@ -923,7 +921,7 @@ end;
 procedure TfrmMain.btnRandomPresetSaveClick(Sender: TObject);
 var
   presetName: string;
-  i, index: Integer;
+  i: Integer;
   preset, tile: TDOMElement;
   children: TDOMNodeList;
   tileNode: PVirtualNode;
@@ -2047,7 +2045,7 @@ end;
 procedure TfrmMain.PrepareScreenBlock(ABlockInfo: PBlockInfo);
 
   procedure GetLandAlt(const AX, AY: Integer; const ADefaultZ,
-    ADefaultRaw: SmallInt; var Z, RawZ: SmallInt);
+    ADefaultRaw: SmallInt; out Z, RawZ: SmallInt);
   var
     cell: TMapCell;
   begin
@@ -2547,7 +2545,7 @@ begin
         virtualTile.Y := tileY;
         virtualTile.Z := frmVirtualLayer.seZ.Value;
         virtualTile.Priority := virtualTile.Z;
-        virtualTile.PriorityBonus := MaxInt;
+        virtualTile.PriorityBonus := High(ShortInt);
 
         Inc(i);
       end;

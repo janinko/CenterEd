@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UMulBlock;
 
@@ -38,7 +38,7 @@ type
   
   { TMulBlockEventHandler }
 
-  TMulBlockEventHandler = class(TObject)
+  TMulBlockEventHandler = class
     constructor Create;
     destructor Destroy; override;
   protected
@@ -51,7 +51,7 @@ type
 
   { TMulBlock }
 
-  TMulBlock = class(TObject)
+  TMulBlock = class
     constructor Create;
     destructor Destroy; override;
   protected

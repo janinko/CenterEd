@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmTileInfo;
 
@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, LCLIntf, LCLType, LMessages, strutils;
+  ExtCtrls, LCLIntf, LCLType, strutils;
 
 type
 
@@ -48,7 +48,6 @@ type
     { private declarations }
   public
     procedure Update(ATileID: Word);
-    //procedure Show; overload; reintroduce;
     procedure Show(ATileID: Word); overload;
   end; 
 
@@ -157,21 +156,6 @@ begin
     tmHide.Enabled := True; //Refresh timer
   end;
 end;
-
-{procedure TfrmTileInfo.Show;
-begin
-  ShowWindow(Handle, SW_SHOWNOACTIVATE);
-  Include(FormState, fsVisible);
-  VisibleChanging;
-  try
-    Perform(CM_VISIBLECHANGED, WParam(Ord(True)), 0);
-    AdjustSize;
-    RequestAlign;
-  finally
-    VisibleChanged;
-  end;
-  //FormShow(Self);
-end;}
 
 procedure TfrmTileInfo.Show(ATileID: Word);
 begin

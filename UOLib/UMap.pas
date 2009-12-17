@@ -30,7 +30,7 @@ unit UMap;
 interface
 
 uses
-  SysUtils, Classes, fgl, UMulBlock, UWorldItem;
+  SysUtils, Classes, fgl, UWorldItem;
 
 const
   MapCellSize = 3;

@@ -5,7 +5,7 @@ unit Logging;
 interface
 
 uses
-  MultiLog, IPCChannel;
+  MultiLog{$IFNDEF NoLogging}, IPCChannel{$ENDIF};
 
 const
   lcAll = [0..31]; //all logging classes

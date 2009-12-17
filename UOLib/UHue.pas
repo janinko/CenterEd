@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UHue;
 
@@ -30,10 +30,14 @@ unit UHue;
 interface
 
 uses
-  SysUtils, Classes, Graphics, UMulBlock, UGraphicHelper;
+  SysUtils, Classes, Graphics, UMulBlock;
 
 type
+
   TColorTable = array[0..31] of Word;
+
+  { THue }
+
   THue = class(TMulBlock)
     constructor Create(AData: TStream);
     function Clone: THue; override;
@@ -52,7 +56,11 @@ type
     property TableEnd: Word read FTableEnd write FTableEnd;
     property Name: string read GetName write SetName;
   end;
+
   THueEntries = array[0..7] of THue;
+
+  { THueGroup }
+
   THueGroup = class(TMulBlock)
     constructor Create(AData: TStream);
     destructor Destroy; override;
@@ -92,7 +100,7 @@ var
   color: Word;
 begin
   SetLength(FName, 20);
-  if Assigned(AData) then
+  if AData <> nil then
   begin
     buffer := TMemoryStream.Create;
     buffer.CopyFrom(AData, 88);
@@ -158,7 +166,7 @@ var
   i: Integer;
   buffer: TMemoryStream;
 begin
-  if Assigned(AData) then
+  if AData <> nil then
   begin
     buffer := TMemoryStream.Create;
     buffer.CopyFrom(AData, 708);
@@ -170,7 +178,7 @@ begin
   for i := 0 to 7 do
     FHueEntries[i] := THue.Create(buffer);
 
-  if Assigned(buffer) then FreeAndNil(buffer);
+  buffer.Free;
 end;
 
 destructor THueGroup.Destroy;
@@ -178,9 +186,8 @@ var
   i: Integer;
 begin
   for i := 0 to 7 do
-    if Assigned(FHueEntries[i]) then
-      FreeAndNil(FHueEntries[i]);
-  inherited;
+    FreeAndNil(FHueEntries[i]);
+  inherited Destroy;
 end;
 
 function THueGroup.GetHueEntry(AIndex: Integer): THue;
@@ -195,7 +202,7 @@ end;
 
 procedure THueGroup.SetHueEntry(AIndex: Integer; AValue: THue);
 begin
-  if Assigned(FHueEntries[AIndex]) then FreeAndNil(FHueEntries[AIndex]);
+  FreeAndNil(FHueEntries[AIndex]);
   FHueEntries[AIndex] := AValue;
 end;
 

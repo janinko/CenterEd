@@ -36,7 +36,7 @@ type
 
   { TResourceManager }
 
-  TResourceManager = class(TObject)
+  TResourceManager = class
     constructor Create(AFileName: string);
     destructor Destroy; override;
   protected

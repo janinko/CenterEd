@@ -28,8 +28,8 @@ unit UMulManager;
 interface
 
 uses
-  SysUtils, UMulProvider, UTileDataProvider, UArtProvider, UGumpProvider,
-  UTexmapProvider, UHueProvider, URadarProvider, UAnimDataProvider;
+  SysUtils, UTileDataProvider, UArtProvider, UGumpProvider, UTexmapProvider,
+  UHueProvider, URadarProvider, UAnimDataProvider;
 
 type
 

@@ -497,6 +497,7 @@ end;
 function TSeperatedStaticBlock.Clone: TSeperatedStaticBlock;
 begin
   raise Exception.Create('TSeperatedStaticBlock.Clone is not implemented (yet).');
+  Result := nil;
 end;
 
 function TSeperatedStaticBlock.GetSize: Integer;
@@ -1375,7 +1376,6 @@ function TScreenBuffer.Find(AScreenPosition: TPoint): PBlockInfo;
 var
   current: PBlockInfo;
   buff: array[0..3] of GLuint;
-  hits: GLint;
 begin
   Result := nil;
   current := FShortCuts[0];
@@ -1586,8 +1586,6 @@ end;
 { TGLText }
 
 constructor TGLText.Create(AFont: TGLFont; AText: String);
-var
-  i: Integer;
 begin
   FFont := AFont;
   FText := AText;
@@ -1598,7 +1596,6 @@ end;
 procedure TGLText.Render(AScreenRect: TRect);
 var
   x, y: Integer;
-  i: Integer;
 begin
   y := AScreenRect.Top + (AScreenRect.Bottom - AScreenRect.Top - FHeight) div 2;
   x := AScreenRect.Left + (AScreenRect.Right - AScreenRect.Left - FWidth) div 2;

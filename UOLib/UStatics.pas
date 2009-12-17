@@ -210,8 +210,6 @@ begin
 end;
 
 destructor TStaticBlock.Destroy;
-var
-  i: Integer;
 begin
   FreeAndNil(FItems);
   inherited;

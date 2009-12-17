@@ -28,7 +28,7 @@ unit UPackets;
 interface
 
 uses
-  Classes, dzlib, UEnhancedMemoryStream, UPacket, UMap, UStatics;
+  Classes, dzlib, UEnhancedMemoryStream, UPacket, UStatics;
 
 type
   TBlockCoords = packed record
@@ -195,8 +195,6 @@ end;
 { TRequestBlocksPacket }
 
 constructor TRequestBlocksPacket.Create(ACoords: TBlockCoordsArray);
-var
-  i: Integer;
 begin
   inherited Create($04, 0);
   FStream.Write(ACoords[0], Length(ACoords) * SizeOf(TBlockCoords));

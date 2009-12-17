@@ -32,7 +32,7 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, VirtualTrees, LCLIntf, LMessages, Buttons, UPlatformTypes, UStatics,
-  PairSplitter, Menus;
+  Menus;
 
 type
 

@@ -56,11 +56,11 @@ procedure RegisterPacketHandler(AID: Byte; APacketHandler: TPacketHandler);
 implementation
 
 uses
-  UPackets, UAdminHandling;
+  UAdminHandling;
 
 procedure RegisterPacketHandler(AID: Byte; APacketHandler: TPacketHandler);
 begin
-  if Assigned(PacketHandlers[AID]) then FreeAndNil(PacketHandlers[AID]);
+  FreeAndNil(PacketHandlers[AID]);
   PacketHandlers[AID] := APacketHandler;
 end;
 

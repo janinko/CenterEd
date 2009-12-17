@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit URadarProvider;
 
@@ -33,7 +33,10 @@ uses
   SysUtils, Classes, UBufferedStreams;
 
 type
-  TRadarProvider = class(TObject)
+
+  { TRadarProvider }
+
+  TRadarProvider = class
     constructor Create; overload; virtual;
     constructor Create(AData: TStream; AReadOnly: Boolean = False); overload; virtual;
     constructor Create(AData: string; AReadOnly: Boolean = False); overload; virtual;
@@ -77,18 +80,18 @@ end;
 
 destructor TRadarProvider.Destroy;
 begin
-  if Assigned(FData) then FreeAndNil(FData);
+  FreeAndNil(FData);
   inherited Destroy;
 end;
 
 function TRadarProvider.GetColor(AID: Integer): Word;
 begin
+  Result := 0;
   if (AID >= 0) and (AID < $10000) then
   begin
     FData.Position := SizeOf(Word) * AID;
     FData.Read(Result, SizeOf(Word));
-  end else
-    Result := 0;
+  end;
 end;
 
 procedure TRadarProvider.SetColor(AID: Integer; AColor: Word);
