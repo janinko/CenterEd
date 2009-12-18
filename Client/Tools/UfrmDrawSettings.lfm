@@ -7,13 +7,14 @@ inherited frmDrawSettings: TfrmDrawSettings
   Caption = 'Draw settings'
   ClientHeight = 180
   ClientWidth = 242
+  OnCreate = FormCreate
   object rbTileList: TRadioButton[0]
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
     Left = 8
-    Height = 19
+    Height = 22
     Top = 8
-    Width = 125
+    Width = 146
     BorderSpacing.Left = 8
     BorderSpacing.Top = 8
     BorderSpacing.Bottom = 4
@@ -27,9 +28,9 @@ inherited frmDrawSettings: TfrmDrawSettings
     AnchorSideTop.Control = rbTileList
     AnchorSideTop.Side = asrBottom
     Left = 8
-    Height = 19
-    Top = 31
-    Width = 184
+    Height = 22
+    Top = 34
+    Width = 213
     BorderSpacing.Top = 4
     Caption = 'Use tiles from the random pool'
     TabOrder = 1
@@ -43,18 +44,18 @@ inherited frmDrawSettings: TfrmDrawSettings
     AnchorSideRight.Side = asrBottom
     Left = 8
     Height = 49
-    Top = 123
+    Top = 132
     Width = 226
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Around = 8
     Caption = 'Hue (Statics only)'
-    ClientHeight = 31
+    ClientHeight = 45
     ClientWidth = 222
     TabOrder = 2
     object pbHue: TPaintBox
       Cursor = crHandPoint
       Left = 4
-      Height = 27
+      Height = 41
       Top = 0
       Width = 214
       Align = alClient
@@ -70,9 +71,9 @@ inherited frmDrawSettings: TfrmDrawSettings
     AnchorSideTop.Control = cbForceAltitude
     AnchorSideTop.Side = asrBottom
     Left = 8
-    Height = 19
-    Top = 93
-    Width = 135
+    Height = 22
+    Top = 102
+    Width = 149
     BorderSpacing.Top = 12
     Caption = 'Add Random Altitude'
     TabOrder = 3
@@ -83,8 +84,8 @@ inherited frmDrawSettings: TfrmDrawSettings
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Left = 184
-    Height = 25
-    Top = 90
+    Height = 21
+    Top = 103
     Width = 50
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 8
@@ -95,9 +96,9 @@ inherited frmDrawSettings: TfrmDrawSettings
     AnchorSideTop.Control = rbRandom
     AnchorSideTop.Side = asrBottom
     Left = 8
-    Height = 19
-    Top = 62
-    Width = 95
+    Height = 22
+    Top = 68
+    Width = 111
     BorderSpacing.Top = 12
     Caption = 'Force altitude:'
     TabOrder = 5
@@ -108,13 +109,15 @@ inherited frmDrawSettings: TfrmDrawSettings
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Left = 184
-    Height = 25
-    Top = 59
+    Height = 21
+    Top = 69
     Width = 50
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 8
     MaxValue = 127
     MinValue = -128
     TabOrder = 6
+  end
+  inherited tmClose: TTimer[7]
   end
 end

@@ -1084,7 +1084,7 @@ begin
   acDraw.Checked := True;
   tbDrawTile.Down := True;
   mnuDraw.Checked := True;
-  frmDrawSettings.ShowModal;
+  frmDrawSettings.Show;
   ProcessToolState;
 end;
 

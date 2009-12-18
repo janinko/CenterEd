@@ -59,7 +59,8 @@ implementation
 
 procedure TfrmToolWindow.FormDeactivate(Sender: TObject);
 begin
-  Close;
+  if CanClose then
+    Close;
 end;
 
 procedure TfrmToolWindow.FormClose(Sender: TObject;

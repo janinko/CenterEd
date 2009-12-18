@@ -46,12 +46,15 @@ type
     rbTileList: TRadioButton;
     seForceAltitude: TSpinEdit;
     seRandomHeight: TSpinEdit;
+    procedure FormCreate(Sender: TObject);
     procedure pbHueClick(Sender: TObject);
     procedure pbHuePaint(Sender: TObject);
     procedure seForceAltitudeChange(Sender: TObject);
     procedure seRandomHeightChange(Sender: TObject);
-  public
-    { public declarations }
+  private
+    FCanClose: Boolean;
+    function CanClose: Boolean; override;
+    procedure OnHueClose(Sender: TObject; var ACloseAction: TCloseAction);
   end; 
 
 var
@@ -65,14 +68,17 @@ uses
 { TfrmDrawSettings }
 
 procedure TfrmDrawSettings.pbHueClick(Sender: TObject);
-var
-  msg: TLMessage;
 begin
   frmHueSettings.Left := Mouse.CursorPos.x - 8;
   frmHueSettings.Top := Mouse.CursorPos.y - 8;
-  frmHueSettings.ShowModal;
-  pbHue.Repaint;
-  MouseLeave(msg);
+  frmHueSettings.OnClose := @OnHueClose;
+  frmHueSettings.Show;
+  FCanClose := False;
+end;
+
+procedure TfrmDrawSettings.FormCreate(Sender: TObject);
+begin
+  FCanClose := True;
 end;
 
 procedure TfrmDrawSettings.pbHuePaint(Sender: TObject);
@@ -100,7 +106,21 @@ begin
   cbRandomHeight.Checked := True;
 end;
 
-//TODO : canclose ---> hue settings
+function TfrmDrawSettings.CanClose: Boolean;
+begin
+  Result := FCanClose and inherited CanClose;
+end;
+
+procedure TfrmDrawSettings.OnHueClose(Sender: TObject;
+  var ACloseAction: TCloseAction);
+var
+  msg: TLMessage;
+begin
+  FCanClose := True;
+  frmHueSettings.OnClose := nil;
+  pbHue.Repaint;
+  MouseLeave(msg);
+end;
 
 initialization
   {$I UfrmDrawSettings.lrs}
