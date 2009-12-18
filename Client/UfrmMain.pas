@@ -966,7 +966,7 @@ var
   tiles: TDOMNodeList;
   tileNode: PVirtualNode;
   tileInfo: PTileInfo;
-  i: Integer;
+  i, id: Integer;
 begin
   if cbRandomPreset.ItemIndex > -1 then
   begin
@@ -976,11 +976,13 @@ begin
     for i := 0 to tiles.Count - 1 do
     begin
       tile := TDOMElement(tiles[i]);
-      if tile.NodeName = 'Tile' then
+      if (tile.NodeName = 'Tile') and
+         TryStrToInt(tile.AttribStrings['ID'], id) and
+         (id < FLandscape.MaxStaticID + $4000) then
       begin
         tileNode := vdtRandom.AddChild(nil);
         tileInfo := vdtRandom.GetNodeData(tileNode);
-        tileInfo^.ID := StrToInt(tile.AttribStrings['ID']);
+        tileInfo^.ID := id;
       end;
     end;
   end;
@@ -2416,8 +2418,9 @@ var
   tileInfo: PTileInfo;
   filter: string;
 begin
+  maxID := $3FFF;
   if cbTerrain.Checked then minID := $0 else minID := $4000;
-  if cbStatics.Checked then maxID := $7FFF else maxID := $3FFF;
+  if cbStatics.Checked then maxID := maxID + FLandscape.MaxStaticID;
   filter := AnsiLowerCase(UTF8ToISO_8859_1(edFilter.Text));
   
   node := vdtTiles.GetFirstSelected;

@@ -350,7 +350,7 @@
     </Linking>
     <Other>
       <CompilerMessages>
-        <IgnoredMessages idx5024="True"/>
+        <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
       </CompilerMessages>
       <CustomOptions Value="-FE../bin/
 -dNoLogging"/>
