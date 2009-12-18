@@ -183,6 +183,7 @@ type
     FOnStaticHued: TStaticChangedEvent;
     FOpenRequests: TBits;
     FWriteMap: TBits;
+    FDrawMap: TBits;
     FMaxStaticID: Cardinal;
     { Methods }
     function GetMapBlock(AX, AY: Word): TMapBlock;
@@ -228,6 +229,7 @@ type
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
     procedure GetNormals(AX, AY: Word; var ANormals: TNormals);
+    procedure LoadNoDrawMap(AFileName: String);
     procedure MoveStatic(AStatic: TStaticItem; AX, AY: Word);
     procedure PrepareBlocks(AX1, AY1, AX2, AY2: Word);
     procedure UpdateBlockAccess;
@@ -601,6 +603,10 @@ begin
   Logger.Send([lcClient, lcInfo], 'Landscape recognizes $%x StaticTile IDs.',
     [FMaxStaticId]);
 
+  FDrawMap := TBits.Create($4000 + FMaxStaticID);
+  for i := 0 to FDrawMap.Size - 1 do
+    FDrawMap[i] := True;
+
   RegisterPacketHandler($04, TPacketHandler.Create(0, @OnBlocksPacket));
   RegisterPacketHandler($06, TPacketHandler.Create(8, @OnDrawMapPacket));
   RegisterPacketHandler($07, TPacketHandler.Create(10, @OnInsertStaticPacket));
@@ -620,6 +626,7 @@ begin
 
   FreeAndNil(FOpenRequests);
   FreeAndNil(FWriteMap);
+  FreeAndNil(FDrawMap);
   
   RegisterPacketHandler($04, nil);
   RegisterPacketHandler($06, nil);
@@ -947,6 +954,7 @@ var
   drawStatics: TStaticItemList;
   i, x, y: Integer;
   tempDrawList: TWorldItemList;
+  staticTileData: TStaticTiledata;
 begin
   ADrawList.Clear;
   tempDrawList := TWorldItemList.Create(False);;
@@ -957,7 +965,7 @@ begin
       if AMap then
       begin
         drawMapCell := GetMapCell(x, y);
-        if (drawMapCell <> nil) and (ANoDraw or (drawMapCell.TileID > 2)) then
+        if (drawMapCell <> nil) and (ANoDraw or FDrawMap[drawMapCell.TileID]) then
         begin
           drawMapCell.Priority := GetEffectiveAltitude(drawMapCell);
           drawMapCell.PriorityBonus := 0;
@@ -972,10 +980,13 @@ begin
         if drawStatics <> nil then
           for i := 0 to drawStatics.Count - 1 do
           begin
-            drawStatics[i].UpdatePriorities(
-              ResMan.Tiledata.StaticTiles[drawStatics[i].TileID],
-              ADrawList.GetSerial);
-            tempDrawList.Add(drawStatics[i]);
+            staticTileData := ResMan.Tiledata.StaticTiles[drawStatics[i].TileID];
+            if ANoDraw or FDrawMap[drawStatics[i].TileID + $4000] then
+            begin
+              drawStatics[i].UpdatePriorities(staticTileData,
+                ADrawList.GetSerial);
+              tempDrawList.Add(drawStatics[i]);
+            end;
           end;
       end;
     end;
@@ -1096,6 +1107,29 @@ begin
   east := cells[1, 1][3];
   south := cells[1, 2][0];
   ANormals[3] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+end;
+
+procedure TLandscape.LoadNoDrawMap(AFileName: String);
+var
+  noDrawFile: TextFile;
+  line: String;
+  id: Integer;
+begin
+  AssignFile(noDrawFile, AFileName);
+  Reset(noDrawFile);
+  while not EOF(noDrawFile) do
+  begin
+    ReadLn(noDrawFile, line);
+    if TryStrToInt(Copy(line, 2, Length(line)), id) then
+    begin
+      if line[1] = 'S' then
+        Inc(id, $4000);
+
+      if id < FDrawMap.Size then
+        FDrawMap[id] := False;
+    end;
+  end;
+  CloseFile(noDrawFile);
 end;
 
 procedure TLandscape.MoveStatic(AStatic: TStaticItem; AX, AY: Word);
