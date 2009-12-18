@@ -38,8 +38,9 @@ uses
   UCacheManager;
 
 type
+  TGlVector3f = array[0..2] of GLfloat;
   PNormals = ^TNormals;
-  TNormals = array[0..3] of Tvector3_single;
+  TNormals = array[0..3] of TGlVector3f;
   PRadarBlock = ^TRadarBlock;
   TRadarBlock = array[0..7, 0..7] of Word;
   
@@ -311,6 +312,13 @@ uses
 function GetID(AX, AY: Word): Integer; inline;
 begin
   Result := (AX shl 16) or AY;
+end;
+
+operator := (AVector: Tvector3_single) GLVector: TGlVector3f;
+begin
+  GLVector[0] := AVector.data[0];
+  GLVector[1] := AVector.data[1];
+  GLVector[2] := AVector.data[2];
 end;
 
 { TLandTextureManager }
@@ -1028,8 +1036,10 @@ begin
 end;
 
 procedure TLandscape.GetNormals(AX, AY: Word; var ANormals: TNormals);
+type
+  _Normals = array[0..3] of Tvector3_single;
 var
-  cells: array[0..2, 0..2] of TNormals;
+  cells: array[0..2, 0..2] of _Normals;
   north, west, south, east: Tvector3_single;
   i, j: Integer;
 
@@ -1038,7 +1048,7 @@ var
     Result := AVector / AVector.length;
   end;
 
-  function GetPlainNormals(X, Y: SmallInt): TNormals;
+  function GetPlainNormals(X, Y: SmallInt): _Normals;
   var
     cell: TMapCell;
     north, west, south, east: ShortInt;
