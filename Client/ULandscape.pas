@@ -30,16 +30,16 @@ unit ULandscape;
 interface
 
 uses
-  SysUtils, Classes, math, LCLIntf, GL, GLu, ImagingOpenGL, Imaging,
+  SysUtils, Classes, math, matrix, LCLIntf, GL, GLu, ImagingOpenGL, Imaging,
   ImagingClasses, ImagingTypes, ImagingUtility,
   UGenericIndex, UMap, UStatics, UArt, UTexture, UTiledata, UHue, UWorldItem,
   UMulBlock, UAnimData,
-  UVector, UEnhancedMemoryStream, UGLFont,
+  UEnhancedMemoryStream, UGLFont,
   UCacheManager;
 
 type
   PNormals = ^TNormals;
-  TNormals = array[0..3] of TVector;
+  TNormals = array[0..3] of Tvector3_single;
   PRadarBlock = ^TRadarBlock;
   TRadarBlock = array[0..7, 0..7] of Word;
   
@@ -1030,14 +1030,19 @@ end;
 procedure TLandscape.GetNormals(AX, AY: Word; var ANormals: TNormals);
 var
   cells: array[0..2, 0..2] of TNormals;
-  north, west, south, east: TVector;
+  north, west, south, east: Tvector3_single;
   i, j: Integer;
+
+  function Normalize(const AVector: Tvector3_single): Tvector3_single; inline;
+  begin
+    Result := AVector / AVector.length;
+  end;
 
   function GetPlainNormals(X, Y: SmallInt): TNormals;
   var
     cell: TMapCell;
     north, west, south, east: ShortInt;
-    u, v: TVector;
+    u, v: Tvector3_single;
   begin
     cell := GetMapCell(X, Y);
     if cell <> nil then
@@ -1056,27 +1061,27 @@ var
 
     if (north = west) and (west = east) and (north = south) then
     begin
-      Result[0] := Vector(0, 0, 1);
-      Result[1] := Vector(0, 0, 1);
-      Result[2] := Vector(0, 0, 1);
-      Result[3] := Vector(0, 0, 1);
+      Result[0].init(0, 0, 1);
+      Result[1].init(0, 0, 1);
+      Result[2].init(0, 0, 1);
+      Result[3].init(0, 0, 1);
     end else
     begin
-      u := Vector(-22, 22, (north - east) * 4);
-      v := Vector(-22, -22, (west - north) * 4);
-      Result[0] := VectorNorm(VectorCross(u, v));
+      u.init(-22, 22, (north - east) * 4);
+      v.init(-22, -22, (west - north) * 4);
+      Result[0] := Normalize(u >< v);
 
-      u := Vector(22, 22, (east - south) * 4);
-      v := Vector(-22, 22, (north - east) * 4);
-      Result[1] := VectorNorm(VectorCross(u, v));
+      u.init(22, 22, (east - south) * 4);
+      v.init(-22, 22, (north - east) * 4);
+      Result[1] := Normalize(u >< v);
 
-      u := Vector(22, -22, (south - west) * 4);
-      v := Vector(22, 22, (east - south) * 4);
-      Result[2] := VectorNorm(VectorCross(u, v));
+      u.init(22, -22, (south - west) * 4);
+      v.init(22, 22, (east - south) * 4);
+      Result[2] := Normalize(u >< v);
 
-      u := Vector(-22, -22, (west - north) * 4);
-      v := Vector(22, -22, (south - west) * 4);
-      Result[3] := VectorNorm(VectorCross(u, v));
+      u.init(-22, -22, (west - north) * 4);
+      v.init(22, -22, (south - west) * 4);
+      Result[3] := Normalize(u >< v);
     end;
   end;
 begin
@@ -1088,25 +1093,25 @@ begin
   west := cells[0, 1][1];
   east := cells[1, 0][3];
   south := cells[1, 1][0];
-  ANormals[0] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+  ANormals[0] := Normalize(north + west + east + south);
 
   north := cells[1, 0][2];
   west := cells[1, 1][1];
   east := cells[2, 0][3];
   south := cells[2, 1][0];
-  ANormals[1] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+  ANormals[1] := Normalize(north + west + east + south);
 
   north := cells[1, 1][2];
   west := cells[1, 2][1];
   east := cells[2, 1][3];
   south := cells[2, 2][0];
-  ANormals[2] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+  ANormals[2] := Normalize(north + west + east + south);
 
   north := cells[0, 1][2];
   west := cells[0, 2][1];
   east := cells[1, 1][3];
   south := cells[1, 2][0];
-  ANormals[3] := VectorNorm(VectorAdd(VectorAdd(VectorAdd(north, west), east), south));
+  ANormals[3] := Normalize(north + west + east + south);
 end;
 
 procedure TLandscape.LoadNoDrawMap(AFileName: String);
