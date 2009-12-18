@@ -1127,21 +1127,44 @@ end;
 procedure TLandscape.LoadNoDrawMap(AFileName: String);
 var
   noDrawFile: TextFile;
-  line: String;
-  id: Integer;
+  line, ids1, ids2: String;
+  i, id1, id2, splitPos: Integer;
 begin
   AssignFile(noDrawFile, AFileName);
   Reset(noDrawFile);
   while not EOF(noDrawFile) do
   begin
     ReadLn(noDrawFile, line);
-    if TryStrToInt(Copy(line, 2, Length(line)), id) then
+    if (Length(line) > 0) and (line[1] in ['S', 'T']) then
     begin
-      if line[1] = 'S' then
-        Inc(id, $4000);
+      splitPos := Pos('-', line);
+      if splitPos > 1 then
+      begin
+        ids1 := Copy(line, 2, splitPos - 2);
+        ids2 := Copy(line, splitPos + 1, Length(line));
+        if TryStrToInt(ids1, id1) and TryStrToInt(ids2, id2) then
+        begin
+          if line[1] = 'S' then
+          begin
+            Inc(id1, $4000);
+            Inc(id2, $4000);
+          end;
 
-      if id < FDrawMap.Size then
-        FDrawMap[id] := False;
+          for i := id1 to id2 do
+            if i < FDrawMap.Size then
+              FDrawMap[i] := False;
+        end;
+      end else
+      begin
+        ids1 := Copy(line, 2, Length(line));
+        if TryStrToInt(ids1, id1) then
+        begin
+          if line[1] = 'S' then
+            Inc(id1, $4000);
+          if id1 < FDrawMap.Size then
+            FDrawMap[id1] := False;
+        end;
+      end;
     end;
   end;
   CloseFile(noDrawFile);

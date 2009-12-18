@@ -858,11 +858,11 @@ begin
   FLandscape.OnStaticInserted := @OnStaticInserted;
 
   if FileExists(FAppDir + 'nodraw.txt') then
-  begin
-    acNoDraw.Enabled := True;
     FLandscape.LoadNoDrawMap(FAppDir + 'nodraw.txt');
-  end else
-    acNoDraw.Enabled := False;
+  if FileExists(FConfigDir + 'nodraw.txt') then
+    FLandscape.LoadNoDrawMap(FConfigDir + 'nodraw.txt');
+  if FileExists(ResMan.GetFile('nodraw.txt')) then
+    FLandscape.LoadNoDrawMap(ResMan.GetFile('nodraw.txt'));
 
   FTextureManager := TLandTextureManager.Create;
   FScreenBuffer := TScreenBuffer.Create;
