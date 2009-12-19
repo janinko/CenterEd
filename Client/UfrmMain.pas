@@ -2312,6 +2312,7 @@ begin
       blockInfo^.Text.Render(blockInfo^.ScreenRect);
   end;
 
+  glColor4f(1.0, 1.0, 1.0, 1.0);
   FOverlayUI.Draw(oglGameWindow);
 end;
 

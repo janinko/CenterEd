@@ -42,14 +42,17 @@ type
   { TfrmLargeScaleCommand }
 
   TfrmLargeScaleCommand = class(TForm)
-    btnClearTerrain: TSpeedButton;
-    btnClearIStaticsTiles: TSpeedButton;
+    btnAddArea: TSpeedButton;
+    btnClearArea: TSpeedButton;
     btnClearDStaticsTiles: TSpeedButton;
-    btnDeleteTerrain: TSpeedButton;
-    btnDeleteIStaticsTiles: TSpeedButton;
-    btnDeleteDStaticsTiles: TSpeedButton;
-    btnExecute: TButton;
+    btnClearIStaticsTiles: TSpeedButton;
+    btnClearTerrain: TSpeedButton;
     btnClose: TButton;
+    btnDeleteArea: TSpeedButton;
+    btnDeleteDStaticsTiles: TSpeedButton;
+    btnDeleteIStaticsTiles: TSpeedButton;
+    btnDeleteTerrain: TSpeedButton;
+    btnExecute: TButton;
     cbCMEraseTarget: TCheckBox;
     gbDrawTerrainTiles: TGroupBox;
     gbDeleteStaticsTiles: TGroupBox;
@@ -78,12 +81,6 @@ type
     pgDeleteStatics: TPage;
     pgInsertStatics: TPage;
     pgModifyAltitude: TPage;
-    pnlControls: TPanel;
-    pnlDrawTerrainTilesControls: TPanel;
-    pnlAreaControls: TPanel;
-    pnlDrawTerrainTilesControls1: TPanel;
-    pnlDrawTerrainTilesControls2: TPanel;
-    pnlLeft: TPanel;
     pbArea: TPaintBox;
     pgArea: TPage;
     pgDrawTerrain: TPage;
@@ -94,15 +91,8 @@ type
     rbSetTerrainAltitude: TRadioButton;
     rbRelativeAltitudeChange: TRadioButton;
     sbArea: TScrollBox;
-    btnAddArea: TSpeedButton;
-    btnDeleteArea: TSpeedButton;
     seDeleteStaticsZ1: TSpinEdit;
     seDeleteStaticsZ2: TSpinEdit;
-    seX1: TSpinEdit;
-    seX2: TSpinEdit;
-    seY1: TSpinEdit;
-    seY2: TSpinEdit;
-    btnClearArea: TSpeedButton;
     seTerrainAltitude1: TSpinEdit;
     seTerrainAltitude2: TSpinEdit;
     seRelativeAltitude: TSpinEdit;
@@ -110,11 +100,15 @@ type
     seInsertStaticsZ: TSpinEdit;
     seCMOffsetX: TSpinEdit;
     seCMOffsetY: TSpinEdit;
+    seX1: TSpinEdit;
+    seX2: TSpinEdit;
+    seY1: TSpinEdit;
+    seY2: TSpinEdit;
     vdtTerrainTiles: TVirtualDrawTree;
     vdtInsertStaticsTiles: TVirtualDrawTree;
     vdtDeleteStaticsTiles: TVirtualDrawTree;
-    vstArea: TVirtualStringTree;
     vstActions: TVirtualStringTree;
+    vstArea: TVirtualStringTree;
     procedure FormShow(Sender: TObject);
     procedure btnAddAreaClick(Sender: TObject);
     procedure btnClearDStaticsTilesClick(Sender: TObject);
