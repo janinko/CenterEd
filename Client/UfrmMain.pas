@@ -35,7 +35,7 @@ uses
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
   XMLPropStorage, fgl, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
-  UGLFont, DOM, XMLRead, XMLWrite;
+  UGLFont, DOM, XMLRead, XMLWrite, strutils;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -47,6 +47,13 @@ type
   TPacketList = specialize TFPGObjectList<TPacket>;
   TAccessChangedListeners = specialize TFPGList<TAccessChangedListener>;
   TSelectionListeners = specialize TFPGList<TSelectionListener>;
+
+  TTileHintInfo = record
+    Name: String;
+    Flags: String;
+    NameRect: TRect;
+    FlagsRect: TRect;
+  end;
 
   { TfrmMain }
 
@@ -138,7 +145,6 @@ type
     tbFilter: TToolButton;
     tbFlat: TToolButton;
     tbNoDraw: TToolButton;
-    tmTileHint: TTimer;
     tbSeparator2: TToolButton;
     tbUndo: TToolButton;
     tsLocations: TTabSheet;
@@ -181,6 +187,8 @@ type
     procedure acUndoExecute(Sender: TObject);
     procedure acVirtualLayerExecute(Sender: TObject);
     procedure ApplicationProperties1Idle(Sender: TObject; var Done: Boolean);
+    procedure ApplicationProperties1ShowHint(var HintStr: string;
+      var CanShow: Boolean; var HintInfo: THintInfo);
     procedure btnAddLocationClick(Sender: TObject);
     procedure btnAddRandomClick(Sender: TObject);
     procedure btnClearLocationsClick(Sender: TObject);
@@ -240,7 +248,6 @@ type
     procedure tbTerrainClick(Sender: TObject);
     procedure tmGrabTileInfoTimer(Sender: TObject);
     procedure tmMovementTimer(Sender: TObject);
-    procedure tmTileHintTimer(Sender: TObject);
     procedure vdtRandomClick(Sender: TObject);
     procedure vdtRandomDragDrop(Sender: TBaseVirtualTree; Source: TObject;
       DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState;
@@ -254,15 +261,14 @@ type
       Stream: TStream);
     procedure vdtRandomUpdating(Sender: TBaseVirtualTree; State: TVTUpdateState);
     procedure vdtTilesClick(Sender: TObject);
+    procedure vdtTilesDrawHint(Sender: TBaseVirtualTree; HintCanvas: TCanvas;
+      Node: PVirtualNode; const R: TRect; Column: TColumnIndex);
     procedure vdtTilesDrawNode(Sender: TBaseVirtualTree;
       const PaintInfo: TVTPaintInfo);
     procedure vdtTilesEnter(Sender: TObject);
-    procedure vdtTilesExit(Sender: TObject);
-    procedure vdtTilesHotChange(Sender: TBaseVirtualTree; OldNode,
-      NewNode: PVirtualNode);
+    procedure vdtTilesGetHintSize(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; var R: TRect);
     procedure vdtTilesKeyPress(Sender: TObject; var Key: char);
-    procedure vdtTilesMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
     procedure vdtTilesScroll(Sender: TBaseVirtualTree; DeltaX, DeltaY: Integer);
     procedure vstChatClick(Sender: TObject);
     procedure vstChatFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -316,6 +322,7 @@ type
     FUndoList: TPacketList;
     FGLFont: TGLFont;
     FSelectionListeners: TSelectionListeners;
+    FTileHint: TTileHintInfo;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -387,8 +394,8 @@ uses
   UfrmAccountControl, UGraphicHelper, ImagingComponents, UfrmDrawSettings,
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
-  UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
-  UfrmRegionControl, Logging, LConvEncoding, LCLType;
+  UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmRegionControl,
+  Logging, LConvEncoding, LCLType;
 
 type
   TGLArrayf4 = array[0..3] of GLfloat;
@@ -1053,6 +1060,17 @@ begin
   Done := False;
 end;
 
+procedure TfrmMain.ApplicationProperties1ShowHint(var HintStr: string;
+  var CanShow: Boolean; var HintInfo: THintInfo);
+begin
+  //that check is a bit dirty, but serves its purpose
+  //(i.e. to set the timeout for the tile info hints)
+  if HintStr = '-' then
+    HintInfo.HideTimeout := Application.HintHidePause +
+      Application.HintHidePausePerChar * (Length(FTileHint.Name) +
+      Length(FTileHint.Flags));
+end;
+
 procedure TfrmMain.btnAddLocationClick(Sender: TObject);
 var
   locationName: string;
@@ -1446,12 +1464,6 @@ begin
   end;
 end;
 
-procedure TfrmMain.tmTileHintTimer(Sender: TObject);
-begin
-  frmTileInfo.Show;
-  tmTileHint.Enabled := False;
-end;
-
 procedure TfrmMain.vdtRandomClick(Sender: TObject);
 var
   node: PVirtualNode;
@@ -1538,6 +1550,18 @@ begin
     ProcessToolState;
 end;
 
+procedure TfrmMain.vdtTilesDrawHint(Sender: TBaseVirtualTree;
+  HintCanvas: TCanvas; Node: PVirtualNode; const R: TRect; Column: TColumnIndex
+  );
+begin
+  HintCanvas.Font.Style := [fsBold];
+  DrawText(HintCanvas.Handle, PChar(FTileHint.Name), Length(FTileHint.Name),
+    FTileHint.NameRect, 0);
+  HintCanvas.Font.Style := [fsItalic];
+  DrawText(HintCanvas.Handle, PChar(FTileHint.Flags), Length(FTileHint.Flags),
+    FTileHint.FlagsRect, DT_WORDBREAK);
+end;
+
 procedure TfrmMain.vdtTilesDrawNode(Sender: TBaseVirtualTree;
   const PaintInfo: TVTPaintInfo);
 var
@@ -1594,34 +1618,88 @@ begin
   end;
 end;
 
-procedure TfrmMain.vdtTilesExit(Sender: TObject);
-begin
-  {TODO : Fix mouse over on !Windows platforms}
-  {$IFDEF Windows}
-  tmTileHint.Enabled := False;
-  {$ENDIF Windows}
-end;
-
-procedure TfrmMain.vdtTilesHotChange(Sender: TBaseVirtualTree; OldNode,
-  NewNode: PVirtualNode);
-{$IFDEF Windows}
+procedure TfrmMain.vdtTilesGetHintSize(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; var R: TRect);
 var
   tileInfo: PTileInfo;
-{$ENDIF Windows}
-begin
-  {TODO : Fix mouse over on !Windows platforms}
-  {$IFDEF Windows}
-  if NewNode <> nil then
+  tileData: TTiledata;
+  prefix, flags: string;
+
+  procedure UpdateFlags(AFlag: TTileDataFlag; AName: string);
   begin
-    tileInfo := vdtTiles.GetNodeData(NewNode);
-    frmTileInfo.Update(tileInfo^.ID);
-    tmTileHint.Enabled := True;
-  end else
-  begin
-    frmTileInfo.Hide;
-    tmTileHint.Enabled := False;
+    if AFlag in tileData.Flags then
+    begin
+      if flags <> '' then
+        flags := flags + ', ' + AName
+      else
+        flags := AName;
+    end;
   end;
-  {$ENDIF Windows}
+
+begin
+  tileInfo := Sender.GetNodeData(Node);
+  flags := '';
+
+  tileData := ResMan.Tiledata.TileData[tileInfo^.ID];
+  if tileInfo^.ID < $4000 then
+  begin
+    if TLandTiledata(tileData).TextureID > 0 then
+      flags := 'Stretchable';
+  end;
+
+  if tdfArticleA in tileData.Flags then
+    prefix := 'a '
+  else if tdfArticleAn in tileData.Flags then
+    prefix := 'an '
+  else
+    prefix := '';
+
+  FTileHint.Name := AnsiProperCase(Format('%s%s',
+    [prefix, tileData.TileName]), [' ']);
+  FTileHint.NameRect.Left := 5;
+  FTileHint.NameRect.Top := 5;
+  Sender.Canvas.Font.Style := [fsBold];
+  DrawText(Sender.Canvas.Handle, PChar(FTileHint.Name), Length(FTileHint.Name),
+    FTileHint.NameRect, DT_CALCRECT);
+
+  UpdateFlags(tdfBackground, 'Background');
+  UpdateFlags(tdfWeapon, 'Weapon');
+  UpdateFlags(tdfTransparent, 'Transparent');
+  UpdateFlags(tdfTranslucent, 'Translucent');
+  UpdateFlags(tdfWall, 'Wall');
+  UpdateFlags(tdfDamaging, 'Damaging');
+  UpdateFlags(tdfImpassable, 'Impassable');
+  UpdateFlags(tdfWet, 'Wet');
+  UpdateFlags(tdfSurface, 'Surface');
+  UpdateFlags(tdfBridge, 'Bridge');
+  UpdateFlags(tdfGeneric, 'Generic');
+  UpdateFlags(tdfWindow, 'Window');
+  UpdateFlags(tdfNoShoot, 'NoShoot');
+  UpdateFlags(tdfInternal, 'Internal');
+  UpdateFlags(tdfFoliage, 'Foliage');
+  UpdateFlags(tdfPartialHue, 'PartialHue');
+  UpdateFlags(tdfMap, 'Map');
+  UpdateFlags(tdfContainer, 'Container');
+  UpdateFlags(tdfWearable, 'Wearable');
+  UpdateFlags(tdfLightSource, 'Lightsource');
+  UpdateFlags(tdfAnimation, 'Animation');
+  UpdateFlags(tdfNoDiagonal, 'NoDiagonal');
+  UpdateFlags(tdfArmor, 'Armor');
+  UpdateFlags(tdfRoof, 'Roof');
+  UpdateFlags(tdfDoor, 'Door');
+  UpdateFlags(tdfStairBack, 'StairBack');
+  UpdateFlags(tdfStairRight, 'StairRight');
+
+  FTileHint.Flags := Format('Flags = [%s]', [flags]);
+  FTileHint.FlagsRect.Left := 5;
+  FTileHint.FlagsRect.Top := FTileHint.NameRect.Bottom + 5;
+  FTileHint.FlagsRect.Right := 145;
+  Sender.Canvas.Font.Style := [fsItalic];
+  DrawText(Sender.Canvas.Handle, PChar(FTileHint.Flags), Length(FTileHint.Flags),
+    FTileHint.FlagsRect, DT_CALCRECT or DT_WORDBREAK);
+
+  R := Rect(0, 0, Max(FTileHint.NameRect.Right, FTileHint.FlagsRect.Right) + 5,
+    FTileHint.FlagsRect.Bottom + 5);
 end;
 
 procedure TfrmMain.vdtTilesKeyPress(Sender: TObject; var Key: char);
@@ -1633,22 +1711,6 @@ begin
     edSearchID.SetFocus;
     edSearchID.SelStart := 1;
     Key := #0;
-  end;
-end;
-
-procedure TfrmMain.vdtTilesMouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer);
-begin
-  if tmTileHint.Enabled then
-  begin
-    tmTileHint.Enabled := False;
-    tmTileHint.Enabled := True; //Restart timer
-  end;
-  
-  if frmTileInfo.Visible then
-  begin
-    frmTileInfo.Hide;
-    tmTileHint.Enabled := True;
   end;
 end;
 

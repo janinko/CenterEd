@@ -141,6 +141,7 @@ object frmMain: TfrmMain
         AnchorSideBottom.Control = spTileList
         Left = 4
         Height = 218
+        Hint = '-'
         Top = 56
         Width = 210
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -169,22 +170,24 @@ object frmMain: TfrmMain
           end>
         Header.DefaultHeight = 17
         Header.MainColumn = 2
-        Header.Options = [hoVisible]
+        Header.Options = [hoShowHint, hoVisible]
         Header.ParentFont = True
         Header.Style = hsFlatButtons
+        HintMode = hmHint
+        ParentShowHint = False
         PopupMenu = pmTileList
+        ShowHint = True
         TabOrder = 0
         TreeOptions.AutoOptions = [toAutoScroll, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
         TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
         TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages, toStaticBackground]
         TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
         OnClick = vdtTilesClick
+        OnDrawHint = vdtTilesDrawHint
         OnDrawNode = vdtTilesDrawNode
         OnEnter = vdtTilesEnter
-        OnExit = vdtTilesExit
-        OnHotChange = vdtTilesHotChange
+        OnGetHintSize = vdtTilesGetHintSize
         OnKeyPress = vdtTilesKeyPress
-        OnMouseMove = vdtTilesMouseMove
         OnScroll = vdtTilesScroll
       end
       object gbRandom: TGroupBox
@@ -809,7 +812,6 @@ object frmMain: TfrmMain
         Width = 210
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Around = 4
-        BorderStyle = bsSingle
         DefaultText = 'Node'
         Header.AutoSizeIndex = 1
         Header.Columns = <        
@@ -1094,7 +1096,7 @@ object frmMain: TfrmMain
         item
           Position = 2
           Text = 'Message'
-          Width = 381
+          Width = 379
         end>
       Header.DefaultHeight = 17
       Header.MainColumn = 2
@@ -2139,6 +2141,7 @@ object frmMain: TfrmMain
   end
   object ApplicationProperties1: TApplicationProperties
     OnIdle = ApplicationProperties1Idle
+    OnShowHint = ApplicationProperties1ShowHint
     left = 295
     top = 33
   end
@@ -2613,12 +2616,6 @@ object frmMain: TfrmMain
     OnTimer = tmGrabTileInfoTimer
     left = 368
     top = 80
-  end
-  object tmTileHint: TTimer
-    Enabled = False
-    OnTimer = tmTileHintTimer
-    left = 184
-    top = 224
   end
   object pmGrabTileInfo: TPopupMenu
     OnPopup = pmGrabTileInfoPopup

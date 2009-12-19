@@ -78,7 +78,7 @@ uses
   UGameResources, UfrmAccountControl, UfrmEditAccount, UfrmDrawSettings,
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
-  UfrmVirtualLayer, UfrmFilter, UfrmTileInfo, UfrmRegionControl;
+  UfrmVirtualLayer, UfrmFilter, UfrmRegionControl;
   
 {$I version.inc}
 
@@ -211,7 +211,6 @@ begin
           frmFilter := TfrmFilter.Create(frmMain);
           frmVirtualLayer := TfrmVirtualLayer.Create(frmMain);
           frmAbout := TfrmAbout.Create(frmMain);
-          frmTileInfo := TfrmTileInfo.Create(frmMain);
           frmMain.Show;
           frmInitialize.Hide;
           tmNoOp.Enabled := True;
@@ -293,7 +292,6 @@ begin
   if frmInitialize = nil then
     frmInitialize := TfrmInitialize.Create(dmNetwork);
 
-  FreeAndNil(frmTileInfo);
   FreeAndNil(frmEditAccount);
   FreeAndNil(frmAccountControl);
   FreeAndNil(frmConfirmation);

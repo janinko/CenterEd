@@ -31,8 +31,8 @@ object frmFilter: TfrmFilter
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 2
-    ClientHeight = 22
-    ClientWidth = 220
+    ClientHeight = 26
+    ClientWidth = 222
     Columns = 2
     ItemIndex = 0
     Items.Strings = (
@@ -50,8 +50,8 @@ object frmFilter: TfrmFilter
     Align = alClient
     BorderSpacing.Around = 4
     Caption = 'Tile filter'
-    ClientHeight = 241
-    ClientWidth = 220
+    ClientHeight = 245
+    ClientWidth = 222
     TabOrder = 1
     object Label1: TLabel
       AnchorSideLeft.Control = GroupBox1
@@ -60,9 +60,9 @@ object frmFilter: TfrmFilter
       AnchorSideRight.Control = GroupBox1
       AnchorSideRight.Side = asrBottom
       Left = 4
-      Height = 27
-      Top = 27
-      Width = 212
+      Height = 30
+      Top = 30
+      Width = 214
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Around = 4
       Caption = 'Drag and Drop static tiles from the tile list on this list to add them to the filter.'
@@ -79,7 +79,7 @@ object frmFilter: TfrmFilter
       Left = 30
       Height = 22
       Hint = 'Clear'
-      Top = 215
+      Top = 219
       Width = 22
       Anchors = [akLeft, akBottom]
       Color = clBtnFace
@@ -131,7 +131,7 @@ object frmFilter: TfrmFilter
       Left = 4
       Height = 22
       Hint = 'Delete'
-      Top = 215
+      Top = 219
       Width = 22
       Anchors = [akLeft, akBottom]
       BorderSpacing.Around = 4
@@ -187,12 +187,11 @@ object frmFilter: TfrmFilter
       AnchorSideBottom.Control = btnDelete
       Cursor = 63
       Left = 4
-      Height = 153
-      Top = 58
-      Width = 212
+      Height = 151
+      Top = 64
+      Width = 214
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Around = 4
-      BorderStyle = bsSingle
       DefaultNodeHeight = 44
       DragType = dtVCL
       Header.AutoSizeIndex = 0
@@ -226,9 +225,9 @@ object frmFilter: TfrmFilter
       AnchorSideLeft.Control = GroupBox1
       AnchorSideTop.Control = GroupBox1
       Left = 4
-      Height = 19
+      Height = 22
       Top = 4
-      Width = 78
+      Width = 85
       BorderSpacing.Around = 4
       Caption = 'Filter active'
       OnChange = cbTileFilterChange
@@ -243,14 +242,14 @@ object frmFilter: TfrmFilter
     Align = alBottom
     BorderSpacing.Around = 4
     Caption = 'Hue filter'
-    ClientHeight = 150
-    ClientWidth = 220
+    ClientHeight = 154
+    ClientWidth = 222
     TabOrder = 2
     object cbHueFilter: TCheckBox
       Left = 4
-      Height = 19
+      Height = 22
       Top = 4
-      Width = 212
+      Width = 214
       Align = alTop
       BorderSpacing.Around = 4
       Caption = 'Filter active'
@@ -260,12 +259,11 @@ object frmFilter: TfrmFilter
     object vdtHues: TVirtualDrawTree
       Cursor = 63
       Left = 4
-      Height = 119
-      Top = 27
-      Width = 212
+      Height = 120
+      Top = 30
+      Width = 214
       Align = alClient
       BorderSpacing.Around = 4
-      BorderStyle = bsSingle
       Header.AutoSizeIndex = 2
       Header.Columns = <      
         item
@@ -280,7 +278,7 @@ object frmFilter: TfrmFilter
         item
           Position = 2
           Text = 'Name'
-          Width = 150
+          Width = 154
         end>
       Header.DefaultHeight = 17
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]

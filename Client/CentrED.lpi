@@ -55,7 +55,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="43">
+    <Units Count="42">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -191,126 +191,119 @@
         <UnitName Value="UfrmFilter"/>
       </Unit19>
       <Unit20>
-        <Filename Value="UfrmTileInfo.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmTileInfo"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmTileInfo"/>
-      </Unit20>
-      <Unit21>
         <Filename Value="UGUIPlatformUtils.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UGUIPlatformUtils"/>
-      </Unit21>
-      <Unit22>
+      </Unit20>
+      <Unit21>
         <Filename Value="UPlatformTypes.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UPlatformTypes"/>
-      </Unit22>
-      <Unit23>
+      </Unit21>
+      <Unit22>
         <Filename Value="UfrmRegionControl.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmRegionControl"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="UfrmRegionControl"/>
-      </Unit23>
-      <Unit24>
+      </Unit22>
+      <Unit23>
         <Filename Value="UPacketHandlers.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UPacketHandlers"/>
-      </Unit24>
-      <Unit25>
+      </Unit23>
+      <Unit24>
         <Filename Value="UPackets.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UPackets"/>
-      </Unit25>
-      <Unit26>
+      </Unit24>
+      <Unit25>
         <Filename Value="ULandscape.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ULandscape"/>
-      </Unit26>
-      <Unit27>
+      </Unit25>
+      <Unit26>
         <Filename Value="UGameResources.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UGameResources"/>
-      </Unit27>
-      <Unit28>
+      </Unit26>
+      <Unit27>
         <Filename Value="UAdminHandling.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UAdminHandling"/>
-      </Unit28>
-      <Unit29>
+      </Unit27>
+      <Unit28>
         <Filename Value="Tools/UfrmToolWindow.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmToolWindow"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="UfrmToolWindow"/>
-      </Unit29>
-      <Unit30>
+      </Unit28>
+      <Unit29>
         <Filename Value="../Logging.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Logging"/>
-      </Unit30>
-      <Unit31>
+      </Unit29>
+      <Unit30>
         <Filename Value="../UOLib/UStatics.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UStatics"/>
-      </Unit31>
-      <Unit32>
+      </Unit30>
+      <Unit31>
         <Filename Value="../UOLib/UWorldItem.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UWorldItem"/>
-      </Unit32>
-      <Unit33>
+      </Unit31>
+      <Unit32>
         <Filename Value="../UOLib/UMap.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UMap"/>
-      </Unit33>
-      <Unit34>
+      </Unit32>
+      <Unit33>
         <Filename Value="../UOLib/UTiledata.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UTiledata"/>
-      </Unit34>
-      <Unit35>
+      </Unit33>
+      <Unit34>
         <Filename Value="UGLFont.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UGLFont"/>
-      </Unit35>
-      <Unit36>
+      </Unit34>
+      <Unit35>
         <Filename Value="../UOLib/UAnimData.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UAnimData"/>
-      </Unit36>
-      <Unit37>
+      </Unit35>
+      <Unit36>
         <Filename Value="../MulProvider/UTileDataProvider.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UTileDataProvider"/>
-      </Unit37>
-      <Unit38>
+      </Unit36>
+      <Unit37>
         <Filename Value="../MulProvider/UAnimDataProvider.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UAnimDataProvider"/>
-      </Unit38>
-      <Unit39>
+      </Unit37>
+      <Unit38>
         <Filename Value="../MulProvider/UMulManager.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UMulManager"/>
-      </Unit39>
-      <Unit40>
+      </Unit38>
+      <Unit39>
         <Filename Value="../MulProvider/UArtProvider.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UArtProvider"/>
-      </Unit40>
-      <Unit41>
+      </Unit39>
+      <Unit40>
         <Filename Value="../MulProvider/UTexmapProvider.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UTexmapProvider"/>
-      </Unit41>
-      <Unit42>
+      </Unit40>
+      <Unit41>
         <Filename Value="../version.inc"/>
         <IsPartOfProject Value="True"/>
-      </Unit42>
+      </Unit41>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -353,7 +346,7 @@
         <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
       </CompilerMessages>
       <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+#-dNoLogging"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>

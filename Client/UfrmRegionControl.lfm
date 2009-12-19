@@ -85,7 +85,7 @@ object frmRegionControl: TfrmRegionControl
       item
         Position = 0
         Text = 'Regions'
-        Width = 160
+        Width = 156
       end>
     Header.DefaultHeight = 17
     Header.Options = [hoAutoResize, hoVisible]
@@ -222,7 +222,6 @@ object frmRegionControl: TfrmRegionControl
     BorderSpacing.Left = 4
     BorderSpacing.Right = 4
     BorderSpacing.Bottom = 4
-    BorderStyle = bsSingle
     DefaultText = 'Node'
     Header.AutoSizeIndex = 0
     Header.Columns = <>

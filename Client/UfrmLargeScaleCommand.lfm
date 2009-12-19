@@ -1089,7 +1089,6 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     Width = 144
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Bottom = 4
-    BorderStyle = bsSingle
     DefaultText = 'Node'
     Header.AutoSizeIndex = 0
     Header.Columns = <>
@@ -1132,7 +1131,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
       item
         Position = 0
         Text = 'Actions'
-        Width = 152
+        Width = 148
       end>
     Header.DefaultHeight = 17
     Header.Options = [hoAutoResize, hoVisible]

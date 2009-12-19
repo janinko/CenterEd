@@ -38,7 +38,7 @@ uses
   multiloglaz, UfrmEditAccount, UfrmDrawSettings, UfrmBoundaries,
   UfrmElevateSettings, UOverlayUI, UResourceManager, UfrmConfirmation,
   UfrmMoveSettings, UfrmAbout, UfrmHueSettings, UfrmRadar,
-  UfrmLargeScaleCommand, UfrmVirtualLayer, UfrmFilter, UfrmTileInfo,
+  UfrmLargeScaleCommand, UfrmVirtualLayer, UfrmFilter,
   UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
   UPacketHandlers, UAdminHandling, UGameResources, ULandscape, UfrmToolWindow,
   Logging, UTileDataProvider, UMap, UWorldItem, UStatics, UTiledata, UAnimData,
