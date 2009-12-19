@@ -1084,7 +1084,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = btnDeleteArea
     Left = 4
-    Height = 118
+    Height = 122
     Top = 154
     Width = 144
     Anchors = [akTop, akLeft, akRight, akBottom]
@@ -1209,10 +1209,8 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     Top = 280
     Width = 22
     Anchors = [akLeft, akBottom]
-    BorderSpacing.Left = 4
-    BorderSpacing.Top = 8
-    BorderSpacing.Right = 4
-    BorderSpacing.Bottom = 8
+    BorderSpacing.Bottom = 4
+    BorderSpacing.Around = 4
     Color = clBtnFace
     Glyph.Data = {
       36040000424D3604000000000000360000002800000010000000100000000100
@@ -1394,6 +1392,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideBottom.Side = asrBottom
     Left = 34
     Height = 22
+    Hint = 'Grab coordinates from the main window.'
     Top = 360
     Width = 22
     Anchors = [akLeft, akBottom]
@@ -1438,6 +1437,8 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     }
     NumGlyphs = 0
     OnClick = btnGrab1Click
+    ShowHint = True
+    ParentShowHint = False
   end
   object btnGrab2: TSpeedButton
     AnchorSideLeft.Control = seY2
@@ -1446,6 +1447,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideBottom.Side = asrBottom
     Left = 92
     Height = 22
+    Hint = 'Grab coordinates from the main window.'
     Top = 360
     Width = 22
     Anchors = [akLeft, akBottom]
@@ -1489,5 +1491,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     }
     NumGlyphs = 0
     OnClick = btnGrab1Click
+    ShowHint = True
+    ParentShowHint = False
   end
 end

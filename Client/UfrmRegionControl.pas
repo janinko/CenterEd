@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2009 Andreas Schneider
  *)
 unit UfrmRegionControl;
 
@@ -32,7 +32,7 @@ interface
 uses
   Classes, SysUtils, math, LResources, Forms, Controls, Graphics, Dialogs,
   VirtualTrees, ExtCtrls, ImagingComponents, StdCtrls, Buttons, Spin, LCLIntf,
-  UEnhancedMemoryStream, Menus, URectList, UEnums;
+  UEnhancedMemoryStream, Menus, URectList, UEnums, UWorldItem;
 
 type
   TAreaMoveType = (amLeft, amTop, amRight, amBottom);
@@ -54,32 +54,28 @@ type
     btnAddArea: TSpeedButton;
     btnAddRegion: TSpeedButton;
     btnClearArea: TSpeedButton;
-    btnDeleteArea: TSpeedButton;
     btnClose: TButton;
+    btnDeleteArea: TSpeedButton;
     btnDeleteRegion: TSpeedButton;
-
     btnSave: TButton;
     Label1: TLabel;
     lblX: TLabel;
     lblY: TLabel;
     mnuAddRegion: TMenuItem;
     mnuDeleteRegion: TMenuItem;
-    Panel1: TPanel;
-    Panel2: TPanel;
-    Panel3: TPanel;
-    Panel4: TPanel;
-    Panel5: TPanel;
     pbArea: TPaintBox;
-    pnlAreaControls: TPanel;
     pmRegions: TPopupMenu;
     sbArea: TScrollBox;
     seX1: TSpinEdit;
     seX2: TSpinEdit;
     seY1: TSpinEdit;
     seY2: TSpinEdit;
+    btnGrab1: TSpeedButton;
+    btnGrab2: TSpeedButton;
     spRegionsArea: TSplitter;
     vstArea: TVirtualStringTree;
     vstRegions: TVirtualStringTree;
+    procedure btnGrab1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure mnuAddRegionClick(Sender: TObject);
     procedure mnuDeleteRegionClick(Sender: TObject);
@@ -93,8 +89,8 @@ type
     procedure FormShow(Sender: TObject);
     procedure pbAreaMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure pbAreaMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer
-      );
+    procedure pbAreaMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
     procedure pbAreaPaint(Sender: TObject);
     procedure seX1Change(Sender: TObject);
     procedure vstAreaChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -112,12 +108,15 @@ type
     FOnRegionModified: TRegionModifiedEvent;
     FOnRegionDeleted: TRegionDeletedEvent;
     FOnRegionList: TRegionListEvent;
+    FSelectFirst: Boolean;
+    FOldWindowState: TWindowState;
     function FindRegion(AName: string): PVirtualNode;
     procedure CheckUnsaved;
     procedure OnModifyRegionPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnDeleteRegionPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnListRegionsPacket(ABuffer: TEnhancedMemoryStream);
     procedure OnAccessChanged(AAccessLevel: TAccessLevel);
+    procedure TileSelected(AWorldItem: TWorldItem);
   public
     property OnRegionModified: TRegionModifiedEvent read FOnRegionModified write FOnRegionModified;
     property OnRegionDeleted: TRegionDeletedEvent read FOnRegionDeleted write FOnRegionDeleted;
@@ -221,9 +220,9 @@ end;
 procedure TfrmRegionControl.FormDestroy(Sender: TObject);
 begin
   frmRadarMap.Dependencies.Remove(pbArea);
-  if AdminPacketHandlers[$08] <> nil then FreeAndNil(AdminPacketHandlers[$08]);
-  if AdminPacketHandlers[$09] <> nil then FreeAndNil(AdminPacketHandlers[$09]);
-  if AdminPacketHandlers[$0A] <> nil then FreeAndNil(AdminPacketHandlers[$0A]);
+  FreeAndNil(AdminPacketHandlers[$08]);
+  FreeAndNil(AdminPacketHandlers[$09]);
+  FreeAndNil(AdminPacketHandlers[$0A]);
 end;
 
 procedure TfrmRegionControl.FormShow(Sender: TObject);
@@ -300,6 +299,15 @@ procedure TfrmRegionControl.FormClose(Sender: TObject;
   var CloseAction: TCloseAction);
 begin
   CheckUnsaved;
+end;
+
+procedure TfrmRegionControl.btnGrab1Click(Sender: TObject);
+begin
+  FSelectFirst := (Sender = btnGrab1);
+  frmMain.RegisterSelectionListener(@TileSelected);
+  FOldWindowState := WindowState;
+  WindowState := wsMinimized;
+  frmMain.SwitchToSelection;
 end;
 
 procedure TfrmRegionControl.mnuDeleteRegionClick(Sender: TObject);
@@ -481,6 +489,8 @@ begin
   seX2.Enabled := selected;
   seY1.Enabled := selected;
   seY2.Enabled := selected;
+  btnGrab1.Enabled := selected;
+  btnGrab2.Enabled := selected;
   if selected then
   begin
     areaInfo := Sender.GetNodeData(Node);
@@ -706,6 +716,22 @@ procedure TfrmRegionControl.OnAccessChanged(AAccessLevel: TAccessLevel);
 begin
   if AAccessLevel >= alAdministrator then
     dmNetwork.Send(TRequestRegionListPacket.Create);
+end;
+
+procedure TfrmRegionControl.TileSelected(AWorldItem: TWorldItem);
+begin
+  if FSelectFirst then
+  begin
+    seX1.Value := AWorldItem.X;
+    seY1.Value := AWorldItem.Y;
+  end else
+  begin
+    seX2.Value := AWorldItem.X;
+    seY2.Value := AWorldItem.Y;
+  end;
+  frmMain.UnregisterSelectionListener(@TileSelected);
+  WindowState := FOldWindowState;
+  seX1Change(nil);
 end;
 
 initialization
