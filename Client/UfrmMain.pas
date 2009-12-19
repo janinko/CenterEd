@@ -45,6 +45,7 @@ type
 
   TGhostTile = class(TStaticItem);
   TPacketList = specialize TFPGObjectList<TPacket>;
+  TAccessChangedListeners = specialize TFPGList<TAccessChangedListener>;
   TSelectionListeners = specialize TFPGList<TSelectionListener>;
 
   { TfrmMain }
@@ -309,7 +310,7 @@ type
     FRandomPresetsFile: string;
     FRandomPresetsDoc: TXMLDocument;
     FLastDraw: TDateTime;
-    FAccessChangedListeners: array of TAccessChangedListener;
+    FAccessChangedListeners: TAccessChangedListeners;
     FRepaintNeeded: Boolean;
     FSelection: TRect;
     FUndoList: TPacketList;
@@ -916,6 +917,7 @@ begin
   DoubleBuffered := True;
   pnlBottom.DoubleBuffered := True;
 
+  FAccessChangedListeners := TAccessChangedListeners.Create;
   FSelectionListeners := TSelectionListeners.Create;
   
   FLastDraw := Now;
@@ -1244,6 +1246,7 @@ begin
   FreeAndNil(FUndoList);
   FreeAndNil(FGLFont);
   FreeAndNil(FRandomPresetsDoc);
+  FreeAndNil(FAccessChangedListeners);
   FreeAndNil(FSelectionListeners);
   
   RegisterPacketHandler($0C, nil);
@@ -1815,14 +1818,9 @@ end;
 
 procedure TfrmMain.RegisterAccessChangedListener(
   AListener: TAccessChangedListener);
-var
-  i: Integer;
 begin
-  for i := Low(FAccessChangedListeners) to High(FAccessChangedListeners) do
-    if FAccessChangedListeners[i] = AListener then
-      Exit; //Prevent duplicates
-  SetLength(FAccessChangedListeners, Length(FAccessChangedListeners) + 1);
-  FAccessChangedListeners[High(FAccessChangedListeners)] := AListener;
+  if FAccessChangedListeners.IndexOf(AListener) < 0 then
+    FAccessChangedListeners.Add(AListener);
 end;
 
 procedure TfrmMain.RegisterSelectionListener(AListener: TSelectionListener);
@@ -1833,25 +1831,8 @@ end;
 
 procedure TfrmMain.UnregisterAccessChangedListener(
   AListener: TAccessChangedListener);
-var
-  i: Integer;
-  found: Boolean;
 begin
-  i := Low(FAccessChangedListeners);
-  found := False;
-  while (i <= High(FAccessChangedListeners)) and (not found) do
-  begin
-    if FAccessChangedListeners[i] = AListener then
-    begin
-      if i < High(FAccessChangedListeners) then
-        Move(FAccessChangedListeners[i+1], FAccessChangedListeners[i],
-          (High(FAccessChangedListeners) - Low(FAccessChangedListeners) - i) *
-          SizeOf(TAccessChangedListener)); //move subsequent entries
-      SetLength(FAccessChangedListeners, Length(FAccessChangedListeners) - 1);
-      found := True;
-    end else
-      Inc(i);
-  end;
+  FAccessChangedListeners.Remove(AListener);
 end;
 
 procedure TfrmMain.UnregisterSelectionListener(AListener: TSelectionListener);
@@ -2951,7 +2932,7 @@ begin
           end;
         end;
 
-        for i := Low(FAccessChangedListeners) to High(FAccessChangedListeners) do
+        for i := FAccessChangedListeners.Count - 1 downto 0 do
           FAccessChangedListeners[i](accessLevel);
       end;
   end;
