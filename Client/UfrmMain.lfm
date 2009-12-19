@@ -618,11 +618,11 @@ object frmMain: TfrmMain
     end
     object tsClients: TTabSheet
       Caption = 'Clients'
-      ClientHeight = 495
+      ClientHeight = 468
       ClientWidth = 218
       object lbClients: TListBox
         Left = 0
-        Height = 495
+        Height = 468
         Top = 0
         Width = 218
         Align = alClient
@@ -636,7 +636,7 @@ object frmMain: TfrmMain
     end
     object tsLocations: TTabSheet
       Caption = 'Locations'
-      ClientHeight = 495
+      ClientHeight = 468
       ClientWidth = 218
       object btnClearLocations: TSpeedButton
         AnchorSideLeft.Control = btnDeleteLocation
@@ -645,7 +645,7 @@ object frmMain: TfrmMain
         Left = 125
         Height = 22
         Hint = 'Clear'
-        Top = 469
+        Top = 442
         Width = 23
         BorderSpacing.Left = 4
         Color = clBtnFace
@@ -698,7 +698,7 @@ object frmMain: TfrmMain
         Left = 98
         Height = 22
         Hint = 'Delete'
-        Top = 469
+        Top = 442
         Width = 23
         Anchors = [akLeft, akBottom]
         BorderSpacing.Bottom = 4
@@ -750,7 +750,7 @@ object frmMain: TfrmMain
         Left = 71
         Height = 22
         Hint = 'Add'
-        Top = 469
+        Top = 442
         Width = 23
         Anchors = [akTop, akRight]
         BorderSpacing.Right = 4
@@ -804,7 +804,7 @@ object frmMain: TfrmMain
         AnchorSideBottom.Control = btnDeleteLocation
         Cursor = 63
         Left = 4
-        Height = 461
+        Height = 434
         Top = 4
         Width = 210
         Anchors = [akTop, akLeft, akRight, akBottom]

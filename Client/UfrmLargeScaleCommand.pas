@@ -32,7 +32,7 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Math,
   VirtualTrees, ExtCtrls, ImagingComponents, StdCtrls, Buttons, Spin, LCLIntf,
-  UPlatformTypes, UEnhancedMemoryStream;
+  UPlatformTypes, UEnhancedMemoryStream, UWorldItem;
 
 type
 
@@ -104,11 +104,14 @@ type
     seX2: TSpinEdit;
     seY1: TSpinEdit;
     seY2: TSpinEdit;
+    btnGrab1: TSpeedButton;
+    btnGrab2: TSpeedButton;
     vdtTerrainTiles: TVirtualDrawTree;
     vdtInsertStaticsTiles: TVirtualDrawTree;
     vdtDeleteStaticsTiles: TVirtualDrawTree;
     vstActions: TVirtualStringTree;
     vstArea: TVirtualStringTree;
+    procedure btnGrab1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnAddAreaClick(Sender: TObject);
     procedure btnClearDStaticsTilesClick(Sender: TObject);
@@ -123,8 +126,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure pbAreaMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure pbAreaMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer
-      );
+    procedure pbAreaMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
     procedure pbAreaPaint(Sender: TObject);
     procedure btnDeleteAreaClick(Sender: TObject);
     procedure btnClearAreaClick(Sender: TObject);
@@ -158,8 +161,11 @@ type
     FDrawTerrainNode: PVirtualNode;
     FDelStaticsNode: PVirtualNode;
     FAddStaticsNode: PVirtualNode;
+    FSelectFirst: Boolean;
+    FOldWindowState: TWindowState;
     function AddNode(AActionID: Integer; ACaption: String): PVirtualNode;
     function FindNode(AActionID: Integer): PVirtualNode;
+    procedure TileSelection(AWorldItem: TWorldItem);
     procedure SerializeTiles(ATileList: TVirtualDrawTree;
       AStream: TEnhancedMemoryStream);
   public
@@ -306,6 +312,15 @@ end;
 procedure TfrmLargeScaleCommand.FormShow(Sender: TObject);
 begin
   SetWindowParent(Handle, frmMain.Handle);
+end;
+
+procedure TfrmLargeScaleCommand.btnGrab1Click(Sender: TObject);
+begin
+  FSelectFirst := (Sender = btnGrab1);
+  frmMain.RegisterSelectionListener(@TileSelection);
+  FOldWindowState := WindowState;
+  WindowState := wsMinimized;
+  frmMain.SwitchToSelection;
 end;
 
 procedure TfrmLargeScaleCommand.btnClearDStaticsTilesClick(Sender: TObject);
@@ -621,6 +636,8 @@ begin
   seX2.Enabled := selected;
   seY1.Enabled := selected;
   seY2.Enabled := selected;
+  btnGrab1.Enabled := selected;
+  btnGrab2.Enabled := selected;
   if selected then
   begin
     nodeInfo := Sender.GetNodeData(Node);
@@ -673,6 +690,22 @@ begin
       Result := node;
     node := vstActions.GetNext(node);
   end;
+end;
+
+procedure TfrmLargeScaleCommand.TileSelection(AWorldItem: TWorldItem);
+begin
+  if FSelectFirst then
+  begin
+    seX1.Value := AWorldItem.X;
+    seY1.Value := AWorldItem.Y;
+  end else
+  begin
+    seX2.Value := AWorldItem.X;
+    seY2.Value := AWorldItem.Y;
+  end;
+  seX1Change(nil);
+  frmMain.UnregisterSelectionListener(@TileSelection);
+  WindowState := FOldWindowState;
 end;
 
 procedure TfrmLargeScaleCommand.SerializeTiles(ATileList: TVirtualDrawTree;

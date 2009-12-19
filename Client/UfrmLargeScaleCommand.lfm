@@ -3,6 +3,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
   Height = 390
   Top = 171
   Width = 620
+  ActiveControl = vstActions
   Caption = 'Large Scale Commands'
   ClientHeight = 390
   ClientWidth = 620
@@ -57,7 +58,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     object pgCopyMove: TPage
       Caption = 'Copy/Move'
       ClientWidth = 462
-      ClientHeight = 343
+      ClientHeight = 316
       object rgCMAction: TRadioGroup
         AnchorSideLeft.Control = pgCopyMove
         AnchorSideTop.Control = pgCopyMove
@@ -130,7 +131,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 27
           Height = 19
           Top = 8
-          Width = 84
+          Width = 82
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Around = 8
           TabOrder = 0
@@ -144,7 +145,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 27
           Height = 19
           Top = 35
-          Width = 84
+          Width = 82
           Anchors = [akTop, akLeft, akRight]
           TabOrder = 1
         end
@@ -165,7 +166,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     object pgModifyAltitude: TPage
       Caption = 'Modify altitude'
       ClientWidth = 462
-      ClientHeight = 343
+      ClientHeight = 316
       object Label2: TLabel
         AnchorSideLeft.Control = rbSetTerrainAltitude
         AnchorSideTop.Control = rbSetTerrainAltitude
@@ -272,20 +273,20 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     object pgDrawTerrain: TPage
       Caption = 'Draw Terrain'
       ClientWidth = 462
-      ClientHeight = 343
+      ClientHeight = 316
       object gbDrawTerrainTiles: TGroupBox
         AnchorSideLeft.Control = pgDrawTerrain
         AnchorSideTop.Control = pgDrawTerrain
         AnchorSideBottom.Control = pgDrawTerrain
         AnchorSideBottom.Side = asrBottom
         Left = 8
-        Height = 327
+        Height = 300
         Top = 8
         Width = 225
         Anchors = [akTop, akLeft, akBottom]
         BorderSpacing.Around = 8
         Caption = 'Tiles'
-        ClientHeight = 313
+        ClientHeight = 286
         ClientWidth = 223
         TabOrder = 0
         object lblDrawTerrainTilesDesc: TLabel
@@ -312,7 +313,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           AnchorSideBottom.Control = btnDeleteTerrain
           Cursor = 63
           Left = 4
-          Height = 217
+          Height = 200
           Top = 66
           Width = 215
           Anchors = [akTop, akLeft, akBottom]
@@ -358,7 +359,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 30
           Height = 22
           Hint = 'Clear'
-          Top = 287
+          Top = 270
           Width = 22
           Anchors = [akLeft, akBottom]
           Color = clBtnFace
@@ -410,7 +411,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 22
           Hint = 'Delete'
-          Top = 287
+          Top = 270
           Width = 22
           Anchors = [akLeft, akBottom]
           BorderSpacing.Around = 4
@@ -461,20 +462,20 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     object pgDeleteStatics: TPage
       Caption = 'Delete statics'
       ClientWidth = 462
-      ClientHeight = 343
+      ClientHeight = 316
       object gbDeleteStaticsTiles: TGroupBox
         AnchorSideLeft.Control = pgDeleteStatics
         AnchorSideTop.Control = pgDeleteStatics
         AnchorSideBottom.Control = pgDeleteStatics
         AnchorSideBottom.Side = asrBottom
         Left = 8
-        Height = 327
+        Height = 300
         Top = 8
         Width = 225
         Anchors = [akTop, akLeft, akBottom]
         BorderSpacing.Around = 8
         Caption = 'Tiles'
-        ClientHeight = 313
+        ClientHeight = 286
         ClientWidth = 223
         TabOrder = 0
         object lblDeleteStaticsTilesDesc: TLabel
@@ -485,7 +486,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 78
           Top = 0
-          Width = 215
+          Width = 213
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -504,9 +505,9 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           AnchorSideBottom.Control = btnDeleteDStaticsTiles
           Cursor = 63
           Left = 4
-          Height = 201
+          Height = 184
           Top = 82
-          Width = 215
+          Width = 213
           Anchors = [akTop, akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -550,7 +551,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 30
           Height = 22
           Hint = 'Clear'
-          Top = 287
+          Top = 270
           Width = 22
           Anchors = [akLeft, akBottom]
           Color = clBtnFace
@@ -602,7 +603,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 22
           Hint = 'Delete'
-          Top = 287
+          Top = 270
           Width = 22
           Anchors = [akLeft, akBottom]
           BorderSpacing.Around = 4
@@ -670,7 +671,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 30
           Top = 0
-          Width = 166
+          Width = 164
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -723,20 +724,20 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     object pgInsertStatics: TPage
       Caption = 'Insert statics'
       ClientWidth = 462
-      ClientHeight = 343
+      ClientHeight = 316
       object gbInserStaticsTiles: TGroupBox
         AnchorSideLeft.Control = pgInsertStatics
         AnchorSideTop.Control = pgInsertStatics
         AnchorSideBottom.Control = pgInsertStatics
         AnchorSideBottom.Side = asrBottom
         Left = 8
-        Height = 327
+        Height = 300
         Top = 8
         Width = 225
         Anchors = [akTop, akLeft, akBottom]
         BorderSpacing.Around = 8
         Caption = 'Tiles'
-        ClientHeight = 313
+        ClientHeight = 286
         ClientWidth = 223
         TabOrder = 0
         object lblInsertStaticsTiles: TLabel
@@ -747,7 +748,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 62
           Top = 0
-          Width = 215
+          Width = 213
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -765,9 +766,9 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           AnchorSideRight.Side = asrBottom
           AnchorSideBottom.Control = btnDeleteIStaticsTiles
           Left = 4
-          Height = 217
+          Height = 200
           Top = 66
-          Width = 215
+          Width = 213
           Anchors = [akTop, akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -810,7 +811,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 30
           Height = 22
           Hint = 'Clear'
-          Top = 287
+          Top = 270
           Width = 22
           Color = clBtnFace
           Glyph.Data = {
@@ -861,7 +862,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 22
           Hint = 'Delete'
-          Top = 287
+          Top = 270
           Width = 22
           Anchors = [akLeft, akBottom]
           BorderSpacing.Around = 4
@@ -929,7 +930,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 30
           Top = 0
-          Width = 175
+          Width = 173
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -990,7 +991,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 22
           Top = 4
-          Width = 175
+          Width = 173
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Left = 4
           BorderSpacing.Top = 4
@@ -1009,7 +1010,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 22
           Top = 26
-          Width = 175
+          Width = 173
           Anchors = [akTop, akLeft, akRight]
           Caption = 'Place tiles on top'
           TabOrder = 1
@@ -1024,7 +1025,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 4
           Height = 22
           Top = 48
-          Width = 175
+          Width = 173
           Anchors = [akTop, akLeft, akRight]
           Caption = 'Place tiles on:'
           TabOrder = 2
@@ -1083,7 +1084,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = btnDeleteArea
     Left = 4
-    Height = 144
+    Height = 118
     Top = 154
     Width = 144
     Anchors = [akTop, akLeft, akRight, akBottom]
@@ -1152,7 +1153,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     Left = 39
     Height = 22
     Hint = 'Add area'
-    Top = 306
+    Top = 280
     Width = 22
     Anchors = [akTop, akRight]
     Color = clBtnFace
@@ -1205,7 +1206,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     Left = 65
     Height = 22
     Hint = 'Delete area'
-    Top = 306
+    Top = 280
     Width = 22
     Anchors = [akLeft, akBottom]
     BorderSpacing.Left = 4
@@ -1261,7 +1262,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     Left = 91
     Height = 22
     Hint = 'Delete all areas'
-    Top = 306
+    Top = 280
     Width = 22
     Color = clBtnFace
     Glyph.Data = {
@@ -1311,7 +1312,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideTop.Side = asrCenter
     Left = 4
     Height = 14
-    Top = 338
+    Top = 312
     Width = 8
     Caption = 'X'
     Enabled = False
@@ -1322,7 +1323,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideBottom.Control = seY1
     Left = 20
     Height = 19
-    Top = 336
+    Top = 310
     Width = 50
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 8
@@ -1337,7 +1338,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideTop.Control = seX1
     Left = 78
     Height = 19
-    Top = 336
+    Top = 310
     Width = 50
     BorderSpacing.Left = 8
     Enabled = False
@@ -1351,7 +1352,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideTop.Side = asrCenter
     Left = 4
     Height = 14
-    Top = 365
+    Top = 339
     Width = 8
     BorderSpacing.Left = 4
     Caption = 'Y'
@@ -1361,15 +1362,14 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
   object seY1: TSpinEdit
     AnchorSideLeft.Control = lblY
     AnchorSideLeft.Side = asrBottom
-    AnchorSideBottom.Control = Owner
-    AnchorSideBottom.Side = asrBottom
+    AnchorSideBottom.Control = btnGrab1
     Left = 20
     Height = 19
-    Top = 363
+    Top = 337
     Width = 50
     Anchors = [akLeft, akBottom]
     BorderSpacing.Left = 8
-    BorderSpacing.Bottom = 8
+    BorderSpacing.Bottom = 4
     Enabled = False
     OnChange = seX1Change
     TabOrder = 7
@@ -1380,11 +1380,114 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     AnchorSideTop.Control = seY1
     Left = 78
     Height = 19
-    Top = 363
+    Top = 337
     Width = 50
     Enabled = False
     OnChange = seX1Change
     TabOrder = 8
     Value = 1
+  end
+  object btnGrab1: TSpeedButton
+    AnchorSideLeft.Control = seY1
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 34
+    Height = 22
+    Top = 360
+    Width = 22
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.Bottom = 8
+    Color = clBtnFace
+    Enabled = False
+    Glyph.Data = {
+      36040000424D3604000000000000360000002800000010000000100000000100
+      2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF007F7F7F067C7C
+      7CE6787878CC75757581FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF008383835DAAAA
+      AAFFDBDBDBFF797979F275757506FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF0097979709FFFFFF00FFFFFF00FFFFFF00888888E7DBDB
+      DBFFB7B7B7FF7D7D7D80FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF009C9C9CC99898981EFFFFFF0090909050ADADADFFF2F2
+      F2FF848484FD8181810FFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00A0A0A0FF9C9C9CE798989836949494DFD9D9D9FFC1C1
+      C1FF898989A0FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00A4A4A4FFD7D7D7FF9D9D9DF8D0D0D0FFEEEEEEFF9191
+      91FE8D8D8D18FFFFFF00FFFFFF00818181097E7E7E09FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00A9A9A9FFF2F2F2FFE5E5E5FFE2E2E2FFE3E3E3FF9595
+      95F4919191CC8D8D8DF9898989FF86868693FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00ADADADFFEEEEEEFFE1E1E1FFDFDFDFFFE0E0E0FFE7E7
+      E7FFE4E4E4FFBBBBBBFF8E8E8E93FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00B1B1B1FFF0F0F0FFE4E4E4FFE2E2E2FFE2E2E2FFE7E7
+      E7FFC1C1C1FF96969690FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00B5B5B5FFF2F2F2FFE8E8E8FFE7E7E7FFEAEAEAFFC6C6
+      C6FF9E9E9E8DFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00B9B9B9FFF4F4F4FFECECECFFEDEDEDFFCBCBCBFFA7A7
+      A78AFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00BDBDBDFFF7F7F7FFEFEFEFFFD0D0D0FFAFAFAF8AFFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00C1C1C1FFF7F7F7FFD5D5D5FFB6B6B687FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00C4C4C4FFD9D9D9FFBEBEBE84FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00C8C8C8FFC5C5C581FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00CBCBCB7EFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
+    }
+    NumGlyphs = 0
+    OnClick = btnGrab1Click
+  end
+  object btnGrab2: TSpeedButton
+    AnchorSideLeft.Control = seY2
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideBottom.Control = btnGrab1
+    AnchorSideBottom.Side = asrBottom
+    Left = 92
+    Height = 22
+    Top = 360
+    Width = 22
+    Anchors = [akLeft, akBottom]
+    Color = clBtnFace
+    Enabled = False
+    Glyph.Data = {
+      36040000424D3604000000000000360000002800000010000000100000000100
+      2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF007F7F7F067C7C
+      7CE6787878CC75757581FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF008383835DAAAA
+      AAFFDBDBDBFF797979F275757506FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF0097979709FFFFFF00FFFFFF00FFFFFF00888888E7DBDB
+      DBFFB7B7B7FF7D7D7D80FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF009C9C9CC99898981EFFFFFF0090909050ADADADFFF2F2
+      F2FF848484FD8181810FFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00A0A0A0FF9C9C9CE798989836949494DFD9D9D9FFC1C1
+      C1FF898989A0FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00A4A4A4FFD7D7D7FF9D9D9DF8D0D0D0FFEEEEEEFF9191
+      91FE8D8D8D18FFFFFF00FFFFFF00818181097E7E7E09FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00A9A9A9FFF2F2F2FFE5E5E5FFE2E2E2FFE3E3E3FF9595
+      95F4919191CC8D8D8DF9898989FF86868693FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00ADADADFFEEEEEEFFE1E1E1FFDFDFDFFFE0E0E0FFE7E7
+      E7FFE4E4E4FFBBBBBBFF8E8E8E93FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00B1B1B1FFF0F0F0FFE4E4E4FFE2E2E2FFE2E2E2FFE7E7
+      E7FFC1C1C1FF96969690FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00B5B5B5FFF2F2F2FFE8E8E8FFE7E7E7FFEAEAEAFFC6C6
+      C6FF9E9E9E8DFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00B9B9B9FFF4F4F4FFECECECFFEDEDEDFFCBCBCBFFA7A7
+      A78AFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00BDBDBDFFF7F7F7FFEFEFEFFFD0D0D0FFAFAFAF8AFFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00C1C1C1FFF7F7F7FFD5D5D5FFB6B6B687FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00C4C4C4FFD9D9D9FFBEBEBE84FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00C8C8C8FFC5C5C581FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00CBCBCB7EFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
+    }
+    NumGlyphs = 0
+    OnClick = btnGrab1Click
   end
 end

@@ -39,11 +39,13 @@ uses
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
+  TSelectionListener = procedure(AWorldItem: TWorldItem) of object;
   TScreenBufferState = (sbsValid, sbsIndexed, sbsFiltered);
   TScreenBufferStates = set of TScreenBufferState;
 
   TGhostTile = class(TStaticItem);
   TPacketList = specialize TFPGObjectList<TPacket>;
+  TSelectionListeners = specialize TFPGList<TSelectionListener>;
 
   { TfrmMain }
 
@@ -312,6 +314,7 @@ type
     FSelection: TRect;
     FUndoList: TPacketList;
     FGLFont: TGLFont;
+    FSelectionListeners: TSelectionListeners;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -366,8 +369,11 @@ type
     procedure InvalidateFilter;
     procedure InvalidateScreenBuffer;
     procedure RegisterAccessChangedListener(AListener: TAccessChangedListener);
+    procedure RegisterSelectionListener(AListener: TSelectionListener);
     procedure SetPos(AX, AY: Word);
+    procedure SwitchToSelection;
     procedure UnregisterAccessChangedListener(AListener: TAccessChangedListener);
+    procedure UnregisterSelectionListener(AListener: TSelectionListener);
   end; 
 
 var
@@ -636,10 +642,16 @@ begin
 
   targetTile := CurrentTile;
   
-  if acSelect.Checked and tmGrabTileInfo.Enabled then
+  if acSelect.Checked then
   begin
-    tmGrabTileInfo.Enabled := False;
-    mnuGrabTileIDClick(nil);
+    if tmGrabTileInfo.Enabled then
+    begin
+      tmGrabTileInfo.Enabled := False;
+      mnuGrabTileIDClick(nil);
+    end;
+
+    for i := FSelectionListeners.Count - 1 downto 0 do
+      FSelectionListeners[i](CurrentTile);
   end;
 
   if (not acSelect.Checked) and (targetTile <> nil) and (SelectedTile <> nil) then
@@ -903,6 +915,8 @@ begin
 
   DoubleBuffered := True;
   pnlBottom.DoubleBuffered := True;
+
+  FSelectionListeners := TSelectionListeners.Create;
   
   FLastDraw := Now;
 end;
@@ -1230,6 +1244,7 @@ begin
   FreeAndNil(FUndoList);
   FreeAndNil(FGLFont);
   FreeAndNil(FRandomPresetsDoc);
+  FreeAndNil(FSelectionListeners);
   
   RegisterPacketHandler($0C, nil);
 end;
@@ -1792,6 +1807,12 @@ begin
   end;
 end;
 
+procedure TfrmMain.SwitchToSelection;
+begin
+  acSelect.Checked := True;
+  BringToFront;
+end;
+
 procedure TfrmMain.RegisterAccessChangedListener(
   AListener: TAccessChangedListener);
 var
@@ -1802,6 +1823,12 @@ begin
       Exit; //Prevent duplicates
   SetLength(FAccessChangedListeners, Length(FAccessChangedListeners) + 1);
   FAccessChangedListeners[High(FAccessChangedListeners)] := AListener;
+end;
+
+procedure TfrmMain.RegisterSelectionListener(AListener: TSelectionListener);
+begin
+  if FSelectionListeners.IndexOf(AListener) < 0 then
+    FSelectionListeners.Add(AListener);
 end;
 
 procedure TfrmMain.UnregisterAccessChangedListener(
@@ -1825,6 +1852,11 @@ begin
     end else
       Inc(i);
   end;
+end;
+
+procedure TfrmMain.UnregisterSelectionListener(AListener: TSelectionListener);
+begin
+  FSelectionListeners.Remove(AListener);
 end;
 
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
