@@ -83,8 +83,7 @@ type
   { TLightManager }
 
   TLightManager = class
-    constructor Create(ACalculateOffset: TCalculateOffset;
-      ALandTextureManager: TLandTextureManager);
+    constructor Create(ACalculateOffset: TCalculateOffset);
     destructor Destroy; override;
   protected
     FLightSources: TLightSources;
@@ -94,7 +93,6 @@ type
     FValid: Boolean;
     FCalculateOffset: TCalculateOffset;
     FLightCache: TLightCache;
-    FLandTextureManager: TLandTextureManager;
     function GetLight(AID: Integer): TLightMaterial;
     procedure UpdateOverlay(AScreenRect: TRect);
   public
@@ -110,14 +108,12 @@ uses
 
 { TLightManager }
 
-constructor TLightManager.Create(ACalculateOffset: TCalculateOffset;
-  ALandTextureManager: TLandTextureManager);
+constructor TLightManager.Create(ACalculateOffset: TCalculateOffset);
 begin
   FCalculateOffset := ACalculateOffset;
   FLightSources := TLightSources.Create(True);
   FLightLevel := 15; //TODO : 0 ...
   FLightCache := TLightCache.Create(32);
-  FLandTextureManager := ALandTextureManager;
 end;
 
 destructor TLightManager.Destroy;
@@ -262,17 +258,14 @@ end;
 constructor TLightSource.Create(AManager: TLightManager; AWorldItem: TWorldItem);
 var
   lightID: Byte;
-  itemMaterial: TMaterial;
 begin
   lightID := ResMan.Tiledata.StaticTiles[AWorldItem.TileID].Quality;
   FMaterial := AManager.GetLight(lightID);
   if FMaterial <> nil then
   begin
-    itemMaterial := AManager.FLandTextureManager.GetStaticMaterial(
-      TStaticItem(AWorldItem));
     AManager.FCalculateOffset(AWorldItem.X, AWorldItem.Y, FX, FY);
     FZ := AWorldItem.Z * 4;
-    FY := FY + 44 - FZ - itemMaterial.RealHeight div 2;
+    FY := FY + 22 - FZ;
     FMaterial.AddRef;
   end;
 end;

@@ -892,7 +892,7 @@ begin
   edX.MaxValue := FLandscape.CellWidth;
   edY.MaxValue := FLandscape.CellHeight;
   FOverlayUI := TOverlayUI.Create;
-  FLightManager := TLightManager.Create(@GetDrawOffset, FTextureManager);
+  FLightManager := TLightManager.Create(@GetDrawOffset);
   
   ProcessAccessLevel;
   
