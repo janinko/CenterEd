@@ -15,7 +15,7 @@ object frmAccountControl: TfrmAccountControl
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poOwnerFormCenter
-  LCLVersion = '0.9.27'
+  LCLVersion = '0.9.29'
   object tbMain: TToolBar
     Left = 0
     Height = 26
@@ -95,9 +95,10 @@ object frmAccountControl: TfrmAccountControl
         Text = 'Accesslevel'
         Width = 100
       end>
+    Header.DefaultHeight = 17
     Header.Options = [hoColumnResize, hoDrag, hoVisible]
     Header.ParentFont = True
-    Header.Style = hsPlates
+    Header.Style = hsFlatButtons
     Images = ilAccesslevel
     TabOrder = 1
     TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
@@ -110,7 +111,6 @@ object frmAccountControl: TfrmAccountControl
     OnGetImageIndex = vstAccountsGetImageIndex
   end
   object ilToolbar: TImageList
-    Masked = False
     left = 144
     Bitmap = {
       4C69040000001000000010000000000000000000000000000000000000000000
@@ -245,7 +245,6 @@ object frmAccountControl: TfrmAccountControl
     }
   end
   object ilAccesslevel: TImageList
-    Masked = False
     left = 176
     Bitmap = {
       4C69040000001000000010000000000000000000000000000000000000000000
