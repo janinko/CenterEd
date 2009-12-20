@@ -36,7 +36,8 @@ type
   TArtProvider = class(TIndexedMulProvider)
   protected
     function GetData(AID: Integer; AIndex: TGenericIndex): TMulBlock; override;
-    function GetArtData(AID: Integer; AIndex: TGenericIndex; AColor: Word; AHue: THue; APartialHue: Boolean): TArt;
+    function GetArtData(AID: Integer; AIndex: TGenericIndex; AColor: Word;
+      AHue: THue; APartialHue: Boolean): TArt;
   public
     function GetArt(AID: Integer; AColor: Word; AHue: THue; APartialHue: Boolean): TArt;
     function GetFlatLand(AID: Integer): TArt;
@@ -60,7 +61,8 @@ begin
       Result := TArt.Create(FData, AIndex, atLand, AColor, AHue, APartialHue)
     else
       Result := TArt.Create(FData, AIndex, atStatic, AColor, AHue, APartialHue);
-  end else
+  end
+  else
   begin
     if AID < $4000 then
       Result := TArt.Create(nil, nil, atLand, AColor, AHue, APartialHue)
@@ -70,7 +72,8 @@ begin
   Result.ID := AID;
 end;
 
-function TArtProvider.GetArt(AID: Integer; AColor: Word; AHue: THue; APartialHue: Boolean): TArt;
+function TArtProvider.GetArt(AID: Integer; AColor: Word; AHue: THue;
+  APartialHue: Boolean): TArt;
 var
   genericIndex: TGenericIndex;
 begin
@@ -95,3 +98,4 @@ begin
 end;
 
 end.
+

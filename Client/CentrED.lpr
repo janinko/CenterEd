@@ -43,7 +43,7 @@ uses
   UPacketHandlers, UAdminHandling, UGameResources, ULandscape, UfrmToolWindow,
   Logging, UTileDataProvider, UMap, UWorldItem, UStatics, UTiledata, UAnimData,
   UGLFont, UAnimDataProvider, UMulManager, UArtProvider, UTexmapProvider,
-ULightManager;
+ULightManager, ULight, ULightProvider;
 
 {$IFDEF WINDOWS}{$R CentrED.rc}{$ENDIF}
 

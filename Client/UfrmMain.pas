@@ -329,8 +329,7 @@ type
     function  ConfirmAction: Boolean;
     function  FindRandomPreset(AName: String): TDOMElement;
     procedure ForceUpdateCurrentTile;
-    procedure GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
-      DrawY: Integer); inline;
+    procedure GetDrawOffset(AX, AY: Integer; out DrawX, DrawY: Integer); inline;
     function  GetInternalTileID(ATile: TWorldItem): Word;
     function  GetSelectedRect: TRect;
     procedure InitRender;
@@ -893,7 +892,7 @@ begin
   edX.MaxValue := FLandscape.CellWidth;
   edY.MaxValue := FLandscape.CellHeight;
   FOverlayUI := TOverlayUI.Create;
-  FLightManager := TLightManager.Create(@GetDrawOffset);
+  FLightManager := TLightManager.Create(@GetDrawOffset, FTextureManager);
   
   ProcessAccessLevel;
   
@@ -2161,7 +2160,7 @@ begin
 
   item := ABlockInfo^.Item;
 
-  GetDrawOffset(item.X - FX, item.Y - FY, drawX, drawY);
+  GetDrawOffset(item.X , item.Y, drawX, drawY);
 
   if acFlat.Checked then
   begin
@@ -2390,7 +2389,7 @@ begin
       blockInfo^.Text.Render(blockInfo^.ScreenRect);
   end;
 
-  FLightManager.Draw(oglGameWindow.ClientRect, FX, FY);
+  FLightManager.Draw(oglGameWindow.ClientRect);
   FOverlayUI.Draw(oglGameWindow);
 end;
 
@@ -3079,11 +3078,12 @@ begin
   UpdateCurrentTile;
 end;
 
-procedure TfrmMain.GetDrawOffset(ARelativeX, ARelativeY: Integer; out DrawX,
-  DrawY: Integer); inline;
+procedure TfrmMain.GetDrawOffset(AX, AY: Integer; out DrawX, DrawY: Integer); inline;
 begin
-  DrawX := (oglGameWindow.Width div 2) + (ARelativeX - ARelativeY) * 22;
-  DrawY := (oglGamewindow.Height div 2) + (ARelativeX + ARelativeY) * 22;
+  Dec(AX, FX);
+  Dec(AY, FY);
+  DrawX := (oglGameWindow.Width div 2) + (AX - AY) * 22;
+  DrawY := (oglGamewindow.Height div 2) + (AX + AY) * 22;
 end;
 
 initialization

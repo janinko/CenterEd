@@ -31,23 +31,24 @@ interface
 
 uses
   Classes, SysUtils, UArtProvider, UTileDataProvider, UTexmapProvider,
-  ULandscape, UHueProvider, UAnimDataProvider;
-  
+  ULandscape, UHueProvider, UAnimDataProvider, ULightProvider;
+
 type
 
   { TGameResourceManager }
 
   TGameResourceManager = class
-    constructor Create(ADataDir: string);
+    constructor Create(ADataDir: String);
     destructor Destroy; override;
   protected
     { Members }
-    FDataDir: string;
+    FDataDir: String;
     FArtProvider: TArtProvider;
     FTiledataProvider: TTiledataProvider;
     FAnimdataProvider: TAnimdataProvider;
     FTexmapProvider: TTexmapProvider;
     FHueProvider: THueProvider;
+    FLightProvider: TLightProvider;
     FLandscape: TLandscape;
   public
     { Fields }
@@ -57,21 +58,22 @@ type
     property Tiledata: TTiledataProvider read FTiledataProvider;
     property Animdata: TAnimDataProvider read FAnimdataProvider;
     property Texmaps: TTexmapProvider read FTexmapProvider;
+    property Lights: TLightProvider read FLightProvider;
 
     { Methods }
-    function GetFile(AFileName: string): string;
+    function GetFile(AFileName: String): String;
     procedure InitLandscape(AWidth, AHeight: Word);
   end;
-  
+
 var
   GameResourceManager: TGameResourceManager;
   ResMan: TGameResourceManager absolute GameResourceManager;
-  
-procedure InitGameResourceManager(ADataDir: string);
+
+procedure InitGameResourceManager(ADataDir: String);
 
 implementation
 
-procedure InitGameResourceManager(ADataDir: string);
+procedure InitGameResourceManager(ADataDir: String);
 begin
   FreeAndNil(GameResourceManager);
   GameResourceManager := TGameResourceManager.Create(ADataDir);
@@ -79,16 +81,19 @@ end;
 
 { TGameResourceManager }
 
-constructor TGameResourceManager.Create(ADataDir: string);
+constructor TGameResourceManager.Create(ADataDir: String);
 begin
   inherited Create;
   FDataDir := IncludeTrailingPathDelimiter(ADataDir);
-  
+
   FArtProvider := TArtProvider.Create(GetFile('art.mul'), GetFile('artidx.mul'), True);
   FTiledataProvider := TTiledataProvider.Create(GetFile('tiledata.mul'), True);
   FAnimdataProvider := TAnimDataProvider.Create(GetFile('animdata.mul'), True);
-  FTexmapProvider := TTexmapProvider.Create(GetFile('texmaps.mul'), GetFile('texidx.mul'), True);
+  FTexmapProvider := TTexmapProvider.Create(GetFile('texmaps.mul'),
+    GetFile('texidx.mul'), True);
   FHueProvider := THueProvider.Create(GetFile('hues.mul'), True);
+  FLightProvider := TLightProvider.Create(GetFile('light.mul'),
+    GetFile('lightidx.mul'), True);
 end;
 
 destructor TGameResourceManager.Destroy;
@@ -98,11 +103,12 @@ begin
   FreeAndNil(FAnimdataProvider);
   FreeAndNil(FTexmapProvider);
   FreeAndNil(FHueProvider);
+  FreeAndNil(FLightProvider);
   FreeAndNil(FLandscape);
   inherited Destroy;
 end;
 
-function TGameResourceManager.GetFile(AFileName: string): string;
+function TGameResourceManager.GetFile(AFileName: String): String;
 begin
   Result := FDataDir + AFileName;
 end;
@@ -117,4 +123,3 @@ finalization
   FreeAndNil(GameResourceManager);
 
 end.
-

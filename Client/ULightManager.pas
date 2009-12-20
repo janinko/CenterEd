@@ -31,25 +31,51 @@ interface
 
 uses
   Classes, SysUtils, Imaging, ImagingTypes, ImagingClasses, ImagingCanvases,
-  ImagingOpenGL, GL, fgl, ULandscape, UWorldItem;
+  ImagingOpenGL, GL, fgl, ULandscape, UWorldItem, UCacheManager;
 
 type
 
-  TCalculateOffset = procedure(ARelativeX, ARelativeY: Integer; out DrawX,
-    DrawY: Integer) of object;
+  TCalculateOffset = procedure(AX, AY: Integer; out DrawX, DrawY: Integer) of object;
+
+  { TLightMaterial }
+
+  TLightMaterial = class(ICacheable)
+    constructor Create(AGraphic: TBaseImage);
+    destructor Destroy; override;
+  protected
+    FRefCount: Integer;
+    FGraphic: TSingleImage;
+    FCanvas: TFastARGB32Canvas;
+  public
+    property Graphic: TSingleImage read FGraphic;
+    property Canvas: TFastARGB32Canvas read FCanvas;
+    procedure AddRef;
+    procedure DelRef;
+
+    {ICacheable}
+    function CanBeRemoved: Boolean;
+    procedure RemoveFromCache;
+  end;
+
+  TLightCache = specialize TCacheManager<TLightMaterial>;
+
+  TLightManager = class;
 
   { TLightSource }
 
   TLightSource = class
-    constructor Create(AWorldItem: TWorldItem);
+    constructor Create(AManager: TLightManager; AWorldItem: TWorldItem);
+    destructor Destroy; override;
   protected
     FX: Integer;
     FY: Integer;
     FZ: smallint;
+    FMaterial: TLightMaterial;
   public
     property X: Integer read FX;
     property Y: Integer read FY;
     property Z: smallint read FZ;
+    property Material: TLightMaterial read FMaterial;
   end;
 
   TLightSources = specialize TFPGObjectList<TLightSource>;
@@ -57,7 +83,8 @@ type
   { TLightManager }
 
   TLightManager = class
-    constructor Create(ACalculateOffset: TCalculateOffset);
+    constructor Create(ACalculateOffset: TCalculateOffset;
+      ALandTextureManager: TLandTextureManager);
     destructor Destroy; override;
   protected
     FLightSources: TLightSources;
@@ -66,40 +93,65 @@ type
     FLightLevel: byte;
     FValid: Boolean;
     FCalculateOffset: TCalculateOffset;
-    procedure UpdateOverlay(AScreenRect: TRect; FX, FY: Integer);
+    FLightCache: TLightCache;
+    FLandTextureManager: TLandTextureManager;
+    function GetLight(AID: Integer): TLightMaterial;
+    procedure UpdateOverlay(AScreenRect: TRect);
   public
     procedure UpdateLightMap(ALeft, AWidth, ATop, AHeight: Integer;
       AScreenBuffer: TScreenBuffer);
-    procedure Draw(AScreenRect: TRect; FX, FY: Integer);
+    procedure Draw(AScreenRect: TRect);
   end;
 
 implementation
 
 uses
-  UGameResources, UTiledata, UStatics, Logging;
+  UGameResources, UTiledata, UStatics, ULight, Logging;
 
 { TLightManager }
 
-constructor TLightManager.Create(ACalculateOffset: TCalculateOffset);
+constructor TLightManager.Create(ACalculateOffset: TCalculateOffset;
+  ALandTextureManager: TLandTextureManager);
 begin
   FCalculateOffset := ACalculateOffset;
   FLightSources := TLightSources.Create(True);
   FLightLevel := 15; //TODO : 0 ...
+  FLightCache := TLightCache.Create(32);
+  FLandTextureManager := ALandTextureManager;
 end;
 
 destructor TLightManager.Destroy;
 begin
   FreeAndNil(FLightSources);
   FreeAndNil(FOverlay);
+  FreeAndNil(FLightCache);
   glDeleteTextures(1, @FOverlayTexture);
   inherited Destroy;
 end;
 
-procedure TLightManager.UpdateOverlay(AScreenRect: TRect; FX, FY: Integer);
+function TLightManager.GetLight(AID: Integer): TLightMaterial;
 var
-  canvas: TFastARGB32Canvas;
+  light: TLight;
+begin
+  Result := nil;
+  if not FLightCache.QueryID(AID, Result) then
+  begin
+    if ResMan.Lights.Exists(AID) then
+    begin
+      light := ResMan.Lights.GetLight(AID);
+      Result := TLightMaterial.Create(light.Graphic);
+      FLightCache.StoreID(AID, Result);
+      light.Free;
+    end;
+  end;
+end;
+
+procedure TLightManager.UpdateOverlay(AScreenRect: TRect);
+var
+  canvas, lightCanvas: TFastARGB32Canvas;
   color: TColor32Rec;
-  i, drawX, drawY, drawZ: Integer;
+  i: Integer;
+  lightMaterial: TLightMaterial;
 begin
   FOverlay.Free;
   glDeleteTextures(1, @FOverlayTexture);
@@ -121,16 +173,13 @@ begin
 
   for i := 0 to FLightSources.Count - 1 do
   begin
-    FCalculateOffset(FLightSources[i].X - FX, FLightSources[i].Y - FY,
-      drawX, drawY);
-    drawZ := FLightSources[i].Z * 4;
-    color.A := $20;
-    color.R := 220;
-    color.G := 0;
-    color.B := 0;
-    canvas.FillColor32 := color.Color;
-    canvas.FillRectBlend(Rect(drawX - 22, drawY - drawZ, drawX + 22,
-      drawY + 44 - drawZ), bfOne, bfOne);
+    lightMaterial := FLightSources[i].Material;
+    if lightMaterial <> nil then
+    begin
+      lightMaterial.Canvas.DrawAdd(lightMaterial.Canvas.ClipRect, canvas,
+        FLightSources[i].FX - lightMaterial.Graphic.Width div 2,
+        FLightSources[i].FY - lightMaterial.Graphic.Height div 2);
+    end;
   end;
 
   //TODO : PowerOfTwo!!!
@@ -182,17 +231,17 @@ begin
            ((itemMap[x + 1, y + 1] = nil) or (itemMap[x + 1, y + 1].Z < lightMap[x, y].Z + 3)) or
            ((itemMap[x, y + 1] = nil) or (itemMap[x, y + 1].Z < lightMap[x, y].Z + 3)) then
         begin
-          FLightSources.Add(TLightSource.Create(lightMap[x, y]));
+          FLightSources.Add(TLightSource.Create(Self, lightMap[x, y]));
         end;
       end;
   FValid := False;
   //Logger.ExitMethod([lcClient, lcDebug], 'UpdateLightMap');
 end;
 
-procedure TLightManager.Draw(AScreenRect: TRect; FX, FY: Integer);
+procedure TLightManager.Draw(AScreenRect: TRect);
 begin
   if not FValid then
-    UpdateOverlay(AScreenRect, FX, FY);
+    UpdateOverlay(AScreenRect);
 
   glBindTexture(GL_TEXTURE_2D, FOverlayTexture);
   glBlendFunc(GL_ZERO, GL_SRC_COLOR);
@@ -210,11 +259,67 @@ end;
 
 { TLightSource }
 
-constructor TLightSource.Create(AWorldItem: TWorldItem);
+constructor TLightSource.Create(AManager: TLightManager; AWorldItem: TWorldItem);
+var
+  lightID: Byte;
+  itemMaterial: TMaterial;
 begin
-  FX := AWorldItem.X;
-  FY := AWorldItem.Y;
-  FZ := AWorldItem.Z;
+  lightID := ResMan.Tiledata.StaticTiles[AWorldItem.TileID].Quality;
+  FMaterial := AManager.GetLight(lightID);
+  if FMaterial <> nil then
+  begin
+    itemMaterial := AManager.FLandTextureManager.GetStaticMaterial(
+      TStaticItem(AWorldItem));
+    AManager.FCalculateOffset(AWorldItem.X, AWorldItem.Y, FX, FY);
+    FZ := AWorldItem.Z * 4;
+    FY := FY + 44 - FZ - itemMaterial.RealHeight div 2;
+    FMaterial.AddRef;
+  end;
+end;
+
+destructor TLightSource.Destroy;
+begin
+  if FMaterial <> nil then
+    FMaterial.DelRef;
+  inherited Destroy;
+end;
+
+{ TLightMaterial }
+
+constructor TLightMaterial.Create(AGraphic: TBaseImage);
+begin
+  FRefCount := 1;
+  FGraphic := TSingleImage.CreateFromImage(AGraphic);
+  FCanvas := TFastARGB32Canvas.CreateForImage(FGraphic);
+end;
+
+destructor TLightMaterial.Destroy;
+begin
+  FreeAndNil(FCanvas);
+  FreeAndNil(FGraphic);
+  inherited Destroy;
+end;
+
+procedure TLightMaterial.AddRef;
+begin
+  Inc(FRefCount);
+end;
+
+procedure TLightMaterial.DelRef;
+begin
+  Dec(FRefCount);
+  if FRefCount < 1 then
+    Free;
+end;
+
+function TLightMaterial.CanBeRemoved: Boolean;
+begin
+  Result := (FRefCount <= 1);
+end;
+
+procedure TLightMaterial.RemoveFromCache;
+begin
+  DelRef;
 end;
 
 end.
