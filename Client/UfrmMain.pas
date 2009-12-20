@@ -35,7 +35,7 @@ uses
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
   XMLPropStorage, fgl, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
-  UGLFont, DOM, XMLRead, XMLWrite, strutils;
+  UGLFont, DOM, XMLRead, XMLWrite, strutils, ULightManager;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -323,6 +323,7 @@ type
     FGLFont: TGLFont;
     FSelectionListeners: TSelectionListeners;
     FTileHint: TTileHintInfo;
+    FLightManager: TLightManager;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -892,6 +893,7 @@ begin
   edX.MaxValue := FLandscape.CellWidth;
   edY.MaxValue := FLandscape.CellHeight;
   FOverlayUI := TOverlayUI.Create;
+  FLightManager := TLightManager.Create(@GetDrawOffset);
   
   ProcessAccessLevel;
   
@@ -1258,6 +1260,7 @@ begin
   FreeAndNil(FTextureManager);
   FreeAndNil(FScreenBuffer);
   FreeAndNil(FOverlayUI);
+  FreeAndNil(FLightManager);
   FreeAndNil(FVLayerImage);
   FreeAndNil(FVLayerMaterial);
   FreeAndNil(FVirtualTiles);
@@ -2387,7 +2390,7 @@ begin
       blockInfo^.Text.Render(blockInfo^.ScreenRect);
   end;
 
-  glColor4f(1.0, 1.0, 1.0, 1.0);
+  FLightManager.Draw(oglGameWindow.ClientRect, FX, FY);
   FOverlayUI.Draw(oglGameWindow);
 end;
 
@@ -2729,6 +2732,10 @@ begin
     end;
   end;
   Include(FScreenBufferState, sbsFiltered);
+
+  //TODO : Check lightlevel first
+  FLightManager.UpdateLightMap(FX + FLowOffsetX, FRangeX + 1, FY + FLowOffsetY,
+    FRangeY + 1, FScreenBuffer);
 end;
 
 procedure TfrmMain.UpdateSelection;

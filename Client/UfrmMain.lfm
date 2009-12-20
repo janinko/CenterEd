@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
   Left = 257
   Height = 579
-  Top = 135
+  Top = 141
   Width = 755
   ActiveControl = oglGameWindow
   Caption = 'UO CentrED'

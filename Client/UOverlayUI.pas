@@ -224,6 +224,9 @@ procedure TOverlayUI.Draw(AContext: TOpenGLControl);
 begin
   if FVisible then
   begin
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     FArrows[0].DrawGL(10, 10, FActiveArrow = 0);
     FArrows[1].DrawGL(AContext.Width div 2 - FArrows[1].Width div 2, 10,
                       FActiveArrow = 1);

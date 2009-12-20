@@ -55,7 +55,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="42">
+    <Units Count="43">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -304,6 +304,11 @@
         <Filename Value="../version.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit41>
+      <Unit42>
+        <Filename Value="ULightManager.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULightManager"/>
+      </Unit42>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -332,7 +337,6 @@
     <Linking>
       <Debugging>
         <GenerateDebugInfo Value="True"/>
-        <UseExternalDbgSyms Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>
       <Options>
