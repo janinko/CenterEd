@@ -32,7 +32,7 @@ interface
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Math,
   VirtualTrees, ExtCtrls, ImagingComponents, StdCtrls, Buttons, Spin, LCLIntf,
-  UPlatformTypes, UEnhancedMemoryStream, UWorldItem;
+  Menus, UPlatformTypes, UEnhancedMemoryStream, UWorldItem;
 
 type
 
@@ -76,6 +76,10 @@ type
     lblInsertStaticsTiles: TLabel;
     lblX: TLabel;
     lblY: TLabel;
+    mnuSelectTopLeft: TMenuItem;
+    mnuSelectTopRight: TMenuItem;
+    mnuSelectBottomLeft: TMenuItem;
+    mnuSelectBottomRight: TMenuItem;
     nbActions: TNotebook;
     pgCopyMove: TPage;
     pgDeleteStatics: TPage;
@@ -84,6 +88,7 @@ type
     pbArea: TPaintBox;
     pgArea: TPage;
     pgDrawTerrain: TPage;
+    pmSelectOffset: TPopupMenu;
     rgCMAction: TRadioGroup;
     rbPlaceStaticsOnTerrain: TRadioButton;
     rbPlaceStaticsOnTop: TRadioButton;
@@ -106,12 +111,14 @@ type
     seY2: TSpinEdit;
     btnGrab1: TSpeedButton;
     btnGrab2: TSpeedButton;
+    btnGrabOffset: TSpeedButton;
     vdtTerrainTiles: TVirtualDrawTree;
     vdtInsertStaticsTiles: TVirtualDrawTree;
     vdtDeleteStaticsTiles: TVirtualDrawTree;
     vstActions: TVirtualStringTree;
     vstArea: TVirtualStringTree;
     procedure btnGrab1Click(Sender: TObject);
+    procedure btnGrabOffsetClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnAddAreaClick(Sender: TObject);
     procedure btnClearDStaticsTilesClick(Sender: TObject);
@@ -124,6 +131,7 @@ type
     procedure btnExecuteClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure mnuSelectTopLeftClick(Sender: TObject);
     procedure pbAreaMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure pbAreaMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -162,10 +170,12 @@ type
     FDelStaticsNode: PVirtualNode;
     FAddStaticsNode: PVirtualNode;
     FSelectFirst: Boolean;
+    FOffsetSelection: TObject;
     FOldWindowState: TWindowState;
     function AddNode(AActionID: Integer; ACaption: String): PVirtualNode;
     function FindNode(AActionID: Integer): PVirtualNode;
     procedure TileSelection(AWorldItem: TWorldItem);
+    procedure OffsetSelection(AWorldItem: TWorldItem);
     procedure SerializeTiles(ATileList: TVirtualDrawTree;
       AStream: TEnhancedMemoryStream);
   public
@@ -229,6 +239,15 @@ end;
 procedure TfrmLargeScaleCommand.FormDestroy(Sender: TObject);
 begin
   frmRadarMap.Dependencies.Remove(pbArea);
+end;
+
+procedure TfrmLargeScaleCommand.mnuSelectTopLeftClick(Sender: TObject);
+begin
+  FOffsetSelection := Sender;
+  frmMain.RegisterSelectionListener(@OffsetSelection);
+  FOldWindowState := WindowState;
+  WindowState := wsMinimized;
+  frmMain.SwitchToSelection;
 end;
 
 procedure TfrmLargeScaleCommand.pbAreaMouseDown(Sender: TObject;
@@ -321,6 +340,11 @@ begin
   FOldWindowState := WindowState;
   WindowState := wsMinimized;
   frmMain.SwitchToSelection;
+end;
+
+procedure TfrmLargeScaleCommand.btnGrabOffsetClick(Sender: TObject);
+begin
+  pmSelectOffset.PopUp;
 end;
 
 procedure TfrmLargeScaleCommand.btnClearDStaticsTilesClick(Sender: TObject);
@@ -638,6 +662,7 @@ begin
   seY2.Enabled := selected;
   btnGrab1.Enabled := selected;
   btnGrab2.Enabled := selected;
+  btnGrabOffset.Enabled := selected;
   if selected then
   begin
     nodeInfo := Sender.GetNodeData(Node);
@@ -705,6 +730,32 @@ begin
   end;
   seX1Change(nil);
   frmMain.UnregisterSelectionListener(@TileSelection);
+  WindowState := FOldWindowState;
+end;
+
+procedure TfrmLargeScaleCommand.OffsetSelection(AWorldItem: TWorldItem);
+begin
+  if FOffsetSelection = mnuSelectTopLeft then
+  begin
+    seCMOffsetX.Value := AWorldItem.X - Min(seX1.Value, seX2.Value);
+    seCMOffsetY.Value := AWorldItem.Y - Min(seY1.Value, seY2.Value);
+  end else
+  if FOffsetSelection = mnuSelectTopRight then
+  begin
+    seCMOffsetX.Value := AWorldItem.X - Max(seX1.Value, seX2.Value);
+    seCMOffsetY.Value := AWorldItem.Y - Min(seY1.Value,seY2.Value);
+  end else
+  if FOffsetSelection = mnuSelectBottomLeft then
+  begin
+    seCMOffsetX.Value := AWorldItem.X - Min(seX1.Value, seX2.Value);
+    seCMOffsetY.Value := AWorldItem.Y - Max(seY1.Value, seY2.Value);
+  end else
+  if FOffsetSelection = mnuSelectBottomRight then
+  begin
+    seCMOffsetX.Value := AWorldItem.X - Max(seX1.Value, seX2.Value);
+    seCMOffsetY.Value := AWorldItem.Y - Max(seY1.Value, seY2.Value);
+  end;
+  frmMain.UnregisterSelectionListener(@OffsetSelection);
   WindowState := FOldWindowState;
 end;
 

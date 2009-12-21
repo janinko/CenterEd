@@ -28,20 +28,20 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     Top = 0
     Width = 468
     Anchors = [akTop, akLeft, akRight, akBottom]
-    PageIndex = 0
+    PageIndex = 1
     ShowTabs = False
     TabOrder = 0
     object pgArea: TPage
       Caption = 'pgArea'
       ClientWidth = 462
-      ClientHeight = 343
+      ClientHeight = 316
       object sbArea: TScrollBox
         Left = 0
-        Height = 343
+        Height = 316
         Top = 0
         Width = 462
         Align = alClient
-        ClientHeight = 341
+        ClientHeight = 314
         ClientWidth = 460
         TabOrder = 0
         object pbArea: TPaintBox
@@ -58,7 +58,7 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     object pgCopyMove: TPage
       Caption = 'Copy/Move'
       ClientWidth = 462
-      ClientHeight = 316
+      ClientHeight = 343
       object rgCMAction: TRadioGroup
         AnchorSideLeft.Control = pgCopyMove
         AnchorSideTop.Control = pgCopyMove
@@ -126,14 +126,15 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           AnchorSideLeft.Control = Label9
           AnchorSideLeft.Side = asrBottom
           AnchorSideTop.Control = gbCMOffset
-          AnchorSideRight.Control = gbCMOffset
-          AnchorSideRight.Side = asrBottom
+          AnchorSideRight.Control = btnGrabOffset
           Left = 27
           Height = 19
           Top = 8
-          Width = 82
+          Width = 62
           Anchors = [akTop, akLeft, akRight]
-          BorderSpacing.Around = 8
+          BorderSpacing.Top = 4
+          BorderSpacing.Bottom = 4
+          BorderSpacing.Around = 4
           TabOrder = 0
         end
         object seCMOffsetY: TSpinEdit
@@ -145,9 +146,65 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
           Left = 27
           Height = 19
           Top = 35
-          Width = 82
+          Width = 62
           Anchors = [akTop, akLeft, akRight]
+          BorderSpacing.Bottom = 8
           TabOrder = 1
+        end
+        object btnGrabOffset: TSpeedButton
+          AnchorSideTop.Control = gbCMOffset
+          AnchorSideTop.Side = asrCenter
+          AnchorSideRight.Control = gbCMOffset
+          AnchorSideRight.Side = asrBottom
+          Left = 93
+          Height = 22
+          Hint = 'Grab coordinates and calculate the offset in relation to the selected area.'
+          Top = 22
+          Width = 22
+          Anchors = [akTop, akRight]
+          BorderSpacing.Around = 4
+          Color = clBtnFace
+          Enabled = False
+          Glyph.Data = {
+            36040000424D3604000000000000360000002800000010000000100000000100
+            2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF007F7F7F067C7C
+            7CE6787878CC75757581FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF008383835DAAAA
+            AAFFDBDBDBFF797979F275757506FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF0097979709FFFFFF00FFFFFF00FFFFFF00888888E7DBDB
+            DBFFB7B7B7FF7D7D7D80FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF009C9C9CC99898981EFFFFFF0090909050ADADADFFF2F2
+            F2FF848484FD8181810FFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00A0A0A0FF9C9C9CE798989836949494DFD9D9D9FFC1C1
+            C1FF898989A0FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00A4A4A4FFD7D7D7FF9D9D9DF8D0D0D0FFEEEEEEFF9191
+            91FE8D8D8D18FFFFFF00FFFFFF00818181097E7E7E09FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00A9A9A9FFF2F2F2FFE5E5E5FFE2E2E2FFE3E3E3FF9595
+            95F4919191CC8D8D8DF9898989FF86868693FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00ADADADFFEEEEEEFFE1E1E1FFDFDFDFFFE0E0E0FFE7E7
+            E7FFE4E4E4FFBBBBBBFF8E8E8E93FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00B1B1B1FFF0F0F0FFE4E4E4FFE2E2E2FFE2E2E2FFE7E7
+            E7FFC1C1C1FF96969690FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00B5B5B5FFF2F2F2FFE8E8E8FFE7E7E7FFEAEAEAFFC6C6
+            C6FF9E9E9E8DFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00B9B9B9FFF4F4F4FFECECECFFEDEDEDFFCBCBCBFFA7A7
+            A78AFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00BDBDBDFFF7F7F7FFEFEFEFFFD0D0D0FFAFAFAF8AFFFF
+            FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00C1C1C1FFF7F7F7FFD5D5D5FFB6B6B687FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00C4C4C4FFD9D9D9FFBEBEBE84FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00C8C8C8FFC5C5C581FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00CBCBCB7EFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+            FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
+          }
+          NumGlyphs = 0
+          OnClick = btnGrabOffsetClick
+          ShowHint = True
+          ParentShowHint = False
         end
       end
       object cbCMEraseTarget: TCheckBox
@@ -1492,5 +1549,25 @@ object frmLargeScaleCommand: TfrmLargeScaleCommand
     OnClick = btnGrab1Click
     ShowHint = True
     ParentShowHint = False
+  end
+  object pmSelectOffset: TPopupMenu
+    left = 421
+    top = 82
+    object mnuSelectTopLeft: TMenuItem
+      Caption = 'Select Top-Left Corner'
+      OnClick = mnuSelectTopLeftClick
+    end
+    object mnuSelectTopRight: TMenuItem
+      Caption = 'Select Top-Right Corner'
+      OnClick = mnuSelectTopLeftClick
+    end
+    object mnuSelectBottomLeft: TMenuItem
+      Caption = 'Select Bottom-Left Corner'
+      OnClick = mnuSelectTopLeftClick
+    end
+    object mnuSelectBottomRight: TMenuItem
+      Caption = 'Select Bottom-Right Corner'
+      OnClick = mnuSelectTopLeftClick
+    end
   end
 end

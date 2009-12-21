@@ -116,8 +116,8 @@ begin
   upperLeft := frmMain.pcLeft.ClientToScreen(Point(frmMain.pcLeft.Width, 0));
   lowerLeft := frmMain.pcLeft.ClientToScreen(Point(frmMain.pcLeft.Width,
     frmMain.pcLeft.Height));
-  Left := upperLeft.x - 4;
-  Top := upperLeft.y - 4;
+  Left := upperLeft.x - 8;
+  Top := upperLeft.y - 8;
   Height := lowerLeft.y - upperLeft.y;
 
   SetWindowParent(Handle, frmMain.Handle);
