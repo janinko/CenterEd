@@ -1,0 +1,22 @@
+inherited frmLightlevel: TfrmLightlevel
+  Height = 171
+  Width = 40
+  ActiveControl = tbLightlevel
+  Caption = 'Lightlevel'
+  ClientHeight = 171
+  ClientWidth = 40
+  object tbLightlevel: TTrackBar[0]
+    Left = 0
+    Height = 171
+    Top = 0
+    Width = 40
+    Max = 32
+    OnChange = tbLightlevelChange
+    Orientation = trVertical
+    Position = 0
+    Align = alClient
+    TabOrder = 0
+  end
+  inherited tmClose: TTimer[1]
+  end
+end

@@ -68,6 +68,7 @@ type
     acFilter: TAction;
     acFlat: TAction;
     acNoDraw: TAction;
+    acLightlevel: TAction;
     acUndo: TAction;
     acVirtualLayer: TAction;
     ActionList1: TActionList;
@@ -147,6 +148,7 @@ type
     tbNoDraw: TToolButton;
     tbSeparator2: TToolButton;
     tbUndo: TToolButton;
+    ToolButton1: TToolButton;
     tsLocations: TTabSheet;
     tbSetHue: TToolButton;
     tmGrabTileInfo: TTimer;
@@ -181,6 +183,7 @@ type
     procedure acFilterExecute(Sender: TObject);
     procedure acFlatExecute(Sender: TObject);
     procedure acHueExecute(Sender: TObject);
+    procedure acLightlevelExecute(Sender: TObject);
     procedure acMoveExecute(Sender: TObject);
     procedure acNoDrawExecute(Sender: TObject);
     procedure acSelectExecute(Sender: TObject);
@@ -373,6 +376,7 @@ type
     property Landscape: TLandscape read FLandscape;
     property CurrentTile: TWorldItem read FCurrentTile write SetCurrentTile;
     property SelectedTile: TWorldItem read FSelectedTile write SetSelectedTile;
+    property LightManager: TLightManager read FLightManager;
     { Methods }
     procedure InvalidateFilter;
     procedure InvalidateScreenBuffer;
@@ -395,7 +399,7 @@ uses
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
   UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmRegionControl,
-  Logging, LConvEncoding, LCLType;
+  Logging, LConvEncoding, LCLType, UfrmLightlevel;
 
 type
   TGLArrayf4 = array[0..3] of GLfloat;
@@ -1169,6 +1173,11 @@ begin
   mnuSetHue.Checked := True;
   ProcessToolState;
   frmHueSettings.Show;
+end;
+
+procedure TfrmMain.acLightlevelExecute(Sender: TObject);
+begin
+  frmLightlevel.Show;
 end;
 
 procedure TfrmMain.acMoveExecute(Sender: TObject);

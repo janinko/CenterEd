@@ -110,7 +110,9 @@ begin
      (not FileExists(path + 'tiledata.mul')) or
      (not FileExists(path + 'animdata.mul')) or
      (not FileExists(path + 'texmaps.mul')) or
-     (not FileExists(path + 'texidx.mul')) then
+     (not FileExists(path + 'texidx.mul')) or
+     (not FileExists(path + 'light.mul')) or
+     (not FileExists(path + 'lightidx.mul')) then
   begin
     MessageDlg('Incorrect directory', 'The data path you specified does not '
       + 'seem to be correct.', mtWarning, [mbOK], 0);
