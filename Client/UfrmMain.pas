@@ -2389,7 +2389,8 @@ begin
       blockInfo^.Text.Render(blockInfo^.ScreenRect);
   end;
 
-  FLightManager.Draw(oglGameWindow.ClientRect);
+  if (FLightManager.LightLevel > 0) and not acFlat.Checked then
+    FLightManager.Draw(oglGameWindow.ClientRect);
   FOverlayUI.Draw(oglGameWindow);
 end;
 
@@ -2435,7 +2436,7 @@ end;
 procedure TfrmMain.OnMapChanged(AMapCell: TMapCell);
 begin
   PrepareMapCell(AMapCell);
-  ForceUpdateCurrentTile;
+  InvalidateFilter;
 end;
 
 procedure TfrmMain.OnNewBlock(ABlock: TBlock);
@@ -2461,8 +2462,7 @@ begin
   begin
     PrepareScreenBlock(blockInfo);
     Exclude(FScreenBufferState, sbsIndexed);
-
-    ForceUpdateCurrentTile;
+    InvalidateFilter;
   end;
 end;
 
@@ -2477,6 +2477,7 @@ begin
     begin
       PrepareScreenBlock(blockInfo);
       FRepaintNeeded := True;
+      InvalidateFilter;
       Break;
     end;
   end;
@@ -2492,7 +2493,7 @@ begin
     AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
     PrepareScreenBlock(FScreenBuffer.Insert(AStaticItem));
     FRepaintNeeded := True;
-    ForceUpdateCurrentTile;
+    InvalidateFilter;
   end;
 end;
 
@@ -2591,11 +2592,11 @@ var
   i, tileX, tileY: Integer;
   virtualTile: TVirtualTile;
 begin
-  Logger.EnterMethod([lcClient], 'RebuildScreenBuffer');
+  //Logger.EnterMethod([lcClient], 'RebuildScreenBuffer');
 
   FDrawDistance := Trunc(Sqrt(oglGameWindow.Width * oglGameWindow.Width +
     oglGamewindow.Height * oglGamewindow.Height) / 44);
-  Logger.Send([lcClient], 'DrawDistance', FDrawDistance);
+  //Logger.Send([lcClient], 'DrawDistance', FDrawDistance);
 
   {$HINTS off}{$WARNINGS off}
   if FX - FDrawDistance < 0 then FLowOffsetX := -FX else FLowOffsetX := -FDrawDistance;
@@ -2612,7 +2613,7 @@ begin
 
   if frmVirtualLayer.cbShowLayer.Checked then
   begin
-    Logger.Send([lcClient, lcDebug], 'Preparing Virtual Layer');
+    //Logger.Send([lcClient, lcDebug], 'Preparing Virtual Layer');
 
     if FVLayerMaterial = nil then
       FVLayerMaterial := TSimpleMaterial.Create(FVLayerImage);
@@ -2657,7 +2658,7 @@ begin
         FVirtualTiles.Delete(i);
   end;
 
-  Logger.Send([lcClient, lcDebug], 'VirtualTiles', FVirtualTiles.Count);
+  //Logger.Send([lcClient, lcDebug], 'VirtualTiles', FVirtualTiles.Count);
 
   FLandscape.FillDrawList(FScreenBuffer, FX + FLowOffsetX, FY + FLowOffsetY,
     FRangeX, FRangeY, tbTerrain.Down, tbStatics.Down, acNoDraw.Checked,
@@ -2671,7 +2672,7 @@ begin
   FScreenBuffer.UpdateShortcuts;
   FScreenBufferState := [sbsValid, sbsIndexed];
 
-  Logger.ExitMethod([lcClient], 'RebuildScreenBuffer');
+  //Logger.ExitMethod([lcClient], 'RebuildScreenBuffer');
 end;
 
 procedure TfrmMain.UpdateCurrentTile;
@@ -2689,13 +2690,13 @@ procedure TfrmMain.UpdateCurrentTile(AX, AY: Integer);
 var
   blockInfo: PBlockInfo;
 begin
-  Logger.EnterMethod([lcClient, lcDebug], 'UpdateCurrentTile');
+  //Logger.EnterMethod([lcClient, lcDebug], 'UpdateCurrentTile');
   FOverlayUI.ActiveArrow := FOverlayUI.HitTest(AX, AY);
   if FOverlayUI.ActiveArrow > -1 then
   begin
-    Logger.Send([lcClient, lcDebug], 'Overlay active');
+    //Logger.Send([lcClient, lcDebug], 'Overlay active');
     CurrentTile := nil;
-    Logger.ExitMethod([lcClient, lcDebug], 'UpdateCurrentTile');
+    //Logger.ExitMethod([lcClient, lcDebug], 'UpdateCurrentTile');
     Exit;
   end;
 
@@ -2705,7 +2706,7 @@ begin
   else
     CurrentTile := nil;
 
-  Logger.ExitMethod([lcClient, lcDebug], 'UpdateCurrentTile');
+  //Logger.ExitMethod([lcClient, lcDebug], 'UpdateCurrentTile');
 end;
 
 procedure TfrmMain.UpdateFilter;
@@ -2732,9 +2733,11 @@ begin
   end;
   Include(FScreenBufferState, sbsFiltered);
 
-  //TODO : Check lightlevel first
-  FLightManager.UpdateLightMap(FX + FLowOffsetX, FRangeX + 1, FY + FLowOffsetY,
-    FRangeY + 1, FScreenBuffer);
+  ForceUpdateCurrentTile;
+
+  if (FLightManager.LightLevel > 0) and not acFlat.Checked then
+    FLightManager.UpdateLightMap(FX + FLowOffsetX, FRangeX + 1, FY + FLowOffsetY,
+      FRangeY + 1, FScreenBuffer);
 end;
 
 procedure TfrmMain.UpdateSelection;
@@ -2841,7 +2844,7 @@ var
   cell: TMapCell;
   i, tileX, tileY: Integer;
 begin
-  Logger.EnterMethod([lcClient, lcDebug], 'UpdateSelection');
+  //Logger.EnterMethod([lcClient, lcDebug], 'UpdateSelection');
 
   //If the current tile is nil, but we still have a selected tile, the
   //procedure is pointless - the selection should stay intact.
@@ -2853,7 +2856,7 @@ begin
       selectedRect := GetSelectedRect;
 
     //clean up old ghost tiles
-    Logger.Send([lcClient, lcDebug], 'Cleaning ghost tiles');
+    //Logger.Send([lcClient, lcDebug], 'Cleaning ghost tiles');
     for i := FVirtualTiles.Count - 1 downto 0 do
     begin
       item := FVirtualTiles[i];
@@ -2863,7 +2866,7 @@ begin
         FVirtualTiles.Delete(i);
       end;
     end;
-    Logger.Send([lcClient, lcDebug], 'FSelection', FSelection);
+    //Logger.Send([lcClient, lcDebug], 'FSelection', FSelection);
     for tileX := FSelection.Left to FSelection.Right do
       for tileY := FSelection.Top to FSelection.Bottom do
         if not IsInRect(tileX, tileY, selectedRect) then
@@ -2881,8 +2884,8 @@ begin
       blockInfo := nil;
       if (SelectedTile <> nil) and (CurrentTile <> SelectedTile) then
       begin
-        Logger.Send([lcClient, lcDebug], 'Multiple Targets');
-        Logger.Send([lcClient, lcDebug], 'SelectedRect', selectedRect);
+        {Logger.Send([lcClient, lcDebug], 'Multiple Targets');
+        Logger.Send([lcClient, lcDebug], 'SelectedRect', selectedRect);}
         //set new ghost tiles
         if acDraw.Checked then
           for tileX := selectedRect.Left to selectedRect.Right do
@@ -2895,7 +2898,7 @@ begin
               selectedRect) and not acDraw.Checked);
       end else
       begin
-        Logger.Send([lcClient, lcDebug], 'Single Target');
+        //Logger.Send([lcClient, lcDebug], 'Single Target');
         if acDraw.Checked and not IsInRect(CurrentTile.X, CurrentTile.Y,
           FSelection) then
           AddGhostTile(CurrentTile.X, CurrentTile.Y, CurrentTile);
@@ -2907,8 +2910,8 @@ begin
     end;
     FSelection := selectedRect;
   end;
-  Logger.Send([lcClient, lcDebug], 'Virtual Tiles', FVirtualTiles.Count);
-  Logger.ExitMethod([lcClient, lcDebug], 'UpdateSelection');
+  {Logger.Send([lcClient, lcDebug], 'Virtual Tiles', FVirtualTiles.Count);
+  Logger.ExitMethod([lcClient, lcDebug], 'UpdateSelection');}
 end;
 
 procedure TfrmMain.OnTileRemoved(ATile: TMulBlock);

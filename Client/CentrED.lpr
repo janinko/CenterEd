@@ -33,17 +33,7 @@ uses
   {$ENDIF}{$ENDIF}
   SysUtils,
   Interfaces, // this includes the LCL widgetset
-  Forms, LResources, lnetvisual, LazOpenGLContext, UdmNetwork, UfrmMain,
-  UfrmLogin, UfrmInitialize, UfrmAccountControl, virtualtreeview_package,
-  multiloglaz, UfrmEditAccount, UfrmDrawSettings, UfrmBoundaries,
-  UfrmElevateSettings, UOverlayUI, UResourceManager, UfrmConfirmation,
-  UfrmMoveSettings, UfrmAbout, UfrmHueSettings, UfrmRadar,
-  UfrmLargeScaleCommand, UfrmVirtualLayer, UfrmFilter,
-  UGUIPlatformUtils, UPlatformTypes, UfrmRegionControl, UPackets,
-  UPacketHandlers, UAdminHandling, UGameResources, ULandscape, UfrmToolWindow,
-  Logging, UTileDataProvider, UMap, UWorldItem, UStatics, UTiledata, UAnimData,
-  UGLFont, UAnimDataProvider, UMulManager, UArtProvider, UTexmapProvider,
-ULightManager, ULight, ULightProvider;
+  Forms, LResources, UdmNetwork;
 
 {$IFDEF WINDOWS}{$R CentrED.rc}{$ENDIF}
 

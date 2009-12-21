@@ -69,12 +69,12 @@ type
   protected
     FX: Integer;
     FY: Integer;
-    FZ: smallint;
+    FZ: SmallInt;
     FMaterial: TLightMaterial;
   public
     property X: Integer read FX;
     property Y: Integer read FY;
-    property Z: smallint read FZ;
+    property Z: SmallInt read FZ;
     property Material: TLightMaterial read FMaterial;
   end;
 
@@ -89,13 +89,15 @@ type
     FLightSources: TLightSources;
     FOverlay: TSingleImage;
     FOverlayTexture: GLuint;
-    FLightLevel: byte;
+    FLightLevel: Byte;
     FValid: Boolean;
     FCalculateOffset: TCalculateOffset;
     FLightCache: TLightCache;
     function GetLight(AID: Integer): TLightMaterial;
+    procedure SetLightLevel(AValue: Byte);
     procedure UpdateOverlay(AScreenRect: TRect);
   public
+    property LightLevel: Byte read FLightLevel write SetLightLevel;
     procedure UpdateLightMap(ALeft, AWidth, ATop, AHeight: Integer;
       AScreenBuffer: TScreenBuffer);
     procedure Draw(AScreenRect: TRect);
@@ -112,7 +114,7 @@ constructor TLightManager.Create(ACalculateOffset: TCalculateOffset);
 begin
   FCalculateOffset := ACalculateOffset;
   FLightSources := TLightSources.Create(True);
-  FLightLevel := 15; //TODO : 0 ...
+  FLightLevel := 0;
   FLightCache := TLightCache.Create(32);
 end;
 
@@ -142,6 +144,12 @@ begin
   end;
 end;
 
+procedure TLightManager.SetLightLevel(AValue: Byte);
+begin
+  FLightLevel := AValue;
+  FValid := False;
+end;
+
 procedure TLightManager.UpdateOverlay(AScreenRect: TRect);
 var
   canvas, lightCanvas: TFastARGB32Canvas;
@@ -153,12 +161,12 @@ begin
   glDeleteTextures(1, @FOverlayTexture);
 
   color.A := $FF;
-  color.R := ((32 - FLightLevel) * 255)  div 32;
+  color.R := ((32 - FLightLevel) * 255) div 32;
   color.G := color.R;
   color.B := color.R;
 
-  FOverlay := TSingleImage.CreateFromParams(AScreenRect.Right, AScreenRect.Bottom,
-    ifA8R8G8B8);
+  FOverlay := TSingleImage.CreateFromParams(AScreenRect.Right,
+    AScreenRect.Bottom, ifA8R8G8B8);
   canvas := TFastARGB32Canvas.CreateForImage(FOverlay);
   try
     canvas.FillColor32 := color.Color;
@@ -223,9 +231,10 @@ begin
       if lightMap[x, y] <> nil then
       begin
         if ((itemMap[x, y] = nil) or (itemMap[x, y].Z < lightMap[x, y].Z + 3)) or
-           ((itemMap[x + 1, y] = nil) or (itemMap[x + 1, y].Z < lightMap[x, y].Z + 3)) or
-           ((itemMap[x + 1, y + 1] = nil) or (itemMap[x + 1, y + 1].Z < lightMap[x, y].Z + 3)) or
-           ((itemMap[x, y + 1] = nil) or (itemMap[x, y + 1].Z < lightMap[x, y].Z + 3)) then
+          ((itemMap[x + 1, y] = nil) or (itemMap[x + 1, y].Z < lightMap[x, y].Z + 3)) or
+          ((itemMap[x + 1, y + 1] = nil) or (itemMap[x + 1, y + 1].Z <
+          lightMap[x, y].Z + 3)) or ((itemMap[x, y + 1] = nil) or
+          (itemMap[x, y + 1].Z < lightMap[x, y].Z + 3)) then
         begin
           FLightSources.Add(TLightSource.Create(Self, lightMap[x, y]));
         end;
@@ -242,14 +251,14 @@ begin
   glBindTexture(GL_TEXTURE_2D, FOverlayTexture);
   glBlendFunc(GL_ZERO, GL_SRC_COLOR);
   glBegin(GL_QUADS);
-    glTexCoord2i(0, 0);
-    glVertex2i(AScreenRect.Left, AScreenRect.Top);
-    glTexCoord2i(0, 1);
-    glVertex2i(AScreenRect.Left, AScreenRect.Bottom);
-    glTexCoord2i(1, 1);
-    glVertex2i(AScreenRect.Right, AScreenRect.Bottom);
-    glTexCoord2i(1, 0);
-    glVertex2i(AScreenRect.Right, AScreenRect.Top);
+  glTexCoord2i(0, 0);
+  glVertex2i(AScreenRect.Left, AScreenRect.Top);
+  glTexCoord2i(0, 1);
+  glVertex2i(AScreenRect.Left, AScreenRect.Bottom);
+  glTexCoord2i(1, 1);
+  glVertex2i(AScreenRect.Right, AScreenRect.Bottom);
+  glTexCoord2i(1, 0);
+  glVertex2i(AScreenRect.Right, AScreenRect.Top);
   glEnd;
 end;
 
