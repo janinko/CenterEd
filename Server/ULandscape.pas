@@ -881,6 +881,9 @@ begin
       insertPacket.Free;
       deletePacket.Free;
       movePacket.Free;
+
+      sourceSubscriptions.Free;
+      targetSubscriptions.Free;
     end;
   end;
 end;
