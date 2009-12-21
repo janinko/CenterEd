@@ -31,7 +31,8 @@ interface
 
 uses
   Classes, SysUtils, Imaging, ImagingTypes, ImagingClasses, ImagingCanvases,
-  ImagingOpenGL, GL, fgl, ULandscape, UWorldItem, UCacheManager;
+  ImagingOpenGL, GL, fgl, ULandscape, UWorldItem, UCacheManager,
+  ImagingUtility;
 
 type
 
@@ -106,7 +107,7 @@ type
 implementation
 
 uses
-  UGameResources, UTiledata, UStatics, ULight, Logging;
+  UGameResources, UTiledata, UStatics, UMap, ULight, Logging;
 
 { TLightManager }
 
@@ -171,19 +172,19 @@ begin
   try
     canvas.FillColor32 := color.Color;
     canvas.FillRect(AScreenRect);
+
+    for i := 0 to FLightSources.Count - 1 do
+    begin
+      lightMaterial := FLightSources[i].Material;
+      if lightMaterial <> nil then
+      begin
+        lightMaterial.Canvas.DrawAdd(lightMaterial.Canvas.ClipRect, canvas,
+          FLightSources[i].FX - lightMaterial.Graphic.Width div 2,
+          FLightSources[i].FY - lightMaterial.Graphic.Height div 2);
+      end;
+    end;
   finally
     canvas.Free;
-  end;
-
-  for i := 0 to FLightSources.Count - 1 do
-  begin
-    lightMaterial := FLightSources[i].Material;
-    if lightMaterial <> nil then
-    begin
-      lightMaterial.Canvas.DrawAdd(lightMaterial.Canvas.ClipRect, canvas,
-        FLightSources[i].FX - lightMaterial.Graphic.Width div 2,
-        FLightSources[i].FY - lightMaterial.Graphic.Height div 2);
-    end;
   end;
 
   //TODO : PowerOfTwo!!!
@@ -196,49 +197,58 @@ procedure TLightManager.UpdateLightMap(ALeft, AWidth, ATop, AHeight: Integer;
   AScreenBuffer: TScreenBuffer);
 var
   blockInfo: PBlockInfo;
-  itemMap, lightMap: array of array of TWorldItem;
-  x, y: Integer;
+  lights: TWorldItemList;
+  i, x, y, tileID: Integer;
+  tileData: TTiledata;
 begin
   //Logger.EnterMethod([lcClient, lcDebug], 'UpdateLightMap');
   FLightSources.Clear;
   {Logger.Send([lcClient, lcDebug], 'AWidth', AWidth);
   Logger.Send([lcClient, lcDebug], 'AHeight', AHeight);}
-  SetLength(itemMap, AWidth, AHeight);
-  SetLength(lightMap, AWidth, AHeight);
-  for x := 0 to AWidth - 1 do
-    for y := 0 to AHeight - 1 do
-    begin
-      itemMap[x, y] := nil;
-      lightMap[x, y] := nil;
-    end;
-
+  lights := TWorldItemList.Create(False);
+  x := -1;
+  y := -1;
   blockInfo := nil;
   while AScreenBuffer.Iterate(blockInfo) do
   begin
     if blockInfo^.State = ssNormal then
     begin
-      x := blockInfo^.Item.X - ALeft;
-      y := blockInfo^.Item.Y - ATop;
-      itemMap[x, y] := blockInfo^.Item;
-      if (blockInfo^.Item is TStaticItem) and (tdfLightSource in
-        ResMan.Tiledata.StaticTiles[blockInfo^.Item.TileID].Flags) then
-        lightMap[x, y] := blockInfo^.Item;
+      if (x <> blockInfo^.Item.X) or (y <> blockInfo^.Item.Y) then
+      begin
+        for i := 0 to lights.Count - 1 do
+          FLightSources.Add(TLightSource.Create(Self, lights[i]));
+        lights.Clear;
+        x := blockInfo^.Item.X;
+        y := blockInfo^.Item.Y;
+      end;
+
+      if blockInfo^.Item is TStaticItem then
+        tileID := blockInfo^.Item.TileID + $4000
+      else
+        tileID := blockInfo^.Item.TileID;
+      tileData := ResMan.Tiledata.TileData[tileID];
+
+      if tdfLightSource in tileData.Flags then
+      begin
+        lights.Add(blockInfo^.Item);
+      end else
+      if (tdfRoof in tileData.Flags) or (blockInfo^.Item is TMapCell) then
+      begin
+        lights.Clear;
+      end else
+      if tdfSurface in tileData.Flags then
+      begin
+        for i := lights.Count - 1 downto 0 do
+          if (blockInfo^.Item.Z > lights[i].Z + 3) and
+             (blockInfo^.Item.Z < lights[i].Z + 30) then
+            lights.Delete(i);
+      end;
     end;
   end;
 
-  for x := 0 to AWidth - 2 do
-    for y := 0 to AHeight - 2 do
-      if lightMap[x, y] <> nil then
-      begin
-        if ((itemMap[x, y] = nil) or (itemMap[x, y].Z < lightMap[x, y].Z + 3)) or
-          ((itemMap[x + 1, y] = nil) or (itemMap[x + 1, y].Z < lightMap[x, y].Z + 3)) or
-          ((itemMap[x + 1, y + 1] = nil) or (itemMap[x + 1, y + 1].Z <
-          lightMap[x, y].Z + 3)) or ((itemMap[x, y + 1] = nil) or
-          (itemMap[x, y + 1].Z < lightMap[x, y].Z + 3)) then
-        begin
-          FLightSources.Add(TLightSource.Create(Self, lightMap[x, y]));
-        end;
-      end;
+  for i := 0 to lights.Count - 1 do
+    FLightSources.Add(TLightSource.Create(Self, lights[i]));
+
   FValid := False;
   //Logger.ExitMethod([lcClient, lcDebug], 'UpdateLightMap');
 end;
@@ -251,14 +261,14 @@ begin
   glBindTexture(GL_TEXTURE_2D, FOverlayTexture);
   glBlendFunc(GL_ZERO, GL_SRC_COLOR);
   glBegin(GL_QUADS);
-  glTexCoord2i(0, 0);
-  glVertex2i(AScreenRect.Left, AScreenRect.Top);
-  glTexCoord2i(0, 1);
-  glVertex2i(AScreenRect.Left, AScreenRect.Bottom);
-  glTexCoord2i(1, 1);
-  glVertex2i(AScreenRect.Right, AScreenRect.Bottom);
-  glTexCoord2i(1, 0);
-  glVertex2i(AScreenRect.Right, AScreenRect.Top);
+    glTexCoord2i(0, 0);
+    glVertex2i(AScreenRect.Left, AScreenRect.Top);
+    glTexCoord2i(0, 1);
+    glVertex2i(AScreenRect.Left, AScreenRect.Bottom);
+    glTexCoord2i(1, 1);
+    glVertex2i(AScreenRect.Right, AScreenRect.Bottom);
+    glTexCoord2i(1, 0);
+    glVertex2i(AScreenRect.Right, AScreenRect.Top);
   glEnd;
 end;
 
