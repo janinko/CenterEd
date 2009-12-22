@@ -31,8 +31,7 @@ interface
 
 uses
   Classes, SysUtils, Imaging, ImagingTypes, ImagingClasses, ImagingCanvases,
-  ImagingOpenGL, GL, fgl, ULandscape, UWorldItem, UCacheManager,
-  ImagingUtility;
+  ImagingOpenGL, GL, GLu, GLext, fgl, ULandscape, UWorldItem, UCacheManager;
 
 type
 
@@ -40,22 +39,13 @@ type
 
   { TLightMaterial }
 
-  TLightMaterial = class(ICacheable)
+  TLightMaterial = class(TSimpleMaterial)
     constructor Create(AGraphic: TBaseImage);
     destructor Destroy; override;
   protected
-    FRefCount: Integer;
-    FGraphic: TSingleImage;
     FCanvas: TFastARGB32Canvas;
   public
-    property Graphic: TSingleImage read FGraphic;
     property Canvas: TFastARGB32Canvas read FCanvas;
-    procedure AddRef;
-    procedure DelRef;
-
-    {ICacheable}
-    function CanBeRemoved: Boolean;
-    procedure RemoveFromCache;
   end;
 
   TLightCache = specialize TCacheManager<TLightMaterial>;
@@ -94,11 +84,14 @@ type
     FValid: Boolean;
     FCalculateOffset: TCalculateOffset;
     FLightCache: TLightCache;
+    FUseFBO: Boolean;
+    FInitialized: Boolean;
     function GetLight(AID: Integer): TLightMaterial;
     procedure SetLightLevel(AValue: Byte);
     procedure UpdateOverlay(AScreenRect: TRect);
   public
     property LightLevel: Byte read FLightLevel write SetLightLevel;
+    procedure InitGL;
     procedure UpdateLightMap(ALeft, AWidth, ATop, AHeight: Integer;
       AScreenBuffer: TScreenBuffer);
     procedure Draw(AScreenRect: TRect);
@@ -117,6 +110,7 @@ begin
   FLightSources := TLightSources.Create(True);
   FLightLevel := 0;
   FLightCache := TLightCache.Create(32);
+  FInitialized := False;
 end;
 
 destructor TLightManager.Destroy;
@@ -157,40 +151,99 @@ var
   color: TColor32Rec;
   i: Integer;
   lightMaterial: TLightMaterial;
+  colorGL: GLclampf;
+  fbo: GLuint;
 begin
-  FOverlay.Free;
   glDeleteTextures(1, @FOverlayTexture);
+  if FUseFBO then
+  begin
+    glGenTextures(1, @FOverlayTexture);
+    glBindTexture(GL_TEXTURE_2D, FOverlayTexture);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, AScreenRect.Right,
+      AScreenRect.Bottom, 0, GL_RGBA, GL_UNSIGNED_BYTE, nil);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-  color.A := $FF;
-  color.R := ((32 - FLightLevel) * 255) div 32;
-  color.G := color.R;
-  color.B := color.R;
+    glGenFramebuffersEXT(1, @fbo);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+      GL_TEXTURE_2D, FOverlayTexture, 0);
 
-  FOverlay := TSingleImage.CreateFromParams(AScreenRect.Right,
-    AScreenRect.Bottom, ifA8R8G8B8);
-  canvas := TFastARGB32Canvas.CreateForImage(FOverlay);
-  try
-    canvas.FillColor32 := color.Color;
-    canvas.FillRect(AScreenRect);
+    colorGL :=(32 - lightLevel) / 32;
+    glClearColor(colorGL, colorGL, colorGL, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
 
+    glBlendFunc(GL_ONE, GL_ONE);
     for i := 0 to FLightSources.Count - 1 do
-    begin
-      lightMaterial := FLightSources[i].Material;
-      if lightMaterial <> nil then
       begin
-        lightMaterial.Canvas.DrawAdd(lightMaterial.Canvas.ClipRect, canvas,
-          FLightSources[i].FX - lightMaterial.Graphic.Width div 2,
-          FLightSources[i].FY - lightMaterial.Graphic.Height div 2);
+        lightMaterial := FLightSources[i].Material;
+        if lightMaterial <> nil then
+        begin
+          glBindTexture(GL_TEXTURE_2D, lightMaterial.Texture);
+          glBegin(GL_QUADS);
+            glTexCoord2i(0, 0);
+            glVertex2i(FLightSources[i].FX - lightMaterial.RealWidth div 2,
+              FLightSources[i].FY - lightMaterial.RealHeight div 2);
+            glTexCoord2i(0, 1);
+            glVertex2i(FLightSources[i].FX - lightMaterial.RealWidth div 2,
+              FLightSources[i].FY - lightMaterial.RealHeight div 2 +
+              lightMaterial.Height);
+            glTexCoord2i(1, 1);
+            glVertex2i(FLightSources[i].FX - lightMaterial.RealWidth div 2 +
+              lightMaterial.Width, FLightSources[i].FY -
+              lightMaterial.RealHeight div 2 + lightMaterial.Height);
+            glTexCoord2i(1, 0);
+            glVertex2i(FLightSources[i].FX - lightMaterial.RealWidth div 2 +
+              lightMaterial.Width,
+              FLightSources[i].FY - lightMaterial.RealHeight div 2);
+          glEnd;
+        end;
       end;
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    glDeleteFramebuffersEXT(1, @fbo);
+  end else
+  begin
+    FOverlay.Free;
+
+    color.A := $FF;
+    color.R := ((32 - FLightLevel) * 255) div 32;
+    color.G := color.R;
+    color.B := color.R;
+
+    FOverlay := TSingleImage.CreateFromParams(AScreenRect.Right,
+      AScreenRect.Bottom, ifA8R8G8B8);
+    canvas := TFastARGB32Canvas.CreateForImage(FOverlay);
+    try
+      canvas.FillColor32 := color.Color;
+      canvas.FillRect(AScreenRect);
+
+      for i := 0 to FLightSources.Count - 1 do
+      begin
+        lightMaterial := FLightSources[i].Material;
+        if lightMaterial <> nil then
+        begin
+          lightMaterial.Canvas.DrawAdd(lightMaterial.Canvas.ClipRect, canvas,
+            FLightSources[i].FX - lightMaterial.RealWidth div 2,
+            FLightSources[i].FY - lightMaterial.RealHeight div 2);
+        end;
+      end;
+    finally
+      canvas.Free;
     end;
-  finally
-    canvas.Free;
+
+    FOverlayTexture := CreateGLTextureFromImage(FOverlay.ImageDataPointer^);
   end;
 
-  //TODO : PowerOfTwo!!!
-  FOverlayTexture := CreateGLTextureFromImage(FOverlay.ImageDataPointer^);
-
   FValid := True;
+end;
+
+procedure TLightManager.InitGL;
+begin
+  FUseFBO := Load_GL_EXT_framebuffer_object;
 end;
 
 procedure TLightManager.UpdateLightMap(ALeft, AWidth, ATop, AHeight: Integer;
@@ -249,18 +302,35 @@ begin
   for i := 0 to lights.Count - 1 do
     FLightSources.Add(TLightSource.Create(Self, lights[i]));
 
+  lights.Free;
+
   FValid := False;
   //Logger.ExitMethod([lcClient, lcDebug], 'UpdateLightMap');
 end;
 
 procedure TLightManager.Draw(AScreenRect: TRect);
 begin
+  if not FInitialized then
+    InitGL;
+
   if not FValid then
     UpdateOverlay(AScreenRect);
 
   glBindTexture(GL_TEXTURE_2D, FOverlayTexture);
   glBlendFunc(GL_ZERO, GL_SRC_COLOR);
   glBegin(GL_QUADS);
+  if FUseFBO then
+  begin
+    glTexCoord2i(0, 1);
+    glVertex2i(AScreenRect.Left, AScreenRect.Top);
+    glTexCoord2i(0, 0);
+    glVertex2i(AScreenRect.Left, AScreenRect.Bottom);
+    glTexCoord2i(1, 0);
+    glVertex2i(AScreenRect.Right, AScreenRect.Bottom);
+    glTexCoord2i(1, 1);
+    glVertex2i(AScreenRect.Right, AScreenRect.Top);
+  end else
+  begin
     glTexCoord2i(0, 0);
     glVertex2i(AScreenRect.Left, AScreenRect.Top);
     glTexCoord2i(0, 1);
@@ -269,6 +339,7 @@ begin
     glVertex2i(AScreenRect.Right, AScreenRect.Bottom);
     glTexCoord2i(1, 0);
     glVertex2i(AScreenRect.Right, AScreenRect.Top);
+  end;
   glEnd;
 end;
 
@@ -300,38 +371,14 @@ end;
 
 constructor TLightMaterial.Create(AGraphic: TBaseImage);
 begin
-  FRefCount := 1;
-  FGraphic := TSingleImage.CreateFromImage(AGraphic);
+  inherited Create(AGraphic);
   FCanvas := TFastARGB32Canvas.CreateForImage(FGraphic);
 end;
 
 destructor TLightMaterial.Destroy;
 begin
   FreeAndNil(FCanvas);
-  FreeAndNil(FGraphic);
   inherited Destroy;
-end;
-
-procedure TLightMaterial.AddRef;
-begin
-  Inc(FRefCount);
-end;
-
-procedure TLightMaterial.DelRef;
-begin
-  Dec(FRefCount);
-  if FRefCount < 1 then
-    Free;
-end;
-
-function TLightMaterial.CanBeRemoved: Boolean;
-begin
-  Result := (FRefCount <= 1);
-end;
-
-procedure TLightMaterial.RemoveFromCache;
-begin
-  DelRef;
 end;
 
 end.

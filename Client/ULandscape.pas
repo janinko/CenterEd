@@ -56,7 +56,7 @@ type
     FRealWidth: Integer;
     FRealHeight: Integer;
     FGraphic: TMultiImage;
-    procedure CalculateTextureDimensions(ACaps: TGLTextureCaps; ARealWidth,
+    class procedure CalculateTextureDimensions(ACaps: TGLTextureCaps; ARealWidth,
       ARealHeight: Integer; out AWidth, AHeight: Integer);
     function GenerateTexture(AImage: TBaseImage): TGLuint;
     function GetTexture: GLuint; virtual; abstract;
@@ -1283,7 +1283,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TMaterial.CalculateTextureDimensions(ACaps: TGLTextureCaps;
+class procedure TMaterial.CalculateTextureDimensions(ACaps: TGLTextureCaps;
   ARealWidth, ARealHeight: Integer; out AWidth, AHeight: Integer);
 begin
   if ACaps.NonPowerOfTwo then
