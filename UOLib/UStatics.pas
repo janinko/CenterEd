@@ -157,9 +157,7 @@ procedure TStaticItem.UpdatePriorities(ATileData: TStaticTiledata;
   ASolver: Integer);
 begin
   FPriorityBonus := 0;
-  if not (tdfBackground in ATileData.Flags) then
-    Inc(FPriorityBonus);
-  if ATileData.Height > 0 then
+  if not (tdfBackground in ATileData.Flags) or (ATileData.Height > 0) then
     Inc(FPriorityBonus);
   FPriority := Z + FPriorityBonus;
   FPrioritySolver := ASolver;

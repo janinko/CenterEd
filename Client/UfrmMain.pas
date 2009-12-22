@@ -2348,7 +2348,7 @@ begin
     end;
 
     if blockInfo^.Translucent then
-      glColor4f(intensity, intensity, intensity, 0.5)
+      glColor4f(intensity, intensity, intensity, 0.8)
     else
       glColor4f(intensity, intensity, intensity, 1.0);
 
