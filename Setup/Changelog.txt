@@ -1,6 +1,19 @@
 Changelog:
 [C] = Client, [S] = Server, [-] = Both/Unrelated
 
+Version 0.6
+===========
+[C] Added rendering of lightsources
+[C] Added buttons to the largescale and region dialogs to pick locations from the game window
+[-] Added support for larger tiledata/animdata/art files
+[C] Added ability to define custom "nodraw" tiles (see Wiki)
+[C] Changed static tile render order
+[C] Changed translucent tiles to be more opaque
+[C] Changed the format of locations and random presets to be less fragile
+[C] Fixed a crash related to the Virtual Layer
+[C] Fixed several smaller bugs
+[S] Fixed memory leak
+
 Version 0.5
 ===========
 [C] Completely reworked rendering (should be much faster now)

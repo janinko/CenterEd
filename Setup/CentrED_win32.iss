@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=CentrED
-AppVerName=CentrED 0.5
+AppVerName=CentrED 0.6
 AppPublisher=AKS DataBasis
 AppPublisherURL=http://www.aksdb.de/CentrED
 AppSupportURL=http://www.aksdb.de/CentrED
@@ -13,15 +13,15 @@ DefaultGroupName=AKS DataBasis\CentrED
 OutputBaseFilename=CentrED_win32
 Compression=lzma
 SolidCompression=true
-VersionInfoVersion=0.5
+VersionInfoVersion=0.6
 VersionInfoCompany=AKS DataBasis
 VersionInfoDescription=Client/Server based multiuser map editor
-VersionInfoTextVersion=0.5
+VersionInfoTextVersion=0.6
 VersionInfoCopyright=Andreas Schneider
 AppCopyright=Andreas Schneider
 InfoBeforeFile=Changelog.txt
 SignTool=defsign $f
-AppVersion=0.5
+AppVersion=0.6
 AppID={{77BCACC0-C2D9-470D-858F-A3D94A5F27A5}
 SignedUninstaller=true
 
@@ -35,6 +35,7 @@ Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:Ad
 Source: ..\bin\CentrED.exe; DestDir: {app}; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 Source: ..\bin\CentrED.dat; DestDir: {app}
+Source: ..\bin\nodraw.txt; DestDir: {app}
 
 [Icons]
 Name: {group}\CentrED; Filename: {app}\CentrED.exe

@@ -11,7 +11,16 @@
       <TargetFileExt Value=".exe"/>
     </General>
     <VersionInfo>
-      <ProjectVersion Value=""/>
+      <UseVersionInfo Value="True"/>
+      <CurrentMajorRevNr Value="6"/>
+      <CurrentBuildNr Value="200"/>
+      <ProjectVersion Value="0.6.0.200"/>
+      <CompanyName Value="AKS DataBasis"/>
+      <FileDescription Value="CentrED Server"/>
+      <InternalName Value="CentrED Server"/>
+      <LegalCopyright Value="Andreas Schneider"/>
+      <OriginalFilename Value="cedserver.exe"/>
+      <ProductName Value="CentrED"/>
     </VersionInfo>
     <PublishOptions>
       <Version Value="2"/>
@@ -129,13 +138,13 @@
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
       <Optimizations>
-        <OptimizationLevel Value="0"/>
+        <OptimizationLevel Value="3"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>
-        <GenerateDebugInfo Value="True"/>
-        <UseHeaptrc Value="True"/>
+        <UseLineInfoUnit Value="False"/>
+        <StripSymbols Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>
     </Linking>

@@ -37,6 +37,8 @@ uses
   
 {$I version.inc}
   
+{$IFDEF WINDOWS}{$R cedserver.rc}{$ENDIF}
+
 begin
   Writeln('');
   Writeln('CentrED Server Version ', ProductVersion);
