@@ -253,28 +253,23 @@ var
   lights: TWorldItemList;
   i, x, y, tileID: Integer;
   tileData: TTiledata;
+  tileMap: array of array of TWorldItem;
 begin
   //Logger.EnterMethod([lcClient, lcDebug], 'UpdateLightMap');
   FLightSources.Clear;
   {Logger.Send([lcClient, lcDebug], 'AWidth', AWidth);
   Logger.Send([lcClient, lcDebug], 'AHeight', AHeight);}
   lights := TWorldItemList.Create(False);
-  x := -1;
-  y := -1;
+  SetLength(tileMap, AWidth, AHeight);
+  for x := 0 to AWidth - 1 do
+    for y := 0 to AHeight - 1 do
+      tileMap[x,y] := nil;
+
   blockInfo := nil;
   while AScreenBuffer.Iterate(blockInfo) do
   begin
     if blockInfo^.State = ssNormal then
     begin
-      if (x <> blockInfo^.Item.X) or (y <> blockInfo^.Item.Y) then
-      begin
-        for i := 0 to lights.Count - 1 do
-          FLightSources.Add(TLightSource.Create(Self, lights[i]));
-        lights.Clear;
-        x := blockInfo^.Item.X;
-        y := blockInfo^.Item.Y;
-      end;
-
       if blockInfo^.Item is TStaticItem then
         tileID := blockInfo^.Item.TileID + $4000
       else
@@ -282,25 +277,21 @@ begin
       tileData := ResMan.Tiledata.TileData[tileID];
 
       if tdfLightSource in tileData.Flags then
-      begin
-        lights.Add(blockInfo^.Item);
-      end else
-      if (tdfRoof in tileData.Flags) or (blockInfo^.Item is TMapCell) then
-      begin
-        lights.Clear;
-      end else
-      if tdfSurface in tileData.Flags then
-      begin
-        for i := lights.Count - 1 downto 0 do
-          if (blockInfo^.Item.Z > lights[i].Z + 3) and
-             (blockInfo^.Item.Z < lights[i].Z + 30) then
-            lights.Delete(i);
-      end;
+        lights.Add(blockInfo^.Item)
+      else
+        tileMap[blockInfo^.Item.X - ALeft, blockInfo^.Item.Y - ATop] :=
+          blockInfo^.Item;
     end;
   end;
 
   for i := 0 to lights.Count - 1 do
-    FLightSources.Add(TLightSource.Create(Self, lights[i]));
+  begin
+    x := lights[i].X + 1 - ALeft;
+    y := lights[i].Y + 1 - ATop;
+    if (x = AWidth) or (y = AHeight) or (tileMap[x,y] = nil) or
+      (tileMap[x,y].Z < lights[i].Z + 5) then
+      FLightSources.Add(TLightSource.Create(Self, lights[i]));
+  end;
 
   lights.Free;
 
