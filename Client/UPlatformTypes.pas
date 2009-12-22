@@ -34,18 +34,6 @@ uses
   
 type
   IDataObject = ActiveX.IDataObject;
-  {IDataObject = Interface (IUnknown)
-  ['{0000010e-0000-0000-C000-000000000046}']
-    function GetData(const formatetcIn: FORMATETC; out medium: STGMEDIUM): HRESULT; stdcall;
-    function GetDataHere(const pformatetc: FormatETC; out medium: STGMEDIUM): HRESULT; stdcall;
-    function QueryGetData(const pformatetc: FORMATETC): HRESULT; stdcall;
-    function GetCanonicalFormatTEtc(const pformatetcIn: FORMATETC; out pformatetcOut: FORMATETC): HResult; stdcall;
-    function SetData (const pformatetc: FORMATETC;const medium:STGMEDIUM;FRelease : BOOL):HRESULT; stdcall;
-    function EnumFormatEtc(dwDirection: DWord; out enumformatetcpara: IENUMFORMATETC): HRESULT; stdcall;
-    function DAdvise(const formatetc: FORMATETC; advf: DWORD; const AdvSink: IAdviseSink; out dwConnection: DWORD): HRESULT; stdcall;
-    function DUnadvise(dwconnection: DWord): HRESULT; stdcall;
-    function EnumDAvise(out enumAdvise: IEnumStatData): HRESULT; stdcall;
-  end;}
 
 implementation
 

@@ -147,7 +147,7 @@ end;
 
 procedure TLightManager.UpdateOverlay(AScreenRect: TRect);
 var
-  canvas, lightCanvas: TFastARGB32Canvas;
+  canvas: TFastARGB32Canvas;
   color: TColor32Rec;
   i: Integer;
   lightMaterial: TLightMaterial;

@@ -30,7 +30,7 @@ unit ULightProvider;
 interface
 
 uses
-  UMulProvider, UMulBlock, UGenericIndex, ULight;
+  UMulProvider, UGenericIndex, ULight;
 
 type
 

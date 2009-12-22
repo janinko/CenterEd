@@ -357,6 +357,7 @@
       <Debugging>
         <GenerateDebugInfo Value="True"/>
         <UseHeaptrc Value="True"/>
+        <UseExternalDbgSyms Value="True"/>
       </Debugging>
       <Options>
         <Win32>
