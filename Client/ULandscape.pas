@@ -348,7 +348,7 @@ begin
   Result := nil;
 
   if FUseAnims and (ATileID >= $4000) and (tdfAnimation in
-      ResMan.Tiledata.StaticTiles[ATileID -$4000].Flags) then
+      ResMan.Tiledata.StaticTiles[ATileID - $4000].Flags) then
   begin
     animData := ResMan.Animdata.AnimData[ATileID - $4000];
     if (animData.FrameCount > 0) and not FAnimCache.QueryID(ATileID, Result) then
@@ -384,10 +384,10 @@ begin
   end else
   begin
     Result := nil;
-    id := ATileID or ((AHue.ID and $3FFF) shl 16) or (Byte(APartialHue) shl 30);
+    id := ATileID or (((AHue.ID + 1) and $3FFF) shl 16) or (Byte(APartialHue) shl 30);
 
     if FUseAnims and (ATileID >= $4000) and (tdfAnimation in
-      ResMan.Tiledata.StaticTiles[ATileID -$4000].Flags) then
+      ResMan.Tiledata.StaticTiles[ATileID - $4000].Flags) then
     begin
       animData := ResMan.Animdata.AnimData[ATileID - $4000];
       if (animData.FrameCount > 0) and not FAnimCache.QueryID(id, Result) then

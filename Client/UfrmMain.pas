@@ -601,7 +601,7 @@ var
   lastTile: TWorldItem;
   offsetX, offsetY: Integer;
 begin
-  Logger.EnterMethod([lcClient, lcDebug], 'MouseMove');
+  //Logger.EnterMethod([lcClient, lcDebug], 'MouseMove');
   lastTile := CurrentTile;
   
   if ssMiddle in Shift then
@@ -619,7 +619,7 @@ begin
   UpdateCurrentTile(X, Y);
 
   FRepaintNeeded := True;
-  Logger.ExitMethod([lcClient, lcDebug], 'MouseMove');
+  //Logger.ExitMethod([lcClient, lcDebug], 'MouseMove');
 end;
 
 procedure TfrmMain.oglGameWindowMouseUp(Sender: TObject; Button: TMouseButton;
@@ -1915,13 +1915,13 @@ end;
 
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
 begin
-  Logger.EnterMethod([lcClient, lcDebug], 'SetCurrentTile');
+  //Logger.EnterMethod([lcClient, lcDebug], 'SetCurrentTile');
   if AValue = FCurrentTile then
   begin
-    Logger.ExitMethod([lcClient, lcDebug], 'SetCurrentTile');
+    //Logger.ExitMethod([lcClient, lcDebug], 'SetCurrentTile');
     Exit;
   end;
-  Logger.Send([lcClient, lcDebug], 'Value', AValue);
+  //Logger.Send([lcClient, lcDebug], 'Value', AValue);
 
   if FCurrentTile <> nil then
     FCurrentTile.OnDestroy.UnregisterEvent(@OnTileRemoved);
@@ -1946,18 +1946,18 @@ begin
   end;
 
   UpdateSelection;
-  Logger.ExitMethod([lcClient, lcDebug], 'SetCurrentTile');
+  //Logger.ExitMethod([lcClient, lcDebug], 'SetCurrentTile');
 end;
 
 procedure TfrmMain.SetSelectedTile(const AValue: TWorldItem);
 begin
-  Logger.EnterMethod([lcClient, lcDebug], 'SetSelectedTile');
+  //Logger.EnterMethod([lcClient, lcDebug], 'SetSelectedTile');
   if AValue = FSelectedTile then
   begin
-    Logger.ExitMethod([lcClient, lcDebug], 'SetSelectedTile');
+    //Logger.ExitMethod([lcClient, lcDebug], 'SetSelectedTile');
     Exit;
   end;
-  Logger.Send([lcClient, lcDebug], 'Value', AValue);
+  //Logger.Send([lcClient, lcDebug], 'Value', AValue);
 
   if FSelectedTile <> nil then
     FSelectedTile.OnDestroy.UnregisterEvent(@OnTileRemoved);
@@ -1966,7 +1966,7 @@ begin
     FSelectedTile.OnDestroy.RegisterEvent(@OnTileRemoved);
 
   UpdateSelection;
-  Logger.ExitMethod([lcClient, lcDebug], 'SetSelectedTile');
+  //Logger.ExitMethod([lcClient, lcDebug], 'SetSelectedTile');
 end;
 
 procedure TfrmMain.SetNormalLights;

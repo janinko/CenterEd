@@ -823,7 +823,7 @@ object frmMain: TfrmMain
           item
             Position = 1
             Text = 'Name'
-            Width = 131
+            Width = 135
           end>
         Header.DefaultHeight = 17
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
@@ -1101,7 +1101,7 @@ object frmMain: TfrmMain
         item
           Position = 2
           Text = 'Message'
-          Width = 379
+          Width = 381
         end>
       Header.DefaultHeight = 17
       Header.MainColumn = 2
