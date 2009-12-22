@@ -336,9 +336,9 @@
       <Filename Value="../bin/CentrED"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="../Imaging/;../"/>
+      <IncludeFiles Value="$(ProjOutDir)/;../Imaging/;../"/>
       <OtherUnitFiles Value="../;../UOLib/;../MulProvider/;../Imaging/;../Imaging/JpegLib/;../Imaging/ZLib/;Tools/"/>
-      <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
+      <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
       <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/;../;../UOLib/;../MulProvider/;../Imaging/;../Imaging/JpegLib/;../Imaging/ZLib/;Tools/"/>
     </SearchPaths>
     <Parsing>
