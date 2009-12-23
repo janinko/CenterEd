@@ -42,11 +42,9 @@ type
   protected
     { Members }
     FHue: Word;
-    FOrgHue: Word;
 
     { Methods }
-    function HasChanged: Boolean; override;
-    procedure SetHue(AHue: Word);
+    procedure SetHue(AValue: Word);
   public
     { Fields }
     property Hue: Word read FHue write SetHue;
@@ -54,7 +52,6 @@ type
     { Methods }
     function Clone: TStaticItem; override;
     function GetSize: Integer; override;
-    procedure InitOriginalState; override;
     procedure UpdatePriorities(ATileData: TStaticTiledata; ASolver: Integer);
     procedure Write(AData: TStream); override;
   end;
@@ -112,8 +109,6 @@ begin
     FX := ABlockX * 8 + iX;
     FY := ABlockY * 8 + iY;
   end;
-
-  InitOriginalState;
 end;
 
 constructor TStaticItem.Create(AOwner: TWorldBlock; AData: TStream);
@@ -121,14 +116,12 @@ begin
   Create(AOwner, AData, 0, 0);
 end;
 
-function TStaticItem.HasChanged: Boolean;
+procedure TStaticItem.SetHue(AValue: Word);
 begin
-  Result := (FHue <> FOrgHue) or inherited HasChanged;
-end;
+  if FHue = AValue then
+    Exit;
 
-procedure TStaticItem.SetHue(AHue: Word);
-begin
-  FHue := AHue;
+  FHue := AValue;
   DoChanged;
 end;
 
@@ -147,17 +140,13 @@ begin
   Result := 7;
 end;
 
-procedure TStaticItem.InitOriginalState;
-begin
-  FOrgHue := FHue;
-  inherited InitOriginalState;
-end;
-
 procedure TStaticItem.UpdatePriorities(ATileData: TStaticTiledata;
   ASolver: Integer);
 begin
   FPriorityBonus := 0;
-  if not (tdfBackground in ATileData.Flags) or (ATileData.Height > 0) then
+  if not (tdfBackground in ATileData.Flags) then
+    Inc(FPriorityBonus);
+  if ATileData.Height > 0 then
     Inc(FPriorityBonus);
   FPriority := Z + FPriorityBonus;
   FPrioritySolver := ASolver;

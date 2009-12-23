@@ -107,8 +107,6 @@ begin
   end;
 
   FIsGhost := False;
-
-  InitOriginalState;
 end;
 
 constructor TMapCell.Create(AOwner: TWorldBlock; AData: TStream);

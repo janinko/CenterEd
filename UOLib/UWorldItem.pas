@@ -40,33 +40,30 @@ type
   TWorldItem = class(TMulBlock)
     constructor Create(AOwner: TWorldBlock);
   protected
-    FOwner, FOrgOwner: TWorldBlock;
-    FTileID, FOrgTileID: Word;
-    FX, FOrgX: Word;
-    FY, FOrgY: Word;
-    FZ, FOrgZ: ShortInt;
+    FOwner: TWorldBlock;
+    FTileID: Word;
+    FX: Word;
+    FY: Word;
+    FZ: ShortInt;
     FSelected: Boolean;
     FCanBeEdited: Boolean;
     FLocked: Boolean;
-    FChanged: Boolean;
     FPriority: Integer;
     FPriorityBonus: ShortInt;
     FPrioritySolver: Integer;
-    function GetTileID: Word; virtual;
-    function GetZ: ShortInt; virtual;
-    procedure SetTileID(ATileID: Word);
-    procedure SetX(AX: Word);
-    procedure SetY(AY: Word);
-    procedure SetZ(AZ: ShortInt);
-    procedure SetSelected(ASelected: Boolean);
-    procedure SetOwner(AOwner: TWorldBlock);
-    procedure SetLocked(ALocked: Boolean);
     procedure DoChanged;
-    function HasChanged: Boolean; virtual;
+    function  GetTileID: Word; virtual;
+    function  GetZ: ShortInt; virtual;
+    procedure SetLocked(ALocked: Boolean);
+    procedure SetOwner(AOwner: TWorldBlock);
+    procedure SetSelected(ASelected: Boolean);
+    procedure SetTileID(AValue: Word);
+    procedure SetX(AValue: Word);
+    procedure SetY(AValue: Word);
+    procedure SetZ(AValue: ShortInt);
   public
     procedure UpdatePos(AX, AY: Word; AZ: ShortInt);
     procedure Delete;
-    procedure InitOriginalState; virtual;
 
     property Owner: TWorldBlock read FOwner write SetOwner;
     property TileID: Word read GetTileID write SetTileID;
@@ -76,7 +73,6 @@ type
     property Selected: Boolean read FSelected write SetSelected;
     property CanBeEdited: Boolean read FCanBeEdited write FCanBeEdited;
     property Locked: Boolean read FLocked write SetLocked;
-    property Changed: Boolean read FChanged;
     property Priority: Integer read FPriority write FPriority;
     property PriorityBonus: ShortInt read FPriorityBonus write FPriorityBonus;
     property PrioritySolver: Integer read FPrioritySolver write FPrioritySolver;
@@ -95,18 +91,14 @@ type
     FX: Word;
     FY: Word;
     FRefCount: Integer;
-    FChanges: Integer;
-    function GetChanged: Boolean;
-    procedure SetChanged(AChanged: Boolean);
-    procedure DoStateChanged;
+    FChanged: Boolean;
   public
     property X: Word read FX write FX;
     property Y: Word read FY write FY;
     property RefCount: Integer read FRefCount;
-    property Changed: Boolean read GetChanged write SetChanged;
+    property Changed: Boolean read FChanged write FChanged;
     procedure AddRef;
     procedure RemoveRef;
-    procedure CleanUp;
   end;
 
   TVirtualTile = class(TWorldItem);
@@ -140,9 +132,6 @@ begin
   end;
 
   if Result = 0 then
-    Result := AItem1.PriorityBonus - AItem2.PriorityBonus;
-
-  if Result = 0 then
     Result := AItem1.PrioritySolver - AItem2.PrioritySolver;
 end;
 
@@ -153,8 +142,13 @@ begin
   inherited Create;
   FSelected := False;
   FLocked := False;
-  FChanged := False;
   FOwner := AOwner;
+end;
+
+procedure TWorldItem.DoChanged;
+begin
+  if FOwner <> nil then
+    FOwner.Changed := True;
 end;
 
 function TWorldItem.GetTileID: Word;
@@ -171,44 +165,6 @@ procedure TWorldItem.Delete;
 begin
   SetSelected(False);
   SetLocked(False);
-  if (FOwner <> FOrgOwner) then
-    FOwner.Changed := False
-  else if Assigned(FOrgOwner) and (not FChanged) then
-    FOrgOwner.Changed := True;
-end;
-
-procedure TWorldItem.DoChanged;
-var
-  blockChanged: Boolean;
-begin
-  blockChanged := HasChanged;
-  if Assigned(FOwner) then
-  begin
-    if FChanged and (not blockChanged) then
-      FOwner.Changed := False
-    else if (not FChanged) and blockChanged then
-      FOwner.Changed := True;
-  end;
-  FChanged := blockChanged;
-  if Assigned(FOnChanged) then
-    FOnChanged(Self);
-end;
-
-function TWorldItem.HasChanged: Boolean;
-begin
-  Result := (FX <> FOrgX) or (FY <> FOrgY) or (FZ <> FOrgZ) or
-    (FTileID <> FOrgTileID) or (FOrgOwner <> FOwner);
-end;
-
-procedure TWorldItem.InitOriginalState;
-begin
-  {if Assigned(FOrgOwner) and (FOwner <> FOrgOwner) then
-    FOrgOwner.Changed := False;}
-  FOrgOwner := FOwner;
-  FOrgTileID := FTileID;
-  FOrgX := FX;
-  FOrgY := FY;
-  FOrgZ := FZ;
   DoChanged;
 end;
 
@@ -217,7 +173,7 @@ begin
   if FLocked <> ALocked then
   begin
     FLocked := ALocked;
-    if Assigned(FOwner) then
+    if FOwner <> nil then
       if FLocked then
         FOwner.AddRef
       else
@@ -229,22 +185,19 @@ procedure TWorldItem.SetOwner(AOwner: TWorldBlock);
 begin
   if FOwner <> AOwner then
   begin
-    if Assigned(FOwner) then
+    if FOwner <> nil then
     begin
-      if FOwner <> FOrgOwner then
-        FOwner.Changed := False;
+      FOwner.Changed := True;
       if FLocked then FOwner.RemoveRef;
       if FSelected then FOwner.RemoveRef;
     end;
     FOwner := AOwner;
-    if Assigned(FOwner) then
+    if FOwner <> nil then
     begin
-      if FOwner <> FOrgOwner then
-        FOwner.Changed := True;
+      FOwner.Changed := True;
       if FLocked then FOwner.AddRef;
       if FSelected then FOwner.AddRef;
     end;
-    DoChanged;
   end;
 end;
 
@@ -258,27 +211,39 @@ begin
   FSelected := ASelected;
 end;
 
-procedure TWorldItem.SetTileID(ATileID: Word);
+procedure TWorldItem.SetTileID(AValue: Word);
 begin
-  FTileID := ATileID;
+  if FTileID = AValue then
+    Exit;
+
+  FTileID := AValue;
   DoChanged;
 end;
 
-procedure TWorldItem.SetX(AX: Word);
+procedure TWorldItem.SetX(AValue: Word);
 begin
-  FX := AX;
+  if FX = AValue then
+    Exit;
+
+  FX := AValue;
   DoChanged;
 end;
 
-procedure TWorldItem.SetY(AY: Word);
+procedure TWorldItem.SetY(AValue: Word);
 begin
-  FY := AY;
-  DoChanged
+  if FY = AValue then
+    Exit;
+
+  FY := AValue;
+  DoChanged;
 end;
 
-procedure TWorldItem.SetZ(AZ: ShortInt);
+procedure TWorldItem.SetZ(AValue: ShortInt);
 begin
-  FZ := AZ;
+  if FZ = AValue then
+    Exit;
+
+  FZ := AValue;
   DoChanged;
 end;
 
@@ -295,47 +260,19 @@ end;
 procedure TWorldBlock.AddRef;
 begin
   Inc(FRefCount);
-  DoStateChanged;
-end;
-
-procedure TWorldBlock.CleanUp;
-begin
-  FChanges := 0;
-  DoStateChanged;
 end;
 
 constructor TWorldBlock.Create;
 begin
   inherited Create;
   FRefCount := 0;
-  FChanges := 0;
-end;
-
-procedure TWorldBlock.DoStateChanged;
-begin
-  if Assigned(FOnChanged) then
-    FOnChanged(Self);
-end;
-
-function TWorldBlock.GetChanged: Boolean;
-begin
-  Result := (FChanges <> 0);
+  FChanged := False;
 end;
 
 procedure TWorldBlock.RemoveRef;
 begin
   if FRefCount > 0 then
     Dec(FRefCount);
-  DoStateChanged;
-end;
-
-procedure TWorldBlock.SetChanged(AChanged: Boolean);
-begin
-  if AChanged then
-    Inc(FChanges)
-  else
-    Dec(FChanges);
-  DoStateChanged;
 end;
 
 end.

@@ -6,12 +6,12 @@
       <Flags>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
         <AlwaysBuild Value="False"/>
-        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
       <Title Value="CentrED"/>
+      <LFMResourceType Value="res"/>
       <Icon Value="0"/>
     </General>
     <LazDoc Paths="../doc"/>

@@ -97,7 +97,6 @@ type
     FRadarMap: TRadarMap;
     FBlockCache: TBlockCache;
     FBlockSubscriptions: TBlockSubscriptions;
-    procedure OnBlockChanged(ABlock: TMulBlock);
     procedure OnRemoveCachedObject(ABlock: TBlock);
     function GetMapCell(AX, AY: Word): TMapCell;
     function GetStaticList(AX, AY: Word): TStaticItemList;
@@ -494,11 +493,6 @@ begin
     Result := (west + east) div 2;
 end;
 
-procedure TLandscape.OnBlockChanged(ABlock: TMulBlock);
-begin
-  // Do nothing for now
-end;
-
 procedure TLandscape.OnRemoveCachedObject(ABlock: TBlock);
 begin
   if ABlock <> nil then
@@ -544,12 +538,10 @@ var
 begin
   FMap.Position := ((AX * FHeight) + AY) * 196;
   map := TMapBlock.Create(FMap, AX, AY);
-  map.OnChanged := @OnBlockChanged;
 
   FStaIdx.Position := ((AX * FHeight) + AY) * 12;
   index := TGenericIndex.Create(FStaIdx);
   statics := TSeperatedStaticBlock.Create(FStatics, index, AX, AY);
-  statics.OnChanged := @OnBlockChanged;
   statics.TiledataProvider := FTiledataProvider;
   index.Free;
   
@@ -573,9 +565,7 @@ begin
   begin
     FMap.Position := ((AWorldBlock.X * FHeight) + AWorldBlock.Y) * 196;
     AWorldBlock.Write(FMap);
-    for i := 0 to 63 do
-      TMapBlock(AWorldBlock).Cells[i].InitOriginalState;
-    AWorldBlock.CleanUp;
+    AWorldBlock.Changed := False;
   end else if AWorldBlock is TStaticBlock then
   begin
     FStaIdx.Position := ((AWorldBlock.X * FHeight) + AWorldBlock.Y) * 12;
@@ -597,10 +587,7 @@ begin
     FStaIdx.Seek(-12, soFromCurrent);
     index.Write(FStaIdx);
     index.Free;
-    for i := 0 to 63 do
-      for j := 0 to TSeperatedStaticBlock(AWorldBlock).Cells[i].Count - 1 do
-        TStaticItem(TSeperatedStaticBlock(AWorldBlock).Cells[i].Items[j]).InitOriginalState;
-    AWorldBlock.CleanUp;
+    AWorldBlock.Changed := False;
   end;
 end;
 

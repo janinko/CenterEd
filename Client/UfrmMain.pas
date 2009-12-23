@@ -1285,7 +1285,6 @@ procedure TfrmMain.edSearchIDExit(Sender: TObject);
 begin
   edSearchID.Visible := False;
   edSearchID.Text := '';
-  //edSearchID.Font.Color := clWindowText;
 end;
 
 procedure TfrmMain.edSearchIDKeyPress(Sender: TObject; var Key: char);
@@ -1316,7 +1315,6 @@ begin
     tileID := 0;
     if not TryStrToInt(enteredText, tileID) then
     begin
-      //edSearchID.Font.Color := clRed;
       MessageDlg('Error', 'The specified TileID is invalid.', mtError, [mbOK], 0);
       vdtTiles.SetFocus;
       Exit;
@@ -1341,18 +1339,15 @@ begin
     
     if node = nil then
     begin
-      //edSearchID.Font.Color := clRed;
       MessageDlg('Error', 'The tile with the specified ID could not be found.' +
         LineEnding + 'Check for conflicting filter settings.', mtError, [mbOK], 0);
       vdtTiles.SetFocus;
       Exit;
     end;
-    //edSearchID.Font.Color := clWindowText;
     edSearchID.Visible := False;
   end else if Key = #27 then
   begin
     edSearchID.Visible := False;
-    //edSearchID.Font.Color := clWindowText;
     Key := #0;
   end else if not (Key in ['$', '0'..'9', 'a'..'f', 'A'..'F', 's', 'S',
     't', 'T', #8]) then
@@ -1549,15 +1544,6 @@ end;
 
 procedure TfrmMain.vdtTilesClick(Sender: TObject);
 begin
-  {if vdtTiles.GetFirstSelected <> nil then
-  begin
-    if not tbDrawTile.Down then
-    begin
-      frmDrawSettings.rbTileList.Checked := True;
-      tbDrawTileClick(Sender);
-    end else
-      ProcessToolState;
-  end;}
   if acDraw.Checked then
     ProcessToolState;
 end;
@@ -1566,6 +1552,7 @@ procedure TfrmMain.vdtTilesDrawHint(Sender: TBaseVirtualTree;
   HintCanvas: TCanvas; Node: PVirtualNode; const R: TRect; Column: TColumnIndex
   );
 begin
+  HintCanvas.Font.Assign(Sender.Font);
   HintCanvas.Font.Style := [fsBold];
   DrawText(HintCanvas.Handle, PChar(FTileHint.Name), Length(FTileHint.Name),
     FTileHint.NameRect, 0);
@@ -1941,9 +1928,13 @@ begin
       lblTileInfo.Caption := Format('Terrain TileID: $%x, X: %d, Y: %d, Z: %d',
         [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z])
     else if FCurrentTile is TStaticItem then
-      lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x',
+      {lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x',
         [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z,
-         TStaticItem(FCurrentTile).Hue]);
+         TStaticItem(FCurrentTile).Hue]);}
+      lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x, Priority: %d, Bonus: %d, Solver: %d',
+        [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z,
+         TStaticItem(FCurrentTile).Hue, FCurrentTile.Priority, FCurrentTile.PriorityBonus,
+         FCurrentTile.PrioritySolver]);
   end;
 
   UpdateSelection;
@@ -2446,7 +2437,8 @@ end;
 procedure TfrmMain.OnMapChanged(AMapCell: TMapCell);
 begin
   PrepareMapCell(AMapCell);
-  InvalidateFilter;
+  ForceUpdateCurrentTile;
+  InvalidateFilter
 end;
 
 procedure TfrmMain.OnNewBlock(ABlock: TBlock);
@@ -2457,9 +2449,9 @@ end;
 procedure TfrmMain.OnStaticDeleted(AStaticItem: TStaticItem);
 begin
   FScreenBuffer.Delete(AStaticItem);
-  UpdateCurrentTile;
   FRepaintNeeded := True;
   ForceUpdateCurrentTile;
+  InvalidateFilter
 end;
 
 procedure TfrmMain.OnStaticElevated(AStaticItem: TStaticItem);
@@ -2472,7 +2464,8 @@ begin
   begin
     PrepareScreenBlock(blockInfo);
     Exclude(FScreenBufferState, sbsIndexed);
-    InvalidateFilter;
+    ForceUpdateCurrentTile;
+    InvalidateFilter
   end;
 end;
 
@@ -2487,7 +2480,7 @@ begin
     begin
       PrepareScreenBlock(blockInfo);
       FRepaintNeeded := True;
-      InvalidateFilter;
+      ForceUpdateCurrentTile;
       Break;
     end;
   end;
@@ -2503,7 +2496,8 @@ begin
     AStaticItem.PrioritySolver := FScreenBuffer.GetSerial;
     PrepareScreenBlock(FScreenBuffer.Insert(AStaticItem));
     FRepaintNeeded := True;
-    InvalidateFilter;
+    ForceUpdateCurrentTile;
+    InvalidateFilter
   end;
 end;
 
@@ -2742,8 +2736,6 @@ begin
     end;
   end;
   Include(FScreenBufferState, sbsFiltered);
-
-  ForceUpdateCurrentTile;
 
   if (FLightManager.LightLevel > 0) and not acFlat.Checked then
     FLightManager.UpdateLightMap(FX + FLowOffsetX, FRangeX + 1, FY + FLowOffsetY,
