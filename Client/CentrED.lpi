@@ -356,7 +356,7 @@
     <Linking>
       <Debugging>
         <UseLineInfoUnit Value="False"/>
-        <UseExternalDbgSyms Value="True"/>
+        <StripSymbols Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>
       <Options>

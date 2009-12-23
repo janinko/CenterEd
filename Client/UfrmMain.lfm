@@ -16,7 +16,7 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
-  SessionProperties = 'acFlat.Checked;acNoDraw.Checked;Height;Left;mnuFlatShowHeight.Checked;mnuSecurityQuestion.Checked;mnuShowAnimations.Checked;tbStatics.Down;tbTerrain.Down;Top;Width;WindowState;spTileList.Top'
+  SessionProperties = 'acFlat.Checked;acNoDraw.Checked;Height;Left;mnuFlatShowHeight.Checked;mnuSecurityQuestion.Checked;mnuShowAnimations.Checked;spTileList.Top;tbStatics.Down;tbTerrain.Down;Top;Width;WindowState;mnuWhiteBackground.Checked'
   ShowInTaskBar = stAlways
   LCLVersion = '0.9.29'
   WindowState = wsMaximized
@@ -1446,6 +1446,11 @@ object frmMain: TfrmMain
         Caption = '&Security question'
         Checked = True
         Hint = 'Ask for permission before processing area commands.'
+      end
+      object mnuWhiteBackground: TMenuItem
+        AutoCheck = True
+        Caption = '&White Background'
+        OnClick = mnuWhiteBackgroundClick
       end
     end
     object mnuHelp: TMenuItem

@@ -99,6 +99,7 @@ type
     lblY: TLabel;
     lbClients: TListBox;
     MainMenu1: TMainMenu;
+    mnuWhiteBackground: TMenuItem;
     mnuSecurityQuestion: TMenuItem;
     mnuShowAnimations: TMenuItem;
     mnuSettings: TMenuItem;
@@ -228,6 +229,7 @@ type
     procedure mnuRegionControlClick(Sender: TObject);
     procedure mnuShowAnimationsClick(Sender: TObject);
     procedure mnuShutdownClick(Sender: TObject);
+    procedure mnuWhiteBackgroundClick(Sender: TObject);
     procedure oglGameWindowDblClick(Sender: TObject);
     procedure oglGameWindowKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -507,6 +509,11 @@ end;
 procedure TfrmMain.mnuShutdownClick(Sender: TObject);
 begin
   dmNetwork.Send(TQuitServerPacket.Create(''));
+end;
+
+procedure TfrmMain.mnuWhiteBackgroundClick(Sender: TObject);
+begin
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.oglGameWindowDblClick(Sender: TObject);
@@ -1403,7 +1410,10 @@ end;
 
 procedure TfrmMain.oglGameWindowPaint(Sender: TObject);
 begin
-  glClearColor(0, 0, 0, 1);
+  if mnuWhiteBackground.Checked then
+    glClearColor(1, 1, 1, 1)
+  else
+    glClearColor(0, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
 
   InitRender;
