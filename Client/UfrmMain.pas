@@ -1928,13 +1928,9 @@ begin
       lblTileInfo.Caption := Format('Terrain TileID: $%x, X: %d, Y: %d, Z: %d',
         [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z])
     else if FCurrentTile is TStaticItem then
-      {lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x',
+      lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x',
         [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z,
-         TStaticItem(FCurrentTile).Hue]);}
-      lblTileInfo.Caption := Format('Static TileID: $%x, X: %d, Y: %d, Z: %d, Hue: $%x, Priority: %d, Bonus: %d, Solver: %d',
-        [FCurrentTile.TileID, FCurrentTile.X, FCurrentTile.Y, FCurrentTile.Z,
-         TStaticItem(FCurrentTile).Hue, FCurrentTile.Priority, FCurrentTile.PriorityBonus,
-         FCurrentTile.PrioritySolver]);
+         TStaticItem(FCurrentTile).Hue]);
   end;
 
   UpdateSelection;
