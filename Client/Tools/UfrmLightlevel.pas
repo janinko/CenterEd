@@ -39,6 +39,8 @@ begin
     frmMain.InvalidateFilter;
   end else
     frmMain.LightManager.LightLevel := tbLightlevel.Position;
+
+  frmMain.oglGameWindow.Repaint;
 end;
 
 initialization
