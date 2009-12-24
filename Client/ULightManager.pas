@@ -304,6 +304,8 @@ begin
   if not FInitialized then
     InitGL;
 
+  glColor4f(1, 1, 1, 1);
+
   if not FValid then
     UpdateOverlay(AScreenRect);
 

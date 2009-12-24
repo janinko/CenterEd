@@ -30,7 +30,7 @@ unit ULandscape;
 interface
 
 uses
-  SysUtils, Classes, math, UGenericIndex, UMap, UStatics, UWorldItem, UMulBlock,
+  SysUtils, Classes, math, UGenericIndex, UMap, UStatics, UWorldItem,
   UTileDataProvider, URadarMap,
   UCacheManager, ULinkedList, UBufferedStreams,
   UEnhancedMemoryStream, UPacketHandlers, UPackets, UNetState, UEnums;
@@ -207,6 +207,7 @@ begin
     end;
     block.Free;
   end;
+  FChanged := False;
 end;
 
 constructor TSeperatedStaticBlock.Create(AData: TStream; AIndex: TGenericIndex);
@@ -558,7 +559,7 @@ end;
 
 procedure TLandscape.SaveBlock(AWorldBlock: TWorldBlock);
 var
-  i, j, size: Integer;
+  size: Integer;
   index: TGenericIndex;
 begin
   if AWorldBlock is TMapBlock then

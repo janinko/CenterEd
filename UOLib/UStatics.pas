@@ -189,6 +189,7 @@ begin
       FItems.Add(TStaticItem.Create(Self, block, AX, AY));
     block.Free;
   end;
+  FChanged := False;
 end;
 
 constructor TStaticBlock.Create(AData: TStream; AIndex: TGenericIndex);

@@ -31,9 +31,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  SysUtils, Classes, lnetbase, UConfig, UCEDServer, URadarMap,
-  ULargeScaleOperations, UPackets, UAdminHandling, UClientHandling, ULandscape,
-  UPacketHandlers, URegions, UStatics, Logging;
+  SysUtils, UConfig, UCEDServer;
   
 {$I version.inc}
   

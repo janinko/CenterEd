@@ -173,8 +173,9 @@ begin
       for iX := 0 to 7 do
         Cells[iY * 8 + iX] := TMapCell.Create(Self, buffer, AX * 8 + iX, AY * 8 + iY);
   finally
-    if Assigned(buffer) then FreeAndNil(buffer);
+    buffer.Free;
   end;
+  FChanged := False;
 end;
 
 constructor TMapBlock.Create(AData: TStream);

@@ -69,6 +69,7 @@ type
     acFlat: TAction;
     acNoDraw: TAction;
     acLightlevel: TAction;
+    acWalkable: TAction;
     acUndo: TAction;
     acVirtualLayer: TAction;
     ActionList1: TActionList;
@@ -149,7 +150,8 @@ type
     tbNoDraw: TToolButton;
     tbSeparator2: TToolButton;
     tbUndo: TToolButton;
-    ToolButton1: TToolButton;
+    tbLightlevel: TToolButton;
+    tbWalkable: TToolButton;
     tsLocations: TTabSheet;
     tbSetHue: TToolButton;
     tmGrabTileInfo: TTimer;
@@ -190,6 +192,7 @@ type
     procedure acSelectExecute(Sender: TObject);
     procedure acUndoExecute(Sender: TObject);
     procedure acVirtualLayerExecute(Sender: TObject);
+    procedure acWalkableExecute(Sender: TObject);
     procedure ApplicationProperties1Idle(Sender: TObject; var Done: Boolean);
     procedure ApplicationProperties1ShowHint(var HintStr: string;
       var CanShow: Boolean; var HintInfo: THintInfo);
@@ -525,6 +528,9 @@ end;
 procedure TfrmMain.oglGameWindowKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  if Shift <> [] then
+    Exit;
+
   case Key of
     VK_W, VK_NUMPAD8, VK_UP:
       MoveBy(-8, -8);
@@ -1123,6 +1129,12 @@ end;
 procedure TfrmMain.acVirtualLayerExecute(Sender: TObject);
 begin
   frmVirtualLayer.Show;
+end;
+
+procedure TfrmMain.acWalkableExecute(Sender: TObject);
+begin
+  InvalidateFilter;
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.acDrawExecute(Sender: TObject);
@@ -2311,7 +2323,7 @@ end;
 procedure TfrmMain.Render;
 var
   highlight: Boolean;
-  intensity: GLfloat;
+  intensity, red, green, blue: GLfloat;
   blockInfo: PBlockInfo;
   item: TWorldItem;
 begin
@@ -2345,10 +2357,31 @@ begin
       SetDarkLights;
     end;
 
+    case blockInfo^.WalkRestriction of
+      wrNone:
+        begin
+          red := 1;
+          green := 1;
+          blue := 1;
+        end;
+      wrCanWalk:
+        begin
+          red := 0.5;
+          green := 1;
+          blue := 0.5;
+        end;
+      wrCannotWalk:
+        begin
+          red := 1;
+          green := 0.5;
+          blue := 0.5;
+        end;
+    end;
+
     if blockInfo^.Translucent then
-      glColor4f(intensity, intensity, intensity, 0.8)
+      glColor4f(intensity * red, intensity * green, intensity * blue, 0.8)
     else
-      glColor4f(intensity, intensity, intensity, 1.0);
+      glColor4f(intensity * red, intensity * green, intensity * blue, 1.0);
 
     highlight := blockInfo^.Highlighted and item.CanBeEdited;
 
@@ -2362,7 +2395,7 @@ begin
     begin
       glBindTexture(GL_TEXTURE_2D, blockInfo^.HighRes.Texture);
 
-      if not highlight then
+      if not highlight and (blockInfo^.WalkRestriction = wrNone) then
         glEnable(GL_LIGHTING);
 
       glBegin(GL_QUADS);
@@ -2376,7 +2409,7 @@ begin
         glTexCoord2i(1, 0); glVertex2iv(@blockInfo^.DrawQuad[1]);
       glEnd;
 
-      if not highlight then
+      if not highlight and (blockInfo^.WalkRestriction = wrNone) then
         glDisable(GL_LIGHTING);
     end else
     begin
@@ -2722,8 +2755,13 @@ end;
 procedure TfrmMain.UpdateFilter;
 var
   blockInfo: PBlockInfo;
+  tileData: TTiledata;
+  staticTileData: TStaticTileData;
+  lastSurface: PBlockInfo;
+  surfaceTop: Integer;
 begin
   blockInfo := nil;
+  lastSurface := nil;
   while FScreenBuffer.Iterate(blockInfo) do
   begin
     if blockInfo^.State in [ssNormal, ssFiltered] then
@@ -2739,8 +2777,56 @@ begin
       begin
         blockInfo^.State := ssFiltered;
       end;
+
+      blockInfo^.WalkRestriction := wrNone;
+      if acWalkable.Checked then
+      begin
+        if blockInfo^.Item is TMapCell then
+        begin
+          tileData := ResMan.Tiledata.LandTiles[blockInfo^.Item.TileID];
+          if tdfImpassable in tileData.Flags then
+          begin
+            blockInfo^.WalkRestriction := wrCannotWalk;
+            lastSurface := nil;
+          end else
+          begin
+            blockInfo^.WalkRestriction := wrCanWalk;
+            lastSurface := blockInfo;
+            surfaceTop := blockInfo^.Item.Z;
+          end;
+        end else
+        begin
+          staticTileData := ResMan.Tiledata.StaticTiles[blockInfo^.Item.TileID];
+          if (lastSurface <> nil) and (lastSurface^.WalkRestriction = wrCanWalk) and
+             (lastSurface^.Item.X = blockInfo^.Item.X) and
+             (lastSurface^.Item.Y = blockInfo^.Item.Y) and ([tdfSurface,
+              tdfImpassable] * staticTileData.Flags <> []) then
+          begin
+            if (blockInfo^.Item.Z < surfaceTop + 16) and
+               ((blockInfo^.Item.Z > lastSurface^.Item.Z + 2) or
+                not (tdfSurface in staticTileData.Flags)) then
+              lastSurface^.WalkRestriction := wrCannotWalk;
+          end;
+
+          if tdfSurface in staticTileData.Flags then
+          begin
+            if tdfImpassable in staticTileData.Flags then
+            begin
+              blockInfo^.WalkRestriction := wrCannotWalk;
+              lastSurface := nil;
+            end else
+            begin
+              blockInfo^.WalkRestriction := wrCanWalk;
+              lastSurface := blockInfo;
+              surfaceTop := blockInfo^.Item.Z + staticTileData.Height;
+            end;
+          end;
+        end;
+      end; //acWalkable.Checked
+
     end;
   end;
+
   Include(FScreenBufferState, sbsFiltered);
 
   if (FLightManager.LightLevel > 0) and not acFlat.Checked then

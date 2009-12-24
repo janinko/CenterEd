@@ -251,6 +251,7 @@ type
   end;
 
   TScreenState = (ssNormal, ssFiltered, ssGhost);
+  TWalkRestriction = (wrNone, wrCanWalk, wrCannotWalk);
 
   PBlockInfo = ^TBlockInfo;
   TBlockInfo = record
@@ -266,6 +267,7 @@ type
     HueOverride: Boolean;
     CheckRealQuad: Boolean;
     Translucent: Boolean;
+    WalkRestriction: TWalkRestriction;
     Text: TGLText;
     Next: PBlockInfo;
   end;
