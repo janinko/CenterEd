@@ -12,83 +12,81 @@ object frmAbout: TfrmAbout
   Font.Height = -11
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '0.9.25'
+  LCLVersion = '0.9.29'
   object Label3: TLabel
     Left = 8
-    Height = 62
-    Top = 204
+    Height = 53
+    Top = 189
     Width = 338
     Align = alTop
     BorderSpacing.Top = 16
     BorderSpacing.Around = 8
     Caption = 'Ultima(tm) Online (c)  1997 Electronic Arts Inc. Ultima, the UO logo, Are You With Us?, ORIGIN, the ORIGIN logo and We create worlds are trademarks or registered trademarks of Electronic Arts Inc. in the U.S. and/or other countries. All rights reserved.'
     ParentColor = False
-    ParentFont = True
     WordWrap = True
   end
   object Label5: TLabel
     Left = 8
     Height = 14
-    Top = 120
+    Top = 98
     Width = 338
     Align = alTop
     BorderSpacing.Left = 8
     BorderSpacing.Right = 8
     Caption = 'It is using the following great components:'
     ParentColor = False
-    ParentFont = True
   end
   object Label6: TLabel
     Left = 16
-    Height = 46
-    Top = 134
+    Height = 53
+    Top = 112
     Width = 330
     Align = alTop
     BorderSpacing.Left = 16
     BorderSpacing.Right = 8
-    Caption = '- Vampyre Imaging Lib by Marek Mauder'#13#10'- lNet by Ales Katona and Micha Nelissen'#13#10'- VirtualTrees by Mike Lischke'
+    Caption = '- Vampyre Imaging Lib by Marek Mauder'#13#10'- lNet by Ales Katona and Micha Nelissen'#13#10'- VirtualTrees by Mike Lischke'#13#10'- Silk Icons by Mark James'
     ParentColor = False
-    ParentFont = True
   end
   object Label7: TLabel
     Left = 8
     Height = 14
-    Top = 106
+    Top = 84
     Width = 338
     Align = alTop
     BorderSpacing.Left = 8
     BorderSpacing.Right = 8
     Caption = 'CentrED has been developed using Lazarus and FreePascal.'
     ParentColor = False
-    ParentFont = True
     WordWrap = True
   end
   object Panel2: TPanel
-    Height = 98
+    Left = 0
+    Height = 76
+    Top = 0
     Width = 354
     Align = alTop
     AutoSize = True
     BorderSpacing.Bottom = 8
     BevelOuter = bvNone
-    ClientHeight = 98
+    ClientHeight = 76
     ClientWidth = 354
-    ParentFont = True
     TabOrder = 0
     object Panel1: TPanel
-      Height = 98
-      Width = 220
+      Left = 0
+      Height = 76
+      Top = 0
+      Width = 167
       AutoSize = True
       BevelInner = bvRaised
       BevelOuter = bvLowered
-      ClientHeight = 98
-      ClientWidth = 220
-      ParentFont = True
+      ClientHeight = 76
+      ClientWidth = 167
       TabOrder = 0
       object Label1: TLabel
         Left = 2
         Height = 38
         Top = 2
-        Width = 216
+        Width = 163
         Align = alTop
         Alignment = taCenter
         AutoSize = False
@@ -97,53 +95,51 @@ object frmAbout: TfrmAbout
         Font.Style = [fsBold]
         Layout = tlCenter
         ParentColor = False
+        ParentFont = False
       end
       object lblVersion: TLabel
         Left = 6
-        Height = 25
+        Height = 14
         Top = 40
-        Width = 208
+        Width = 155
         Align = alTop
         Alignment = taRightJustify
         BorderSpacing.Left = 4
         BorderSpacing.Right = 4
         ParentColor = False
-        ParentFont = True
       end
       object lblCopyright: TLabel
         Left = 6
-        Height = 25
-        Top = 69
-        Width = 208
+        Height = 14
+        Top = 58
+        Width = 155
         Align = alTop
         Alignment = taCenter
         BorderSpacing.Around = 4
         ParentColor = False
-        ParentFont = True
       end
     end
   end
   object Panel3: TPanel
     Left = 8
     Height = 25
-    Top = 274
+    Top = 250
     Width = 338
     Align = alTop
     BorderSpacing.Around = 8
     BevelOuter = bvNone
     ClientHeight = 25
     ClientWidth = 338
-    ParentFont = True
     TabOrder = 1
     object btnClose: TButton
       Left = 263
       Height = 25
+      Top = 0
       Width = 75
       Align = alRight
       BorderSpacing.InnerBorder = 4
       Caption = 'Close'
       OnClick = btnCloseClick
-      ParentFont = True
       TabOrder = 0
     end
   end

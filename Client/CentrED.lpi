@@ -18,10 +18,12 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <CurrentMajorRevNr Value="6"/>
-      <CurrentBuildNr Value="200"/>
-      <ProjectVersion Value="0.6.0.200"/>
+      <CurrentMinorRevNr Value="1"/>
+      <CurrentBuildNr Value="209"/>
+      <ProjectVersion Value="0.6.1.209"/>
       <CompanyName Value="AKS DataBasis"/>
       <FileDescription Value="UO CentrED"/>
+      <InternalName Value="CentrED"/>
       <LegalCopyright Value="Andreas Schneider"/>
       <OriginalFilename Value="CentrED.exe"/>
       <ProductName Value="CentrED"/>

@@ -1,6 +1,15 @@
 Changelog:
 [C] = Client, [S] = Server, [-] = Both/Unrelated
 
+Version 0.6.1
+=============
+[C] Added highlighting for (un)walkable tiles
+[C] Added optional white map-background
+[C] Fixed static drawing order (again)
+[C] Fixed flickering that occured in some cases
+[S] Fixed server not always saving changes
+
+
 Version 0.6
 ===========
 [C] Added rendering of lightsources

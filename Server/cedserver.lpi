@@ -14,8 +14,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <CurrentMajorRevNr Value="6"/>
-      <CurrentBuildNr Value="200"/>
-      <ProjectVersion Value="0.6.0.200"/>
+      <CurrentMinorRevNr Value="1"/>
+      <CurrentBuildNr Value="209"/>
+      <ProjectVersion Value="0.6.1.209"/>
       <CompanyName Value="AKS DataBasis"/>
       <FileDescription Value="CentrED Server"/>
       <InternalName Value="CentrED Server"/>
@@ -144,14 +145,15 @@
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
       <Optimizations>
-        <OptimizationLevel Value="0"/>
+        <OptimizationLevel Value="3"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>
-        <GenerateDebugInfo Value="True"/>
-        <UseHeaptrc Value="True"/>
+        <UseLineInfoUnit Value="False"/>
+        <StripSymbols Value="True"/>
       </Debugging>
+      <LinkSmart Value="True"/>
     </Linking>
     <Other>
       <CustomOptions Value="-FE../bin/
