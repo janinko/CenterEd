@@ -329,6 +329,7 @@ end;
 procedure TfrmFilter.btnDeleteClick(Sender: TObject);
 begin
   vdtFilter.DeleteSelectedNodes;
+  frmMain.InvalidateFilter;
 end;
 
 procedure TfrmFilter.cbHueFilterChange(Sender: TObject);
@@ -344,6 +345,7 @@ end;
 procedure TfrmFilter.btnClearClick(Sender: TObject);
 begin
   vdtFilter.Clear;
+  frmMain.InvalidateFilter;
 end;
 
 initialization
