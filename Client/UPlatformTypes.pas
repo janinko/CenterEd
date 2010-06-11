@@ -30,10 +30,11 @@ unit UPlatformTypes;
 interface
 
 uses
-  Classes, SysUtils, ActiveX;
+  Classes, SysUtils,
+  {$IFDEF WINDOWS}ActiveX{$ELSE}fakeactivex{$ENDIF};
   
 type
-  IDataObject = ActiveX.IDataObject;
+  IDataObject = {$IFDEF WINDOWS}ActiveX{$ELSE}fakeactivex{$ENDIF}.IDataObject;
 
 implementation
 

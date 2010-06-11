@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2010 Andreas Schneider
  *)
 program CentrED;
 
@@ -33,9 +33,9 @@ uses
   {$ENDIF}{$ENDIF}
   SysUtils,
   Interfaces, // this includes the LCL widgetset
-  Forms, LResources, UdmNetwork;
+  Forms, UdmNetwork;
 
-{$IFDEF WINDOWS}{$R CentrED.rc}{$ENDIF}
+{$R CentrED.res}
 
 function GetApplicationName: String;
 begin
@@ -43,7 +43,6 @@ begin
 end;
 
 begin
-  {$I CentrED.lrs}
   OnGetApplicationName := @GetApplicationName;
   Application.Initialize;
   Application.CreateForm(TdmNetwork, dmNetwork);

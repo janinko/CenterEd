@@ -11,21 +11,16 @@
       <MainUnit Value="0"/>
       <TargetFileExt Value=".exe"/>
       <Title Value="CentrED"/>
+      <ResourceType Value="res"/>
       <Icon Value="0"/>
     </General>
     <LazDoc Paths="../doc"/>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <CurrentMajorRevNr Value="6"/>
-      <CurrentMinorRevNr Value="1"/>
-      <CurrentBuildNr Value="209"/>
-      <ProjectVersion Value="0.6.1.209"/>
-      <CompanyName Value="AKS DataBasis"/>
-      <FileDescription Value="UO CentrED"/>
-      <InternalName Value="CentrED"/>
-      <LegalCopyright Value="Andreas Schneider"/>
-      <OriginalFilename Value="CentrED.exe"/>
-      <ProductName Value="CentrED"/>
+      <MinorVersionNr Value="6"/>
+      <RevisionNr Value="1"/>
+      <BuildNr Value="209"/>
+      <StringTable Comments="" CompanyName="AKS DataBasis" FileDescription="UO CentrED" FileVersion="0.6.1.209" InternalName="CentrED" LegalCopyright="Andreas Schneider" LegalTrademarks="" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.6.1.209"/>
     </VersionInfo>
     <PublishOptions>
       <Version Value="2"/>
@@ -369,6 +364,7 @@
     <Other>
       <CompilerMessages>
         <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
+        <UseMsgFile Value="True"/>
       </CompilerMessages>
       <CustomOptions Value="-FE../bin/
 -dNoLogging"/>
