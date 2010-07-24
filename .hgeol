@@ -1,0 +1,6 @@
+[patterns]
+**.* = native
+bin/nodraw.txt = CRLF
+
+[repository]
+native = LF
