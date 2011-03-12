@@ -60,6 +60,8 @@ type
       State: TOwnerDrawState);
     procedure lbHueSelectionChange(Sender: TObject; User: boolean);
   public
+    function GetHue: Word;
+  public
     class procedure DrawHue(AHue: THue; ACanvas: TCanvas; ARect: TRect;
       ACaption: string);
   end; 
@@ -115,7 +117,7 @@ begin
   lbRandom.Items.BeginUpdate;
   for i := 0 to lbHue.Count - 1 do
     if lbHue.Selected[i] then
-      lbRandom.Items.AddObject(lbHue.Items.Strings[i], lbHue.Items.Objects[i]);
+      lbRandom.Items.AddObject(lbHue.Items.Strings[i], TObject(i));
   lbRandom.Items.EndUpdate;
 end;
 
@@ -149,6 +151,14 @@ end;
 procedure TfrmHueSettings.lbHueSelectionChange(Sender: TObject; User: boolean);
 begin
   edHue.Text := Format('$%x', [lbHue.ItemIndex]);
+end;
+
+function TfrmHueSettings.GetHue: Word;
+begin
+  if cbRandom.Checked and (lbRandom.Items.Count > 0) then
+    Result := PtrInt(lbRandom.Items.Objects[Random(lbRandom.Items.Count)])
+  else
+    Result := lbHue.ItemIndex;
 end;
 
 class procedure TfrmHueSettings.DrawHue(AHue: THue; ACanvas: TCanvas; ARect: TRect;

@@ -646,6 +646,7 @@ var
   offsetX, offsetY: Integer;
   tile: TWorldItem;
   tileX, tileY, newX, newY: Word;
+  hue: Word;
   targetTiles: TWorldItemList;
   targetTile: TWorldItem;
 begin
@@ -799,14 +800,13 @@ begin
             begin
               tile := targetTiles.Items[i];
 
+              hue := frmHueSettings.GetHue;
               if (tile is TStaticItem) and
-                (TStaticItem(tile).Hue <> frmHueSettings.lbHue.ItemIndex) then
+                (TStaticItem(tile).Hue <> hue) then
               begin
                 FUndoList.Add(THueStaticPacket.Create(tile.X, tile.Y, tile.Z,
-                  tile.TileID, frmHueSettings.lbHue.ItemIndex,
-                  TStaticItem(tile).Hue));
-                dmNetwork.Send(THueStaticPacket.Create(TStaticItem(tile),
-                  frmHueSettings.lbHue.ItemIndex));
+                  tile.TileID, hue, TStaticItem(tile).Hue));
+                dmNetwork.Send(THueStaticPacket.Create(TStaticItem(tile), hue));
               end;
             end;
           end;
@@ -2845,7 +2845,7 @@ procedure TfrmMain.UpdateSelection;
         ABlockInfo^.HueOverride := AHighlighted;
         if AHighlighted then
           ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(
-            TStaticItem(ABlockInfo^.Item), frmHueSettings.lbHue.ItemIndex)
+            TStaticItem(ABlockInfo^.Item), frmHueSettings.GetHue)
         else
           ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(
             TStaticItem(ABlockInfo^.Item));
@@ -2903,7 +2903,7 @@ procedure TfrmMain.UpdateSelection;
       begin
         ghostTile := TGhostTile.Create(nil, nil, 0, 0);
         ghostTile.TileID := tileInfo^.ID - $4000;
-        ghostTile.Hue := frmHueSettings.lbHue.ItemIndex;
+        ghostTile.Hue := frmHueSettings.GetHue;
         ghostTile.X := AX;
         ghostTile.Y := AY;
         if not frmDrawSettings.cbForceAltitude.Checked then
