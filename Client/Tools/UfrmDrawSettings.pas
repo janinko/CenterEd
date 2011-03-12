@@ -87,12 +87,18 @@ var
 begin
   if frmHueSettings <> nil then
   begin
-    if frmHueSettings.lbHue.ItemIndex > 0 then
-      hue := ResMan.Hue.Hues[frmHueSettings.lbHue.ItemIndex - 1]
-    else
-      hue := nil;
-    TfrmHueSettings.DrawHue(hue, pbHue.Canvas, pbHue.Canvas.ClipRect,
-      frmHueSettings.lbHue.Items.Strings[frmHueSettings.lbHue.ItemIndex]);
+    if frmHueSettings.cbRandom.Checked then
+    begin
+      pbHue.Canvas.TextOut(36, 1, '[Random]');
+    end else
+    begin
+      if frmHueSettings.lbHue.ItemIndex > 0 then
+        hue := ResMan.Hue.Hues[frmHueSettings.lbHue.ItemIndex - 1]
+      else
+        hue := nil;
+      TfrmHueSettings.DrawHue(hue, pbHue.Canvas, pbHue.Canvas.ClipRect,
+        frmHueSettings.lbHue.Items.Strings[frmHueSettings.lbHue.ItemIndex]);
+    end;
   end;
 end;
 
