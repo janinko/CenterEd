@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2011 Andreas Schneider
  *)
 unit UfrmHueSettings;
 
@@ -31,7 +31,8 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, Buttons, VirtualTrees, UfrmToolWindow, UHue;
+  ExtCtrls, Buttons, UfrmToolWindow, UHue,
+  XMLRead, XMLWrite, DOM;
 
 type
 
@@ -62,6 +63,12 @@ type
     procedure lbRandomDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure lbRandomDragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
+  private
+    FConfigDir: String;
+    FRandomHuePresetsFile: String;
+    FRandomHuePresetsDoc: TXMLDocument;
+    procedure LoadRandomPresets;
+    procedure SaveRandomPresets;
   public
     function GetHue: Word;
   public
@@ -137,6 +144,10 @@ begin
     lbHue.Items.AddObject(Format('$%x (%s)', [i, hue.Name]), hue);
   end;
   lbHue.ItemIndex := 0;
+
+  FConfigDir := GetAppConfigDir(False);
+  ForceDirectories(FConfigDir);
+  FRandomHuePresetsFile := FConfigDir + 'RandomHuePresets.xml';
 end;
 
 procedure TfrmHueSettings.lbHueDrawItem(Control: TWinControl; Index: Integer;
@@ -167,6 +178,34 @@ procedure TfrmHueSettings.lbRandomDragOver(Sender, Source: TObject; X,
   Y: Integer; State: TDragState; var Accept: Boolean);
 begin
   if Source = lbHue then Accept := True;
+end;
+
+procedure TfrmHueSettings.LoadRandomPresets;
+var
+  presetElement, hueElement: TDOMElement;
+begin
+  FreeAndNil(FRandomHuePresetsDoc);
+  cbRandomPreset.Items.Clear;
+  if FileExists(FRandomHuePresetsFile) then
+  begin
+    ReadXMLFile(FRandomHuePresetsDoc, FRandomHuePresetsFile);
+    presetElement := TDOMElement(FRandomHuePresetsDoc.DocumentElement.FirstChild);
+    while presetElement <> nil do
+    begin
+      if presetElement.NodeName = 'HuePreset' then
+        cbRandomPreset.Items.Add(presetElement.AttribStrings['Name']);
+      presetElement := TDOMElement(presetElement.NextSibling);
+    end;
+  end else
+  begin
+    FRandomHuePresetsDoc := TXMLDocument.Create;
+    FRandomHuePresetsDoc.AppendChild(FRandomHuePresetsDoc.CreateElement('RandomHuePresets'));
+  end;
+end;
+
+procedure TfrmHueSettings.SaveRandomPresets;
+begin
+  WriteXMLFile(FRandomHuePresetsDoc, FRandomHuePresetsFile);
 end;
 
 function TfrmHueSettings.GetHue: Word;
