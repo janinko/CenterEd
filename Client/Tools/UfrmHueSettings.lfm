@@ -48,6 +48,7 @@ inherited frmHueSettings: TfrmHueSettings
     Width = 209
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Around = 8
+    DragMode = dmAutomatic
     Font.Height = 14
     ItemHeight = 16
     OnDrawItem = lbHueDrawItem
@@ -365,6 +366,8 @@ inherited frmHueSettings: TfrmHueSettings
       BorderSpacing.Around = 4
       ItemHeight = 0
       MultiSelect = True
+      OnDragDrop = lbRandomDragDrop
+      OnDragOver = lbRandomDragOver
       OnDrawItem = lbHueDrawItem
       TabOrder = 1
     end

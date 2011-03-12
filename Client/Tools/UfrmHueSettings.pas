@@ -59,6 +59,9 @@ type
     procedure lbHueDrawItem(Control: TWinControl; Index: Integer; ARect: TRect;
       State: TOwnerDrawState);
     procedure lbHueSelectionChange(Sender: TObject; User: boolean);
+    procedure lbRandomDragDrop(Sender, Source: TObject; X, Y: Integer);
+    procedure lbRandomDragOver(Sender, Source: TObject; X, Y: Integer;
+      State: TDragState; var Accept: Boolean);
   public
     function GetHue: Word;
   public
@@ -151,6 +154,19 @@ end;
 procedure TfrmHueSettings.lbHueSelectionChange(Sender: TObject; User: boolean);
 begin
   edHue.Text := Format('$%x', [lbHue.ItemIndex]);
+end;
+
+procedure TfrmHueSettings.lbRandomDragDrop(Sender, Source: TObject; X,
+  Y: Integer);
+begin
+  if Source = lbHue then
+    btnAddRandomClick(Sender);
+end;
+
+procedure TfrmHueSettings.lbRandomDragOver(Sender, Source: TObject; X,
+  Y: Integer; State: TDragState; var Accept: Boolean);
+begin
+  if Source = lbHue then Accept := True;
 end;
 
 function TfrmHueSettings.GetHue: Word;
