@@ -18,7 +18,7 @@ object frmMain: TfrmMain
   Position = poScreenCenter
   SessionProperties = 'acFlat.Checked;acNoDraw.Checked;Height;Left;mnuFlatShowHeight.Checked;mnuSecurityQuestion.Checked;mnuShowAnimations.Checked;spTileList.Top;tbStatics.Down;tbTerrain.Down;Top;Width;WindowState;mnuWhiteBackground.Checked'
   ShowInTaskBar = stAlways
-  LCLVersion = '0.9.29'
+  LCLVersion = '0.9.31'
   WindowState = wsMaximized
   object pnlBottom: TPanel
     Left = 0
@@ -140,7 +140,7 @@ object frmMain: TfrmMain
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = spTileList
         Left = 4
-        Height = 234
+        Height = 240
         Hint = '-'
         Top = 50
         Width = 208
@@ -191,18 +191,20 @@ object frmMain: TfrmMain
         OnScroll = vdtTilesScroll
       end
       object gbRandom: TGroupBox
+        AnchorSideLeft.Control = tsTiles
         AnchorSideTop.Control = spTileList
         AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = tsTiles
+        AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = tsTiles
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 189
-        Top = 289
+        Height = 183
+        Top = 295
         Width = 216
-        Align = alBottom
         Anchors = [akTop, akLeft, akRight, akBottom]
         Caption = 'Random pool'
-        ClientHeight = 171
+        ClientHeight = 165
         ClientWidth = 212
         TabOrder = 1
         object btnAddRandom: TSpeedButton
@@ -214,7 +216,6 @@ object frmMain: TfrmMain
           Top = 0
           Width = 23
           BorderSpacing.Left = 4
-          Color = clBtnFace
           Glyph.Data = {
             36040000424D3604000000000000360000002800000010000000100000000100
             2000000000000004000064000000640000000000000000000000000000000000
@@ -266,7 +267,6 @@ object frmMain: TfrmMain
           Top = 0
           Width = 23
           BorderSpacing.Left = 4
-          Color = clBtnFace
           Glyph.Data = {
             36040000424D3604000000000000360000002800000010000000100000000100
             2000000000000004000064000000640000000000000000000000000000000000
@@ -318,7 +318,6 @@ object frmMain: TfrmMain
           Top = 0
           Width = 23
           BorderSpacing.Left = 4
-          Color = clBtnFace
           Glyph.Data = {
             36040000424D3604000000000000360000002800000010000000100000000100
             2000000000000004000064000000640000000000000000000000000000000000
@@ -366,11 +365,10 @@ object frmMain: TfrmMain
           Left = 160
           Height = 22
           Hint = 'Save Preset'
-          Top = 146
+          Top = 140
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
-          Color = clBtnFace
           Glyph.Data = {
             36040000424D3604000000000000360000002800000010000000100000000100
             2000000000000004000064000000640000000000000000000000000000000000
@@ -420,11 +418,10 @@ object frmMain: TfrmMain
           Left = 186
           Height = 22
           Hint = 'Delete Preset'
-          Top = 146
+          Top = 140
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
-          Color = clBtnFace
           Glyph.Data = {
             36040000424D3604000000000000360000002800000010000000100000000100
             2000000000000004000064000000640000000000000000000000000000000000
@@ -477,7 +474,7 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = cbRandomPreset
           Cursor = 63
           Left = 4
-          Height = 118
+          Height = 112
           Top = 24
           Width = 204
           Anchors = [akTop, akLeft, akRight, akBottom]
@@ -526,7 +523,7 @@ object frmMain: TfrmMain
           AnchorSideBottom.Side = asrBottom
           Left = 4
           Height = 21
-          Top = 146
+          Top = 140
           Width = 152
           Anchors = [akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
@@ -546,7 +543,7 @@ object frmMain: TfrmMain
         Cursor = crVSplit
         Left = 0
         Height = 5
-        Top = 284
+        Top = 290
         Width = 216
         Align = alNone
         Anchors = [akLeft, akRight, akBottom]
@@ -560,7 +557,7 @@ object frmMain: TfrmMain
         Left = 108
         Height = 21
         Hint = 'Append S or T to restrict the search to Statics or Terrain.'
-        Top = 255
+        Top = 261
         Width = 96
         Anchors = [akRight, akBottom]
         BorderSpacing.Right = 8
@@ -650,7 +647,6 @@ object frmMain: TfrmMain
         Top = 452
         Width = 23
         BorderSpacing.Left = 4
-        Color = clBtnFace
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000000000000000
@@ -704,7 +700,6 @@ object frmMain: TfrmMain
         Width = 23
         Anchors = [akLeft, akBottom]
         BorderSpacing.Bottom = 4
-        Color = clBtnFace
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000000000000000
@@ -756,7 +751,6 @@ object frmMain: TfrmMain
         Width = 23
         Anchors = [akTop, akRight]
         BorderSpacing.Right = 4
-        Color = clBtnFace
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000000000000000
@@ -822,7 +816,7 @@ object frmMain: TfrmMain
           item
             Position = 1
             Text = 'Name'
-            Width = 133
+            Width = 129
           end>
         Header.DefaultHeight = 17
         Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoVisible]
@@ -857,18 +851,18 @@ object frmMain: TfrmMain
       Top = 2
       Caption = 'Disconnect'
       ImageIndex = 0
+      OnClick = mnuDisconnectClick
       ParentShowHint = False
       ShowHint = True
-      OnClick = mnuDisconnectClick
     end
     object tbSeparator1: TToolButton
       Left = 24
       Top = 2
-      Width = 16
+      Width = 4
       Style = tbsDivider
     end
     object tbSelect: TToolButton
-      Left = 40
+      Left = 28
       Top = 2
       Action = acSelect
       Grouped = True
@@ -877,7 +871,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbDrawTile: TToolButton
-      Left = 63
+      Left = 51
       Top = 2
       Action = acDraw
       Grouped = True
@@ -886,7 +880,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbMoveTile: TToolButton
-      Left = 86
+      Left = 74
       Top = 2
       Action = acMove
       Grouped = True
@@ -895,7 +889,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbElevateTile: TToolButton
-      Left = 109
+      Left = 97
       Top = 2
       Action = acElevate
       Grouped = True
@@ -904,7 +898,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbDeleteTile: TToolButton
-      Left = 132
+      Left = 120
       Top = 2
       Action = acDelete
       Grouped = True
@@ -913,7 +907,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbSetHue: TToolButton
-      Left = 155
+      Left = 143
       Top = 2
       Action = acHue
       Grouped = True
@@ -922,111 +916,111 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbSeparator3: TToolButton
-      Left = 209
+      Left = 193
       Top = 2
-      Width = 16
+      Width = 4
       Caption = 'tbSeparator3'
       Style = tbsDivider
     end
     object tbBoundaries: TToolButton
-      Left = 225
+      Left = 197
       Top = 2
       Action = acBoundaries
       ParentShowHint = False
       ShowHint = True
     end
     object tbSeparator4: TToolButton
-      Left = 294
+      Left = 266
       Top = 2
-      Width = 17
+      Width = 4
       Caption = 'tbSeparator4'
       Style = tbsDivider
     end
     object tbTerrain: TToolButton
-      Left = 311
+      Left = 270
       Hint = 'Show Terrain'
       Top = 2
       Caption = 'Terrain'
       Down = True
       ImageIndex = 10
+      OnClick = tbTerrainClick
       ParentShowHint = False
       ShowHint = True
       Style = tbsCheck
-      OnClick = tbTerrainClick
     end
     object tbStatics: TToolButton
-      Left = 334
+      Left = 293
       Hint = 'Show Statics'
       Top = 2
       Caption = 'Statics'
       Down = True
       ImageIndex = 11
+      OnClick = tbStaticsClick
       ParentShowHint = False
       ShowHint = True
       Style = tbsCheck
-      OnClick = tbStaticsClick
     end
     object tbSeparator5: TToolButton
-      Left = 461
+      Left = 420
       Top = 2
-      Width = 17
+      Width = 4
       Caption = 'tbSeparator5'
       Style = tbsDivider
     end
     object tbRadarMap: TToolButton
-      Left = 478
+      Left = 424
       Hint = 'Radar Map'
       Top = 2
       Caption = 'Radar Map'
       ImageIndex = 13
+      OnClick = tbRadarMapClick
       ParentShowHint = False
       ShowHint = True
-      OnClick = tbRadarMapClick
     end
     object tbVirtualLayer: TToolButton
-      Left = 248
+      Left = 220
       Top = 2
       Action = acVirtualLayer
     end
     object tbFilter: TToolButton
-      Left = 271
+      Left = 243
       Top = 2
       Action = acFilter
-      Style = tbsCheck
       OnMouseMove = tbFilterMouseMove
+      Style = tbsCheck
     end
     object tbFlat: TToolButton
-      Left = 426
+      Left = 385
       Top = 2
       Action = acFlat
       DropdownMenu = pmFlatViewSettings
       Style = tbsDropDown
     end
     object tbNoDraw: TToolButton
-      Left = 357
+      Left = 316
       Top = 2
       Action = acNoDraw
       Style = tbsCheck
     end
     object tbSeparator2: TToolButton
-      Left = 178
+      Left = 166
       Top = 2
-      Width = 8
+      Width = 4
       Caption = 'tbSeparator2'
       Style = tbsDivider
     end
     object tbUndo: TToolButton
-      Left = 186
+      Left = 170
       Top = 2
       Action = acUndo
     end
     object tbLightlevel: TToolButton
-      Left = 403
+      Left = 362
       Top = 2
       Action = acLightlevel
     end
     object tbWalkable: TToolButton
-      Left = 380
+      Left = 339
       Top = 2
       Action = acWalkable
       Style = tbsCheck
@@ -1106,7 +1100,7 @@ object frmMain: TfrmMain
         item
           Position = 2
           Text = 'Message'
-          Width = 381
+          Width = 377
         end>
       Header.DefaultHeight = 17
       Header.MainColumn = 2
@@ -1134,14 +1128,13 @@ object frmMain: TfrmMain
   end
   object spChat: TSplitter
     AnchorSideLeft.Control = pcLeft
-    AnchorSideLeft.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Cursor = crVSplit
-    Left = 224
+    Left = 0
     Height = 5
     Top = 414
-    Width = 531
+    Width = 755
     Align = alNone
     Anchors = [akLeft, akRight, akBottom]
     AutoSnap = False

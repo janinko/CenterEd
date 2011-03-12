@@ -31,16 +31,29 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  UfrmToolWindow, UHue;
+  ExtCtrls, Buttons, VirtualTrees, UfrmToolWindow, UHue;
 
 type
 
   { TfrmHueSettings }
 
   TfrmHueSettings = class(TfrmToolWindow)
+    btnAddRandom: TSpeedButton;
+    btnClearRandom: TSpeedButton;
+    btnDeleteRandom: TSpeedButton;
+    btnRandomPresetDelete: TSpeedButton;
+    btnRandomPresetSave: TSpeedButton;
+    cbRandomPreset: TComboBox;
+    cbRandom: TCheckBox;
     edHue: TEdit;
+    gbRandom: TGroupBox;
     lblHue: TLabel;
     lbHue: TListBox;
+    lbRandom: TListBox;
+    procedure btnAddRandomClick(Sender: TObject);
+    procedure btnClearRandomClick(Sender: TObject);
+    procedure btnDeleteRandomClick(Sender: TObject);
+    procedure cbRandomChange(Sender: TObject);
     procedure edHueEditingDone(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lbHueDrawItem(Control: TWinControl; Index: Integer; ARect: TRect;
@@ -73,6 +86,39 @@ begin
     lbHue.ItemIndex := hueID;
 end;
 
+procedure TfrmHueSettings.btnDeleteRandomClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  lbRandom.Items.BeginUpdate;
+  for i := lbRandom.Items.Count - 1 downto 0 do
+    if lbRandom.Selected[i] then
+      lbRandom.Items.Delete(i);
+  lbRandom.Items.EndUpdate;
+end;
+
+procedure TfrmHueSettings.cbRandomChange(Sender: TObject);
+begin
+  lbHue.MultiSelect := cbRandom.Checked;
+  gbRandom.Visible := cbRandom.Checked;
+end;
+
+procedure TfrmHueSettings.btnClearRandomClick(Sender: TObject);
+begin
+  lbRandom.Items.Clear;
+end;
+
+procedure TfrmHueSettings.btnAddRandomClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  lbRandom.Items.BeginUpdate;
+  for i := 0 to lbHue.Count - 1 do
+    if lbHue.Selected[i] then
+      lbRandom.Items.AddObject(lbHue.Items.Strings[i], lbHue.Items.Objects[i]);
+  lbRandom.Items.EndUpdate;
+end;
+
 procedure TfrmHueSettings.FormCreate(Sender: TObject);
 var
   i: Integer;
@@ -97,7 +143,7 @@ begin
     hue := ResMan.Hue.Hues[Index-1]
   else
     hue := nil;
-  DrawHue(hue, lbHue.Canvas, ARect, lbHue.Items.Strings[Index]);
+  DrawHue(hue, TListBox(Control).Canvas, ARect, TListBox(Control).Items.Strings[Index]);
 end;
 
 procedure TfrmHueSettings.lbHueSelectionChange(Sender: TObject; User: boolean);
@@ -121,7 +167,7 @@ begin
       ACanvas.MoveTo(ARect.Left + 2 + i, ARect.Top + 1);
       ACanvas.LineTo(ARect.Left + 2 + i, ARect.Bottom - 1);
     end;
-  ACanvas.TextOut(ARect.Left + 36, ARect.Top, ACaption);
+  ACanvas.TextOut(ARect.Left + 36, ARect.Top + 1, ACaption);
 end;
 
 initialization
