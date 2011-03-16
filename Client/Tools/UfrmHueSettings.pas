@@ -54,7 +54,10 @@ type
     procedure btnAddRandomClick(Sender: TObject);
     procedure btnClearRandomClick(Sender: TObject);
     procedure btnDeleteRandomClick(Sender: TObject);
+    procedure btnRandomPresetDeleteClick(Sender: TObject);
+    procedure btnRandomPresetSaveClick(Sender: TObject);
     procedure cbRandomChange(Sender: TObject);
+    procedure cbRandomPresetChange(Sender: TObject);
     procedure edHueEditingDone(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lbHueDrawItem(Control: TWinControl; Index: Integer; ARect: TRect;
@@ -67,6 +70,7 @@ type
     FConfigDir: String;
     FRandomHuePresetsFile: String;
     FRandomHuePresetsDoc: TXMLDocument;
+    function FindRandomPreset(AName: String): TDOMElement;
     procedure LoadRandomPresets;
     procedure SaveRandomPresets;
   public
@@ -109,10 +113,83 @@ begin
   lbRandom.Items.EndUpdate;
 end;
 
+procedure TfrmHueSettings.btnRandomPresetDeleteClick(Sender: TObject);
+var
+  preset: TDOMElement;
+begin
+  if cbRandomPreset.ItemIndex > -1 then
+  begin
+    preset := TDOMElement(cbRandomPreset.Items.Objects[cbRandomPreset.ItemIndex]);
+    FRandomHuePresetsDoc.DocumentElement.RemoveChild(preset);
+    cbRandomPreset.Items.Delete(cbRandomPreset.ItemIndex);
+    cbRandomPreset.ItemIndex := -1;
+  end;
+end;
+
+procedure TfrmHueSettings.btnRandomPresetSaveClick(Sender: TObject);
+var
+  presetName: string;
+  i: Integer;
+  preset, hue: TDOMElement;
+  children: TDOMNodeList;
+begin
+  presetName := cbRandomPreset.Text;
+  if InputQuery('Save Preset', 'Enter the name of the preset:', presetName) then
+  begin
+    preset := FindRandomPreset(presetName);
+    if preset = nil then
+    begin
+      preset := FRandomHuePresetsDoc.CreateElement('Preset');
+      preset.AttribStrings['Name'] := presetName;
+      FRandomHuePresetsDoc.DocumentElement.AppendChild(preset);
+      cbRandomPreset.Items.AddObject(presetName, preset);
+    end else
+    begin
+      children := preset.GetChildNodes;
+      for i := children.Count - 1 downto 0 do
+        preset.RemoveChild(children[i]);
+    end;
+
+    for i := 0 to lbRandom.Items.Count - 1 do
+    begin
+      hue := FRandomHuePresetsDoc.CreateElement('Hue');
+      hue.AttribStrings['ID'] := IntToStr(PtrInt(lbRandom.Items.Objects[i]));
+      preset.AppendChild(hue);
+    end;
+
+    cbRandomPreset.ItemIndex := cbRandomPreset.Items.IndexOfObject(preset);
+
+    SaveRandomPresets;
+  end;
+end;
+
 procedure TfrmHueSettings.cbRandomChange(Sender: TObject);
 begin
   lbHue.MultiSelect := cbRandom.Checked;
   gbRandom.Visible := cbRandom.Checked;
+end;
+
+procedure TfrmHueSettings.cbRandomPresetChange(Sender: TObject);
+var
+  preset, hue: TDOMElement;
+  id: PtrInt;
+begin
+  lbRandom.Clear;
+  if cbRandomPreset.ItemIndex > -1 then
+  begin
+    preset := TDOMElement(cbRandomPreset.Items.Objects[cbRandomPreset.ItemIndex]);
+    hue := TDOMElement(preset.FirstChild);
+
+    while hue <> nil do
+    begin
+      if hue.NodeName = 'Hue' then
+      begin
+        id := StrToInt(hue.AttribStrings['ID']);
+        lbRandom.Items.AddObject(lbHue.Items.Strings[id], TObject(id));
+      end;
+      hue := TDOMElement(hue.NextSibling);
+    end;
+  end;
 end;
 
 procedure TfrmHueSettings.btnClearRandomClick(Sender: TObject);
@@ -122,7 +199,7 @@ end;
 
 procedure TfrmHueSettings.btnAddRandomClick(Sender: TObject);
 var
-  i: Integer;
+  i: PtrInt;
 begin
   lbRandom.Items.BeginUpdate;
   for i := 0 to lbHue.Count - 1 do
@@ -148,6 +225,8 @@ begin
   FConfigDir := GetAppConfigDir(False);
   ForceDirectories(FConfigDir);
   FRandomHuePresetsFile := FConfigDir + 'RandomHuePresets.xml';
+
+  LoadRandomPresets;
 end;
 
 procedure TfrmHueSettings.lbHueDrawItem(Control: TWinControl; Index: Integer;
@@ -180,6 +259,18 @@ begin
   if Source = lbHue then Accept := True;
 end;
 
+function TfrmHueSettings.FindRandomPreset(AName: String): TDOMElement;
+begin
+  Result := TDOMElement(FRandomHuePresetsDoc.DocumentElement.FirstChild);
+  while Result <> nil do
+  begin
+    if SameText(Result.AttribStrings['Name'], AName) then
+      Break;
+
+    Result := TDOMElement(Result.NextSibling);
+  end;
+end;
+
 procedure TfrmHueSettings.LoadRandomPresets;
 var
   presetElement, hueElement: TDOMElement;
@@ -193,7 +284,7 @@ begin
     while presetElement <> nil do
     begin
       if presetElement.NodeName = 'HuePreset' then
-        cbRandomPreset.Items.Add(presetElement.AttribStrings['Name']);
+        cbRandomPreset.Items.AddObject(presetElement.AttribStrings['Name'], presetElement);
       presetElement := TDOMElement(presetElement.NextSibling);
     end;
   end else

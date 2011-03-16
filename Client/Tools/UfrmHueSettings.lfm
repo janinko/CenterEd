@@ -277,6 +277,7 @@ inherited frmHueSettings: TfrmHueSettings
         3BFF000000000000000000000000000000000000000000000000
       }
       NumGlyphs = 0
+      OnClick = btnRandomPresetSaveClick
       ShowCaption = False
       ShowHint = True
       ParentShowHint = False
@@ -329,6 +330,7 @@ inherited frmHueSettings: TfrmHueSettings
         4FFFC5894BFFC4763BFF00000000000000000000000000000000
       }
       NumGlyphs = 0
+      OnClick = btnRandomPresetDeleteClick
       ShowCaption = False
       ShowHint = True
       ParentShowHint = False
@@ -347,6 +349,7 @@ inherited frmHueSettings: TfrmHueSettings
       BorderSpacing.Right = 4
       BorderSpacing.Bottom = 4
       ItemHeight = 15
+      OnChange = cbRandomPresetChange
       Sorted = True
       Style = csDropDownList
       TabOrder = 0
