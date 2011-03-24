@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  VirtualTrees, Math, UEnhancedMemoryStream, UEnums;
+  StdCtrls, ExtCtrls, VirtualTrees, Math, UEnhancedMemoryStream, UEnums;
 
 type
 
@@ -282,15 +282,25 @@ procedure TfrmAccountControl.vstAccountsGetImageIndex(Sender: TBaseVirtualTree;
 var
   accountInfo: PAccountInfo;
 begin
+  accountInfo := Sender.GetNodeData(Node);
   if Column = 0 then
   begin
-    accountInfo := Sender.GetNodeData(Node);
     case accountInfo^.AccessLevel of
       alNone: ImageIndex := 0;
       alView: ImageIndex := 1;
-      alNormal: ImageIndex := 2;
-      alAdministrator: ImageIndex := 3;
+      alNormal:
+        begin
+          if accountInfo^.Regions.Count > 0 then
+            ImageIndex := 2
+          else
+            ImageIndex := 3;
+        end;
+      alAdministrator: ImageIndex := 4;
     end;
+  end else if Column = 3 then
+  begin
+    if accountInfo^.Regions.Count > 0 then
+      ImageIndex := 5;
   end;
 end;
 

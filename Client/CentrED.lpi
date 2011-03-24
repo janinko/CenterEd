@@ -131,25 +131,29 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="5">
+    <RequiredPackages Count="6">
       <Item1>
-        <PackageName Value="multiloglaz"/>
+        <PackageName Value="LCLBase"/>
+        <MinVersion Major="1" Release="1" Valid="True"/>
       </Item1>
       <Item2>
-        <PackageName Value="LazOpenGLContext"/>
-        <MinVersion Valid="True"/>
+        <PackageName Value="multiloglaz"/>
       </Item2>
       <Item3>
-        <PackageName Value="LCL"/>
+        <PackageName Value="LazOpenGLContext"/>
+        <MinVersion Valid="True"/>
       </Item3>
       <Item4>
-        <PackageName Value="lnetvisual"/>
-        <MinVersion Minor="5" Release="3" Valid="True"/>
+        <PackageName Value="LCL"/>
       </Item4>
       <Item5>
+        <PackageName Value="lnetvisual"/>
+        <MinVersion Minor="5" Release="3" Valid="True"/>
+      </Item5>
+      <Item6>
         <PackageName Value="virtualtreeview_package"/>
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
-      </Item5>
+      </Item6>
     </RequiredPackages>
     <Units Count="46">
       <Unit0>
