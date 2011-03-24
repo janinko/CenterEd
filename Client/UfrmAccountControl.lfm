@@ -15,7 +15,7 @@ object frmAccountControl: TfrmAccountControl
   OnDestroy = FormDestroy
   OnShow = FormShow
   Position = poOwnerFormCenter
-  LCLVersion = '0.9.29'
+  LCLVersion = '0.9.31'
   object tbMain: TToolBar
     Left = 0
     Height = 26
@@ -30,44 +30,44 @@ object frmAccountControl: TfrmAccountControl
       Top = 2
       Caption = 'Refresh'
       ImageIndex = 0
+      OnClick = tbRefreshClick
       ParentShowHint = False
       ShowHint = True
-      OnClick = tbRefreshClick
     end
     object tbAddUser: TToolButton
-      Left = 32
+      Left = 28
       Hint = 'Add User'
       Top = 2
       Caption = 'Add User'
       ImageIndex = 1
+      OnClick = tbAddUserClick
       ParentShowHint = False
       ShowHint = True
-      OnClick = tbAddUserClick
     end
     object tbEditUser: TToolButton
-      Left = 55
+      Left = 51
       Hint = 'Edit User'
       Top = 2
       Caption = 'Edit User'
       ImageIndex = 2
+      OnClick = tbEditUserClick
       ParentShowHint = False
       ShowHint = True
-      OnClick = tbEditUserClick
     end
     object tbDeleteUser: TToolButton
-      Left = 78
+      Left = 74
       Hint = 'Delete User'
       Top = 2
       Caption = 'Delete User'
       ImageIndex = 3
+      OnClick = tbDeleteUserClick
       ParentShowHint = False
       ShowHint = True
-      OnClick = tbDeleteUserClick
     end
     object tbSeparator1: TToolButton
       Left = 24
       Top = 2
-      Width = 8
+      Width = 4
       Caption = 'tbSeparator1'
       Style = tbsDivider
     end
@@ -96,19 +96,21 @@ object frmAccountControl: TfrmAccountControl
         Width = 100
       end>
     Header.DefaultHeight = 17
-    Header.Options = [hoColumnResize, hoDrag, hoVisible]
+    Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     Header.ParentFont = True
     Header.Style = hsFlatButtons
     Images = ilAccesslevel
     TabOrder = 1
-    TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes]
+    TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
     TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
     TreeOptions.SelectionOptions = [toFullRowSelect]
+    OnCompareNodes = vstAccountsCompareNodes
     OnDblClick = vstAccountsDblClick
     OnFreeNode = vstAccountsFreeNode
     OnGetText = vstAccountsGetText
     OnGetImageIndex = vstAccountsGetImageIndex
+    OnHeaderClick = vstAccountsHeaderClick
   end
   object ilToolbar: TImageList
     left = 144
@@ -245,7 +247,7 @@ object frmAccountControl: TfrmAccountControl
     }
   end
   object ilAccesslevel: TImageList
-    left = 176
+    left = 184
     Bitmap = {
       4C69040000001000000010000000000000000000000000000000000000000000
       0000A3A3A3FFA0A0A0FF9D9D9DFF9A9A9AFF979797FF949494FF000000000000

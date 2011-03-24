@@ -55,6 +55,8 @@ type
     procedure tbAddUserClick(Sender: TObject);
     procedure tbDeleteUserClick(Sender: TObject);
     procedure tbRefreshClick(Sender: TObject);
+    procedure vstAccountsCompareNodes(Sender: TBaseVirtualTree; Node1,
+      Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
     procedure vstAccountsDblClick(Sender: TObject);
     procedure vstAccountsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstAccountsGetImageIndex(Sender: TBaseVirtualTree;
@@ -62,6 +64,8 @@ type
       var Ghosted: Boolean; var ImageIndex: Integer);
     procedure vstAccountsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure vstAccountsHeaderClick(Sender: TVTHeader; Column: TColumnIndex;
+      Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   protected
     procedure OnModifyUserResponse(ABuffer: TEnhancedMemoryStream);
     procedure OnDeleteUserResponse(ABuffer: TEnhancedMemoryStream);
@@ -244,6 +248,19 @@ begin
   dmNetwork.Send(TRequestUserListPacket.Create);
 end;
 
+procedure TfrmAccountControl.vstAccountsCompareNodes(Sender: TBaseVirtualTree;
+  Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+var
+  accountInfo1, accountInfo2: PAccountInfo;
+begin
+  accountInfo1 := Sender.GetNodeData(Node1);
+  accountInfo2 := Sender.GetNodeData(Node2);
+  case Column of
+    1: Result := CompareText(accountInfo1^.Username, accountInfo2^.Username);
+    2: Result := Integer(accountInfo1^.AccessLevel) - Integer(accountInfo2^.AccessLevel);
+  end;
+end;
+
 procedure TfrmAccountControl.vstAccountsDblClick(Sender: TObject);
 begin
   tbEditUserClick(Sender);
@@ -289,6 +306,26 @@ begin
     2: CellText := GetAccessLevelString(accountInfo^.AccessLevel);
   else
     CellText := '';
+  end;
+end;
+
+procedure TfrmAccountControl.vstAccountsHeaderClick(Sender: TVTHeader;
+  Column: TColumnIndex; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Column in [1, 2] then
+  begin
+    if Sender.SortColumn <> Column then
+    begin
+      Sender.SortColumn := Column;
+      Sender.SortDirection := sdAscending;
+    end else
+    begin
+      case Sender.SortDirection of
+        sdAscending: Sender.SortDirection := sdDescending;
+        sdDescending: Sender.SortDirection := sdAscending;
+      end;
+    end;
+    Sender.Treeview.SortTree(Sender.SortColumn, Sender.SortDirection);
   end;
 end;
 
