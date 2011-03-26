@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2007 Andreas Schneider
+ *      Portions Copyright 2011 Andreas Schneider
  *)
 unit UfrmAbout;
 
@@ -62,7 +62,8 @@ var
 
 implementation
 
-{$I version.inc}
+uses
+  vinfo;
 
 { TfrmAbout }
 
@@ -73,8 +74,7 @@ end;
 
 procedure TfrmAbout.FormCreate(Sender: TObject);
 begin
-  lblVersion.Caption := Format('Version %s', [ProductVersion]);
-  lblCopyright.Caption := Format('Copyright %s', [Copyright]);
+  lblVersion.Caption := Format('Version %s', [VersionInfo.GetProductVersionString]);
 end;
 
 initialization

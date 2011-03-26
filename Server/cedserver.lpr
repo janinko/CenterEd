@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2011 Andreas Schneider
  *)
 program cedserver;
 
@@ -31,18 +31,14 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  SysUtils, UConfig, UCEDServer;
+  SysUtils, UConfig, UCEDServer, vinfo;
   
-{$I version.inc}
-  
-{$IFDEF WINDOWS}{$R cedserver.rc}{$ENDIF}
-
 {$R *.res}
 
 begin
   Writeln('');
-  Writeln('CentrED Server Version ', ProductVersion);
-  Writeln('Copyright ', Copyright);
+  Writeln('CentrED Server Version ', versionInfo.GetProductVersionString);
+  Writeln('Copyright 2011 Andreas Schneider');
   //Writeln('================================');
   Writeln('');
 

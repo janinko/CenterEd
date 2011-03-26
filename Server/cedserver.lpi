@@ -15,7 +15,7 @@
       <MinorVersionNr Value="6"/>
       <RevisionNr Value="1"/>
       <BuildNr Value="209"/>
-      <StringTable CompanyName="AKS DataBasis" FileDescription="CentrED Server" InternalName="CentrED Server" LegalCopyright="Andreas Schneider" OriginalFilename="cedserver.exe" ProductName="CentrED"/>
+      <StringTable CompanyName="AKS DataBasis" FileDescription="CentrED Server" InternalName="CentrED Server" LegalCopyright="Andreas Schneider" OriginalFilename="cedserver.exe" ProductName="CentrED" ProductVersion="0.6.1"/>
     </VersionInfo>
     <BuildModes Count="3">
       <Item1 Name="default" Default="True"/>
@@ -219,7 +219,6 @@
       <IncludeFiles Value="..;../Imaging"/>
       <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
       <UnitOutputDirectory Value="../obj"/>
-      <SrcPath Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>

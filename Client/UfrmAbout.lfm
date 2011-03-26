@@ -12,11 +12,11 @@ object frmAbout: TfrmAbout
   Font.Height = -11
   OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '0.9.29'
+  LCLVersion = '0.9.31'
   object Label3: TLabel
     Left = 8
     Height = 53
-    Top = 189
+    Top = 178
     Width = 338
     Align = alTop
     BorderSpacing.Top = 16
@@ -28,7 +28,7 @@ object frmAbout: TfrmAbout
   object Label5: TLabel
     Left = 8
     Height = 14
-    Top = 98
+    Top = 87
     Width = 338
     Align = alTop
     BorderSpacing.Left = 8
@@ -39,7 +39,7 @@ object frmAbout: TfrmAbout
   object Label6: TLabel
     Left = 16
     Height = 53
-    Top = 112
+    Top = 101
     Width = 330
     Align = alTop
     BorderSpacing.Left = 16
@@ -50,7 +50,7 @@ object frmAbout: TfrmAbout
   object Label7: TLabel
     Left = 8
     Height = 14
-    Top = 84
+    Top = 73
     Width = 338
     Align = alTop
     BorderSpacing.Left = 8
@@ -61,32 +61,32 @@ object frmAbout: TfrmAbout
   end
   object Panel2: TPanel
     Left = 0
-    Height = 76
+    Height = 65
     Top = 0
     Width = 354
     Align = alTop
     AutoSize = True
     BorderSpacing.Bottom = 8
     BevelOuter = bvNone
-    ClientHeight = 76
+    ClientHeight = 65
     ClientWidth = 354
     TabOrder = 0
     object Panel1: TPanel
       Left = 0
-      Height = 76
+      Height = 65
       Top = 0
-      Width = 167
+      Width = 190
       AutoSize = True
       BevelInner = bvRaised
       BevelOuter = bvLowered
-      ClientHeight = 76
-      ClientWidth = 167
+      ClientHeight = 65
+      ClientWidth = 190
       TabOrder = 0
       object Label1: TLabel
         Left = 2
         Height = 38
         Top = 2
-        Width = 163
+        Width = 186
         Align = alTop
         Alignment = taCenter
         AutoSize = False
@@ -99,9 +99,9 @@ object frmAbout: TfrmAbout
       end
       object lblVersion: TLabel
         Left = 6
-        Height = 14
+        Height = 1
         Top = 40
-        Width = 155
+        Width = 178
         Align = alTop
         Alignment = taRightJustify
         BorderSpacing.Left = 4
@@ -111,11 +111,12 @@ object frmAbout: TfrmAbout
       object lblCopyright: TLabel
         Left = 6
         Height = 14
-        Top = 58
-        Width = 155
+        Top = 45
+        Width = 178
         Align = alTop
         Alignment = taCenter
         BorderSpacing.Around = 4
+        Caption = 'Copyright 2011 Andreas Schneider'
         ParentColor = False
       end
     end
@@ -123,7 +124,7 @@ object frmAbout: TfrmAbout
   object Panel3: TPanel
     Left = 8
     Height = 25
-    Top = 250
+    Top = 239
     Width = 338
     Align = alTop
     BorderSpacing.Around = 8
