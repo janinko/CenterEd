@@ -59,6 +59,9 @@ type
       Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
     procedure vstAccountsDblClick(Sender: TObject);
     procedure vstAccountsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstAccountsGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle;
+      var HintText: String);
     procedure vstAccountsGetImageIndex(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
@@ -71,6 +74,8 @@ type
     procedure OnDeleteUserResponse(ABuffer: TEnhancedMemoryStream);
     procedure OnListUsersPacket(ABuffer: TEnhancedMemoryStream);
     function FindNode(AUsername: string): PVirtualNode;
+  private
+    procedure OnListModified;
   end;
 
 var
@@ -276,6 +281,20 @@ begin
   if accountInfo^.Regions <> nil then FreeAndNil(accountInfo^.Regions);
 end;
 
+procedure TfrmAccountControl.vstAccountsGetHint(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex;
+  var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: String);
+var
+  accountInfo: PAccountInfo;
+begin
+  if Column = 3 then
+  begin
+    accountInfo := Sender.GetNodeData(Node);
+    if accountInfo^.Regions.Count > 0 then
+      HintText := Trim(accountInfo^.Regions.Text);
+  end;
+end;
+
 procedure TfrmAccountControl.vstAccountsGetImageIndex(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
   var Ghosted: Boolean; var ImageIndex: Integer);
@@ -360,6 +379,7 @@ begin
         regions := ABuffer.ReadByte;
         for i := 0 to regions - 1 do
           accountInfo^.Regions.Add(ABuffer.ReadStringNull);
+        OnListModified;
 
         Messagedlg('Success', Format('The user "%s" has been added.', [username]),
           mtInformation, [mbOK], 0);
@@ -375,6 +395,7 @@ begin
           regions := ABuffer.ReadByte;
           for i := 0 to regions - 1 do
             accountInfo^.Regions.Add(ABuffer.ReadStringNull);
+          OnListModified;
 
           Messagedlg('Success', Format('The user "%s" has been modified.', [username]),
             mtInformation, [mbOK], 0);
@@ -401,6 +422,8 @@ begin
         if node <> nil then
         begin
           vstAccounts.DeleteNode(node);
+          OnListModified;
+
           Messagedlg('Success', Format('The user "%s" has been deleted.', [username]),
             mtInformation, [mbOK], 0);
         end;
@@ -433,6 +456,7 @@ begin
       accountInfo^.Regions.Add(ABuffer.ReadStringNull);
   end;
   vstAccounts.EndUpdate;
+  OnListModified;
 end;
 
 function TfrmAccountControl.FindNode(AUsername: string): PVirtualNode;
@@ -449,6 +473,11 @@ begin
       Result := node;
     node := vstAccounts.GetNext(node);
   end;
+end;
+
+procedure TfrmAccountControl.OnListModified;
+begin
+  vstAccounts.Header.SortColumn := -1;
 end;
 
 initialization

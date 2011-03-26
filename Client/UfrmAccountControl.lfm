@@ -112,7 +112,10 @@ object frmAccountControl: TfrmAccountControl
     Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     Header.ParentFont = True
     Header.Style = hsFlatButtons
+    HintMode = hmHint
     Images = ilAccesslevel
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 1
     TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
     TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
@@ -123,6 +126,7 @@ object frmAccountControl: TfrmAccountControl
     OnFreeNode = vstAccountsFreeNode
     OnGetText = vstAccountsGetText
     OnGetImageIndex = vstAccountsGetImageIndex
+    OnGetHint = vstAccountsGetHint
     OnHeaderClick = vstAccountsHeaderClick
   end
   object ilToolbar: TImageList
