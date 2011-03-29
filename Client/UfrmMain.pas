@@ -1882,6 +1882,8 @@ end;
 procedure TfrmMain.XMLPropStorage1RestoreProperties(Sender: TObject);
 begin
   FTextureManager.UseAnims := mnuShowAnimations.Checked;
+  if spTileList.Top > spTileList.Parent.Height then
+    spTileList.Top := spTileList.Parent.Height - 200;
 end;
 
 procedure TfrmMain.SetX(const AValue: Integer);

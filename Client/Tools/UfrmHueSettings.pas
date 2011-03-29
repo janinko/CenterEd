@@ -283,7 +283,7 @@ begin
     presetElement := TDOMElement(FRandomHuePresetsDoc.DocumentElement.FirstChild);
     while presetElement <> nil do
     begin
-      if presetElement.NodeName = 'HuePreset' then
+      if presetElement.NodeName = 'Preset' then
         cbRandomPreset.Items.AddObject(presetElement.AttribStrings['Name'], presetElement);
       presetElement := TDOMElement(presetElement.NextSibling);
     end;
