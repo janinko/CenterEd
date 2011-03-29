@@ -188,8 +188,8 @@ type
     FMaxStaticID: Cardinal;
     { Methods }
     function GetMapBlock(AX, AY: Word): TMapBlock;
-    function GetMapCell(AX, AY: Word): TMapCell;
-    function GetNormals(AX, AY: Word): TNormals;
+    function GetMapCell(AX, AY: Integer): TMapCell;
+    function GetNormals(AX, AY: Integer): TNormals;
     function GetStaticBlock(AX, AY: Word): TSeperatedStaticBlock;
     function GetStaticList(AX, AY: Word): TStaticItemList;
     { Events }
@@ -207,9 +207,9 @@ type
     property Height: Word read FHeight;
     property CellWidth: Word read FCellWidth;
     property CellHeight: Word read FCellHeight;
-    property MapCell[X, Y: Word]: TMapCell read GetMapCell;
+    property MapCell[X, Y: Integer]: TMapCell read GetMapCell;
     property StaticList[X, Y: Word]: TStaticItemList read GetStaticList;
-    property Normals[X, Y: Word]: TNormals read GetNormals;
+    property Normals[X, Y: Integer]: TNormals read GetNormals;
     property MaxStaticID: Cardinal read FMaxStaticID;
     property OnChange: TLandscapeChangeEvent read FOnChange write FOnChange;
     property OnMapChanged: TMapChangedEvent read FOnMapChanged write FOnMapChanged;
@@ -661,7 +661,7 @@ begin
   end;
 end;
 
-function TLandscape.GetMapCell(AX, AY: Word): TMapCell;
+function TLandscape.GetMapCell(AX, AY: Integer): TMapCell;
 var
   block: TMapBlock;
 begin
@@ -674,7 +674,7 @@ begin
   end;
 end;
 
-function TLandscape.GetNormals(AX, AY: Word): TNormals;
+function TLandscape.GetNormals(AX, AY: Integer): TNormals;
 begin
   GetNormals(AX, AY, Result);
 end;

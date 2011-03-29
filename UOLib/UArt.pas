@@ -60,7 +60,7 @@ implementation
 
 type
   PWordArray = ^TWordArray;
-  TWordArray = array[0..16383] of Word;
+  TWordArray = array[0..(MaxInt div SizeOf(Word) - 1)] of Word;
 
 constructor TArt.Create(AData: TStream; AIndex: TGenericIndex; AArtType: TArtType);
 begin
