@@ -450,8 +450,7 @@
     </CodeGeneration>
     <Linking>
       <Debugging>
-        <UseLineInfoUnit Value="False"/>
-        <GenerateDwarf Value="True"/>
+        <GenerateDebugInfo Value="True"/>
       </Debugging>
       <Options>
         <Win32>

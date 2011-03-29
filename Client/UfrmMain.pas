@@ -48,6 +48,8 @@ type
   TAccessChangedListeners = specialize TFPGList<TAccessChangedListener>;
   TSelectionListeners = specialize TFPGList<TSelectionListener>;
 
+  THueList = specialize TFPGList<Word>;
+
   TTileHintInfo = record
     Name: String;
     Flags: String;
@@ -332,6 +334,7 @@ type
     FSelectionListeners: TSelectionListeners;
     FTileHint: TTileHintInfo;
     FLightManager: TLightManager;
+    FHueBuffer: THueList;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -639,7 +642,7 @@ procedure TfrmMain.oglGameWindowMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   map: TMapCell;
-  i: Integer;
+  i, hueCount: Integer;
   z: ShortInt;
   blockInfo: PBlockInfo;
   targetRect: TRect;
@@ -796,17 +799,27 @@ begin
             end;
           end else if acHue.Checked then                //***** Hue tile *****//
           begin
+            hueCount := 0;
             for i := 0 to targetTiles.Count - 1 do
             begin
               tile := targetTiles.Items[i];
 
-              hue := frmHueSettings.GetHue;
-              if (tile is TStaticItem) and
-                (TStaticItem(tile).Hue <> hue) then
+              if tile is TStaticItem then
               begin
-                FUndoList.Add(THueStaticPacket.Create(tile.X, tile.Y, tile.Z,
-                  tile.TileID, hue, TStaticItem(tile).Hue));
-                dmNetwork.Send(THueStaticPacket.Create(TStaticItem(tile), hue));
+                //If a hue is in the buffer (see UpdateSelection), use that, otherwise
+                //create a new one. (Necessary for random hues.)
+                if hueCount < FHueBuffer.Count then
+                  hue := FHueBuffer[hueCount]
+                else
+                  hue := frmHueSettings.GetHue;
+                Inc(hueCount);
+
+                if TStaticItem(tile).Hue <> hue then
+                begin
+                  FUndoList.Add(THueStaticPacket.Create(tile.X, tile.Y, tile.Z,
+                    tile.TileID, hue, TStaticItem(tile).Hue));
+                  dmNetwork.Send(THueStaticPacket.Create(TStaticItem(tile), hue));
+                end;
               end;
             end;
           end;
@@ -946,6 +959,8 @@ begin
   FSelectionListeners := TSelectionListeners.Create;
   
   FLastDraw := Now;
+
+  FHueBuffer := THueList.Create;
 end;
 
 procedure TfrmMain.btnGoToClick(Sender: TObject);
@@ -1296,6 +1311,7 @@ begin
   FreeAndNil(FRandomPresetsDoc);
   FreeAndNil(FAccessChangedListeners);
   FreeAndNil(FSelectionListeners);
+  FreeAndNil(FHueBuffer);
   
   RegisterPacketHandler($0C, nil);
 end;
@@ -2835,8 +2851,12 @@ begin
 end;
 
 procedure TfrmMain.UpdateSelection;
+var
+  highlightCount: Integer;
 
   procedure SetHighlight(ABlockInfo: PBlockInfo; AHighlighted: Boolean);
+  var
+    hue: Word;
   begin
     if (ABlockInfo^.Item is TStaticItem) and acHue.Checked then
     begin
@@ -2844,12 +2864,27 @@ procedure TfrmMain.UpdateSelection;
       begin
         ABlockInfo^.HueOverride := AHighlighted;
         if AHighlighted then
+        begin
+          if highlightCount < FHueBuffer.Count then
+          begin
+            hue := FHueBuffer[highlightCount];
+          end else
+          begin
+            hue := frmHueSettings.GetHue;
+            FHueBuffer.Add(hue);
+          end;
+
           ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(
-            TStaticItem(ABlockInfo^.Item), frmHueSettings.GetHue)
-        else
+            TStaticItem(ABlockInfo^.Item), hue);
+        end else
+        begin
           ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(
             TStaticItem(ABlockInfo^.Item));
+        end;
       end;
+
+      if AHighlighted then
+        Inc(highlightCount);
     end else
     begin
       ABlockInfo^.Highlighted := AHighlighted;
@@ -2948,6 +2983,14 @@ begin
       selectedRect := Rect(-1, -1, -1, -1)
     else
       selectedRect := GetSelectedRect;
+
+    if acHue.Checked and (SelectedTile = nil) then
+    begin
+      //Prepare hue buffer
+      FHueBuffer.Clear;
+    end;
+
+    highlightCount := 0;
 
     //clean up old ghost tiles
     //Logger.Send([lcClient, lcDebug], 'Cleaning ghost tiles');
