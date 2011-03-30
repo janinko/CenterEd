@@ -265,6 +265,7 @@ type
     State: TScreenState;
     Highlighted: Boolean;
     HueOverride: Boolean;
+    Hue: Word;
     CheckRealQuad: Boolean;
     Translucent: Boolean;
     WalkRestriction: TWalkRestriction;

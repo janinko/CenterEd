@@ -43,12 +43,12 @@ type
   TScreenBufferState = (sbsValid, sbsIndexed, sbsFiltered);
   TScreenBufferStates = set of TScreenBufferState;
 
+  TBlockInfoList = specialize TFPGList<PBlockInfo>;
+
   TGhostTile = class(TStaticItem);
   TPacketList = specialize TFPGObjectList<TPacket>;
   TAccessChangedListeners = specialize TFPGList<TAccessChangedListener>;
   TSelectionListeners = specialize TFPGList<TSelectionListener>;
-
-  THueList = specialize TFPGList<Word>;
 
   TTileHintInfo = record
     Name: String;
@@ -334,7 +334,6 @@ type
     FSelectionListeners: TSelectionListeners;
     FTileHint: TTileHintInfo;
     FLightManager: TLightManager;
-    FHueBuffer: THueList;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -642,15 +641,14 @@ procedure TfrmMain.oglGameWindowMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   map: TMapCell;
-  i, hueCount: Integer;
+  i: Integer;
   z: ShortInt;
   blockInfo: PBlockInfo;
   targetRect: TRect;
   offsetX, offsetY: Integer;
   tile: TWorldItem;
   tileX, tileY, newX, newY: Word;
-  hue: Word;
-  targetTiles: TWorldItemList;
+  targetBlocks: TBlockInfoList;
   targetTile: TWorldItem;
 begin
   Logger.EnterMethod([lcClient, lcDebug], 'MouseUp');
@@ -706,9 +704,8 @@ begin
           end;
 
         Logger.Send([lcClient, lcDebug], 'Virtual tiles', FVirtualTiles.Count);
-        for i := 0 to FVirtualTiles.Count - 1 do
+        for tile in FVirtualTiles do
         begin
-          tile := FVirtualTiles[i];
           if tile is TGhostTile then
           begin
             dmNetwork.Send(TInsertStaticPacket.Create(tile.X, tile.Y, tile.Z,
@@ -721,10 +718,18 @@ begin
         if (not acMove.Checked) or (SelectedTile <> targetTile) or
            (not frmMoveSettings.cbAsk.Checked) or ConfirmAction then
         begin
-          targetTiles := TWorldItemList.Create(False);
+          targetBlocks := TBlockInfoList.Create;
           if SelectedTile = targetTile then
           begin
-            targetTiles.Add(targetTile)
+            blockInfo := nil;
+            while FScreenBuffer.Iterate(blockInfo) do
+            begin
+              if blockInfo^.Item = targetTile then
+              begin
+                targetBlocks.Add(blockInfo);
+                Break;
+              end;
+            end;
           end else
           begin
             blockInfo := nil;
@@ -734,7 +739,7 @@ begin
                 blockInfo^.Item.CanBeEdited and
                 IsInRect(blockInfo^.Item.X, blockInfo^.Item.Y, targetRect) then
               begin
-                targetTiles.Add(blockInfo^.Item);
+                targetBlocks.Add(blockInfo);
               end;
             end;
           end;
@@ -743,10 +748,9 @@ begin
           begin
             offsetX := frmMoveSettings.GetOffsetX;
             offsetY := frmMoveSettings.GetOffsetY;
-            for i := 0 to targetTiles.Count - 1 do
+            for blockInfo in targetBlocks do
             begin
-              tile := targetTiles.Items[i];
-
+              tile := blockInfo^.Item;
               if tile is TStaticItem then
               begin
                 newX := EnsureRange(tile.X + offsetX, 0, FLandscape.CellWidth - 1);
@@ -759,9 +763,9 @@ begin
             end;
           end else if acElevate.Checked then        //***** Elevate tile *****//
           begin
-            for i := 0 to targetTiles.Count - 1 do
+            for blockInfo in targetBlocks do
             begin
-              tile := targetTiles.Items[i];
+              tile := blockInfo^.Item;
 
               z := frmElevateSettings.seZ.Value;
               if frmElevateSettings.rbRaise.Checked then
@@ -786,10 +790,9 @@ begin
             end;
           end else if acDelete.Checked then          //***** Delete tile *****//
           begin
-            for i := 0 to targetTiles.Count - 1 do
+            for blockInfo in targetBlocks do
             begin
-              tile := targetTiles.Items[i];
-
+              tile := blockInfo^.Item;
               if tile is TStaticItem then
               begin
                 FUndoList.Add(TInsertStaticPacket.Create(tile.X, tile.Y,
@@ -799,32 +802,24 @@ begin
             end;
           end else if acHue.Checked then                //***** Hue tile *****//
           begin
-            hueCount := 0;
-            for i := 0 to targetTiles.Count - 1 do
+            for blockInfo in targetBlocks do
             begin
-              tile := targetTiles.Items[i];
+              tile := blockInfo^.Item;
 
-              if tile is TStaticItem then
+              if blockInfo^.HueOverride and (tile is TStaticItem) then
               begin
-                //If a hue is in the buffer (see UpdateSelection), use that, otherwise
-                //create a new one. (Necessary for random hues.)
-                if hueCount < FHueBuffer.Count then
-                  hue := FHueBuffer[hueCount]
-                else
-                  hue := frmHueSettings.GetHue;
-                Inc(hueCount);
-
-                if TStaticItem(tile).Hue <> hue then
+                if TStaticItem(tile).Hue <> blockInfo^.Hue then
                 begin
                   FUndoList.Add(THueStaticPacket.Create(tile.X, tile.Y, tile.Z,
-                    tile.TileID, hue, TStaticItem(tile).Hue));
-                  dmNetwork.Send(THueStaticPacket.Create(TStaticItem(tile), hue));
+                    tile.TileID, blockInfo^.Hue, TStaticItem(tile).Hue));
+                  dmNetwork.Send(THueStaticPacket.Create(TStaticItem(tile),
+                    blockInfo^.Hue));
                 end;
               end;
             end;
           end;
 
-          targetTiles.Free;
+          targetBlocks.Free;
         end;
       end;
     end;
@@ -959,8 +954,6 @@ begin
   FSelectionListeners := TSelectionListeners.Create;
   
   FLastDraw := Now;
-
-  FHueBuffer := THueList.Create;
 end;
 
 procedure TfrmMain.btnGoToClick(Sender: TObject);
@@ -1311,7 +1304,6 @@ begin
   FreeAndNil(FRandomPresetsDoc);
   FreeAndNil(FAccessChangedListeners);
   FreeAndNil(FSelectionListeners);
-  FreeAndNil(FHueBuffer);
   
   RegisterPacketHandler($0C, nil);
 end;
@@ -2853,12 +2845,8 @@ begin
 end;
 
 procedure TfrmMain.UpdateSelection;
-var
-  highlightCount: Integer;
 
   procedure SetHighlight(ABlockInfo: PBlockInfo; AHighlighted: Boolean);
-  var
-    hue: Word;
   begin
     if (ABlockInfo^.Item is TStaticItem) and acHue.Checked then
     begin
@@ -2867,26 +2855,15 @@ var
         ABlockInfo^.HueOverride := AHighlighted;
         if AHighlighted then
         begin
-          if highlightCount < FHueBuffer.Count then
-          begin
-            hue := FHueBuffer[highlightCount];
-          end else
-          begin
-            hue := frmHueSettings.GetHue;
-            FHueBuffer.Add(hue);
-          end;
-
+          ABlockInfo^.Hue := frmHueSettings.GetHue;
           ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(
-            TStaticItem(ABlockInfo^.Item), hue);
+            TStaticItem(ABlockInfo^.Item), ABlockInfo^.Hue);
         end else
         begin
           ABlockInfo^.LowRes := FTextureManager.GetStaticMaterial(
             TStaticItem(ABlockInfo^.Item));
         end;
       end;
-
-      if AHighlighted then
-        Inc(highlightCount);
     end else
     begin
       ABlockInfo^.Highlighted := AHighlighted;
@@ -2985,14 +2962,6 @@ begin
       selectedRect := Rect(-1, -1, -1, -1)
     else
       selectedRect := GetSelectedRect;
-
-    if acHue.Checked and (SelectedTile = nil) then
-    begin
-      //Prepare hue buffer
-      FHueBuffer.Clear;
-    end;
-
-    highlightCount := 0;
 
     //clean up old ghost tiles
     //Logger.Send([lcClient, lcDebug], 'Cleaning ghost tiles');
