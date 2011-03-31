@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2011 Andreas Schneider
  *)
 unit ULight;
 
@@ -76,8 +76,8 @@ begin
       for y := 0 to Height - 1 do
         for x := 0 to Width - 1 do
         begin
-          buffer.Read(color, SizeOf(byte));
-          color32.R := color * 8;
+          buffer.Read(color, SizeOf(Byte));
+          color32.R := Byte(color * 8);
           color32.G := color32.R;
           color32.B := color32.R;
           if color > 0 then

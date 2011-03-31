@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2011 Andreas Schneider
  *)
 unit ULightManager;
 
@@ -31,7 +31,8 @@ interface
 
 uses
   Classes, SysUtils, Imaging, ImagingTypes, ImagingClasses, ImagingCanvases,
-  ImagingOpenGL, GL, GLu, GLext, fgl, ULandscape, UWorldItem, UCacheManager;
+  ImagingOpenGL, GL, GLu, GLext, fgl, ULandscape, UWorldItem, UCacheManager,
+  Math;
 
 type
 
@@ -279,8 +280,10 @@ begin
       if tdfLightSource in tileData.Flags then
         lights.Add(blockInfo^.Item)
       else
-        tileMap[blockInfo^.Item.X - ALeft, blockInfo^.Item.Y - ATop] :=
-          blockInfo^.Item;
+        x := blockInfo^.Item.X - ALeft;
+        y := blockInfo^.Item.Y - ATop;
+        if InRange(x, 0, AWidth - 1) and InRange(y, 0, AHeight - 1) then
+          tileMap[x, y] := blockInfo^.Item;
     end;
   end;
 
@@ -288,8 +291,9 @@ begin
   begin
     x := lights[i].X + 1 - ALeft;
     y := lights[i].Y + 1 - ATop;
-    if (x = AWidth) or (y = AHeight) or (tileMap[x,y] = nil) or
-      (tileMap[x,y].Z < lights[i].Z + 5) then
+    if (x = AWidth) or (y = AHeight) or
+      (InRange(x, 0, AWidth - 1) and InRange(y, 0, AHeight - 1) and
+        ((tileMap[x,y] = nil) or (tileMap[x,y].Z < lights[i].Z + 5))) then
       FLightSources.Add(TLightSource.Create(Self, lights[i]));
   end;
 
