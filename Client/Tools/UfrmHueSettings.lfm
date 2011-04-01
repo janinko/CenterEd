@@ -378,7 +378,7 @@ inherited frmHueSettings: TfrmHueSettings
   object cbRandom: TCheckBox[4]
     AnchorSideTop.Control = edHue
     AnchorSideTop.Side = asrCenter
-    AnchorSideRight.Control = gbRandom
+    AnchorSideRight.Control = lbHue
     AnchorSideRight.Side = asrBottom
     Left = 152
     Height = 19
