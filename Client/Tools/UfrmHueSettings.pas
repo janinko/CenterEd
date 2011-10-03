@@ -60,6 +60,7 @@ type
     procedure cbRandomPresetChange(Sender: TObject);
     procedure edHueEditingDone(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure lbHueDrawItem(Control: TWinControl; Index: Integer; ARect: TRect;
       State: TOwnerDrawState);
     procedure lbHueSelectionChange(Sender: TObject; User: boolean);
@@ -227,6 +228,11 @@ begin
   FRandomHuePresetsFile := FConfigDir + 'RandomHuePresets.xml';
 
   LoadRandomPresets;
+end;
+
+procedure TfrmHueSettings.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(FRandomHuePresetsDoc);
 end;
 
 procedure TfrmHueSettings.lbHueDrawItem(Control: TWinControl; Index: Integer;

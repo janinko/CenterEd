@@ -9,6 +9,7 @@ inherited frmHueSettings: TfrmHueSettings
   ClientWidth = 225
   Constraints.MinWidth = 225
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   object lblHue: TLabel[0]
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = edHue
