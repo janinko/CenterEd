@@ -646,7 +646,7 @@ var
   blockInfo: PBlockInfo;
   targetRect: TRect;
   offsetX, offsetY: Integer;
-  tile: TWorldItem;
+  item: TWorldItem;
   tileX, tileY, newX, newY: Word;
   targetBlocks: TBlockInfoList;
   targetTile: TWorldItem;
@@ -704,13 +704,13 @@ begin
           end;
 
         Logger.Send([lcClient, lcDebug], 'Virtual tiles', FVirtualTiles.Count);
-        for tile in FVirtualTiles do
+        for item in FVirtualTiles do
         begin
-          if tile is TGhostTile then
+          if item is TGhostTile then
           begin
-            dmNetwork.Send(TInsertStaticPacket.Create(tile.X, tile.Y, tile.Z,
-              tile.TileID, TGhostTile(tile).Hue));
-            FUndoList.Add(TDeleteStaticPacket.Create(TGhostTile(tile)));
+            dmNetwork.Send(TInsertStaticPacket.Create(item.X, item.Y, item.Z,
+              item.TileID, TGhostTile(item).Hue));
+            FUndoList.Add(TDeleteStaticPacket.Create(TGhostTile(item)));
           end;
         end;
       end else if (SelectedTile <> targetTile) or targetTile.CanBeEdited then
@@ -744,75 +744,75 @@ begin
             end;
           end;
 
-          if acMove.Checked then                       //***** Move tile *****//
+          if acMove.Checked then                       //***** Move item *****//
           begin
             offsetX := frmMoveSettings.GetOffsetX;
             offsetY := frmMoveSettings.GetOffsetY;
             for blockInfo in targetBlocks do
             begin
-              tile := blockInfo^.Item;
-              if tile is TStaticItem then
+              item := blockInfo^.Item;
+              if item is TStaticItem then
               begin
-                newX := EnsureRange(tile.X + offsetX, 0, FLandscape.CellWidth - 1);
-                newY := EnsureRange(tile.Y + offsetY, 0, FLandscape.CellHeight - 1);
-                FUndoList.Add(TMoveStaticPacket.Create(newX, newY, tile.Z,
-                  tile.TileID, TStaticItem(tile).Hue, tile.X, tile.Y));
-                dmNetwork.Send(TMoveStaticPacket.Create(TStaticItem(tile),
+                newX := EnsureRange(item.X + offsetX, 0, FLandscape.CellWidth - 1);
+                newY := EnsureRange(item.Y + offsetY, 0, FLandscape.CellHeight - 1);
+                FUndoList.Add(TMoveStaticPacket.Create(newX, newY, item.Z,
+                  item.TileID, TStaticItem(item).Hue, item.X, item.Y));
+                dmNetwork.Send(TMoveStaticPacket.Create(TStaticItem(item),
                   newX, newY));
               end;
             end;
-          end else if acElevate.Checked then        //***** Elevate tile *****//
+          end else if acElevate.Checked then        //***** Elevate item *****//
           begin
             for blockInfo in targetBlocks do
             begin
-              tile := blockInfo^.Item;
+              item := blockInfo^.Item;
 
               z := frmElevateSettings.seZ.Value;
               if frmElevateSettings.rbRaise.Checked then
-                z := EnsureRange(tile.Z + z, -128, 127)
+                z := EnsureRange(item.Z + z, -128, 127)
               else if frmElevateSettings.rbLower.Checked then
-                z := EnsureRange(tile.Z - z, -128, 127);
+                z := EnsureRange(item.Z - z, -128, 127);
 
-              if tile is TMapCell then
+              if item is TMapCell then
               begin
                 if frmElevateSettings.cbRandomHeight.Checked then
                   Inc(z, Random(frmElevateSettings.seRandomHeight.Value));
-                FUndoList.Add(TDrawMapPacket.Create(tile.X, tile.Y, tile.Z,
-                  tile.TileID));
-                dmNetwork.Send(TDrawMapPacket.Create(tile.X, tile.Y, z,
-                  tile.TileID));
+                FUndoList.Add(TDrawMapPacket.Create(item.X, item.Y, item.Z,
+                  item.TileID));
+                dmNetwork.Send(TDrawMapPacket.Create(item.X, item.Y, z,
+                  item.TileID));
               end else
               begin
-                FUndoList.Add(TElevateStaticPacket.Create(tile.X, tile.Y,
-                  z, tile.TileID, TStaticItem(tile).Hue, tile.Z));
-                dmNetwork.Send(TElevateStaticPacket.Create(TStaticItem(tile), z));
+                FUndoList.Add(TElevateStaticPacket.Create(item.X, item.Y,
+                  z, item.TileID, TStaticItem(item).Hue, item.Z));
+                dmNetwork.Send(TElevateStaticPacket.Create(TStaticItem(item), z));
               end;
             end;
-          end else if acDelete.Checked then          //***** Delete tile *****//
+          end else if acDelete.Checked then          //***** Delete item *****//
           begin
             for blockInfo in targetBlocks do
             begin
-              tile := blockInfo^.Item;
-              if tile is TStaticItem then
+              item := blockInfo^.Item;
+              if item is TStaticItem then
               begin
-                FUndoList.Add(TInsertStaticPacket.Create(tile.X, tile.Y,
-                  tile.Z, tile.TileID, TStaticItem(tile).Hue));
-                dmNetwork.Send(TDeleteStaticPacket.Create(TStaticItem(tile)));
+                FUndoList.Add(TInsertStaticPacket.Create(item.X, item.Y,
+                  item.Z, item.TileID, TStaticItem(item).Hue));
+                dmNetwork.Send(TDeleteStaticPacket.Create(TStaticItem(item)));
               end;
             end;
-          end else if acHue.Checked then                //***** Hue tile *****//
+          end else if acHue.Checked then                //***** Hue item *****//
           begin
             for blockInfo in targetBlocks do
             begin
-              tile := blockInfo^.Item;
+              item := blockInfo^.Item;
 
-              if blockInfo^.HueOverride and (tile is TStaticItem) then
+              if blockInfo^.HueOverride and (item is TStaticItem) then
               begin
-                if TStaticItem(tile).Hue <> blockInfo^.Hue then
+                if TStaticItem(item).Hue <> blockInfo^.Hue then
                 begin
-                  FUndoList.Add(THueStaticPacket.Create(tile.X, tile.Y, tile.Z,
-                    tile.TileID, blockInfo^.Hue, TStaticItem(tile).Hue));
-                  dmNetwork.Send(THueStaticPacket.Create(TStaticItem(tile),
+                  FUndoList.Add(THueStaticPacket.Create(item.X, item.Y, item.Z,
+                    item.TileID, blockInfo^.Hue, TStaticItem(item).Hue));
+                  dmNetwork.Send(THueStaticPacket.Create(TStaticItem(item),
                     blockInfo^.Hue));
                 end;
               end;
@@ -978,7 +978,7 @@ procedure TfrmMain.btnRandomPresetSaveClick(Sender: TObject);
 var
   presetName: string;
   i: Integer;
-  preset, tile: TDOMElement;
+  presetElement, tileElement: TDOMElement;
   children: TDOMNodeList;
   tileNode: PVirtualNode;
   tileInfo: PTileInfo;
@@ -986,31 +986,31 @@ begin
   presetName := cbRandomPreset.Text;
   if InputQuery('Save Preset', 'Enter the name of the preset:', presetName) then
   begin
-    preset := FindRandomPreset(presetName);
-    if preset = nil then
+    presetElement := FindRandomPreset(presetName);
+    if presetElement = nil then
     begin
-      preset := FRandomPresetsDoc.CreateElement('Preset');
-      preset.AttribStrings['Name'] := presetName;
-      FRandomPresetsDoc.DocumentElement.AppendChild(preset);
-      cbRandomPreset.Items.AddObject(presetName, preset);
+      presetElement := FRandomPresetsDoc.CreateElement('Preset');
+      presetElement.AttribStrings['Name'] := presetName;
+      FRandomPresetsDoc.DocumentElement.AppendChild(presetElement);
+      cbRandomPreset.Items.AddObject(presetName, presetElement);
     end else
     begin
-      children := preset.ChildNodes;
+      children := presetElement.ChildNodes;
       for i := children.Count - 1 downto 0 do
-        preset.RemoveChild(children[i]);
+        presetElement.RemoveChild(children[i]);
     end;
 
     tileNode := vdtRandom.GetFirst;
     while tileNode <> nil do
     begin
       tileInfo := vdtRandom.GetNodeData(tileNode);
-      tile := FRandomPresetsDoc.CreateElement('Tile');
-      tile.AttribStrings['ID'] := IntToStr(tileInfo^.ID);
-      preset.AppendChild(tile);
+      tileElement := FRandomPresetsDoc.CreateElement('Tile');
+      tileElement.AttribStrings['ID'] := IntToStr(tileInfo^.ID);
+      presetElement.AppendChild(tileElement);
       tileNode := vdtRandom.GetNext(tileNode);
     end;
 
-    cbRandomPreset.ItemIndex := cbRandomPreset.Items.IndexOfObject(preset);
+    cbRandomPreset.ItemIndex := cbRandomPreset.Items.IndexOfObject(presetElement);
 
     SaveRandomPresets;
   end;
@@ -1018,7 +1018,7 @@ end;
 
 procedure TfrmMain.cbRandomPresetChange(Sender: TObject);
 var
-  preset, tile: TDOMElement;
+  presetElement, tileElement: TDOMElement;
   tiles: TDOMNodeList;
   tileNode: PVirtualNode;
   tileInfo: PTileInfo;
@@ -1027,13 +1027,13 @@ begin
   if cbRandomPreset.ItemIndex > -1 then
   begin
     vdtRandom.Clear;
-    preset := TDOMElement(cbRandomPreset.Items.Objects[cbRandomPreset.ItemIndex]);
-    tiles := preset.ChildNodes;
+    presetElement := TDOMElement(cbRandomPreset.Items.Objects[cbRandomPreset.ItemIndex]);
+    tiles := presetElement.ChildNodes;
     for i := 0 to tiles.Count - 1 do
     begin
-      tile := TDOMElement(tiles[i]);
-      if (tile.NodeName = 'Tile') and
-         TryStrToInt(tile.AttribStrings['ID'], id) and
+      tileElement := TDOMElement(tiles[i]);
+      if (tileElement.NodeName = 'Tile') and
+         TryStrToInt(tileElement.AttribStrings['ID'], id) and
          (id < FLandscape.MaxStaticID + $4000) then
       begin
         tileNode := vdtRandom.AddChild(nil);

@@ -858,11 +858,11 @@ object frmMain: TfrmMain
     object tbSeparator1: TToolButton
       Left = 24
       Top = 2
-      Width = 4
+      Width = 5
       Style = tbsDivider
     end
     object tbSelect: TToolButton
-      Left = 28
+      Left = 29
       Top = 2
       Action = acSelect
       Grouped = True
@@ -871,7 +871,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbDrawTile: TToolButton
-      Left = 51
+      Left = 52
       Top = 2
       Action = acDraw
       Grouped = True
@@ -880,7 +880,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbMoveTile: TToolButton
-      Left = 74
+      Left = 75
       Top = 2
       Action = acMove
       Grouped = True
@@ -889,7 +889,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbElevateTile: TToolButton
-      Left = 97
+      Left = 98
       Top = 2
       Action = acElevate
       Grouped = True
@@ -898,7 +898,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbDeleteTile: TToolButton
-      Left = 120
+      Left = 121
       Top = 2
       Action = acDelete
       Grouped = True
@@ -907,7 +907,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbSetHue: TToolButton
-      Left = 143
+      Left = 144
       Top = 2
       Action = acHue
       Grouped = True
@@ -916,28 +916,28 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbSeparator3: TToolButton
-      Left = 193
+      Left = 195
       Top = 2
-      Width = 4
+      Width = 5
       Caption = 'tbSeparator3'
       Style = tbsDivider
     end
     object tbBoundaries: TToolButton
-      Left = 197
+      Left = 200
       Top = 2
       Action = acBoundaries
       ParentShowHint = False
       ShowHint = True
     end
     object tbSeparator4: TToolButton
-      Left = 266
+      Left = 269
       Top = 2
-      Width = 4
+      Width = 5
       Caption = 'tbSeparator4'
       Style = tbsDivider
     end
     object tbTerrain: TToolButton
-      Left = 270
+      Left = 274
       Hint = 'Show Terrain'
       Top = 2
       Caption = 'Terrain'
@@ -949,7 +949,7 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbStatics: TToolButton
-      Left = 293
+      Left = 297
       Hint = 'Show Statics'
       Top = 2
       Caption = 'Statics'
@@ -961,14 +961,14 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbSeparator5: TToolButton
-      Left = 420
+      Left = 424
       Top = 2
-      Width = 4
+      Width = 5
       Caption = 'tbSeparator5'
       Style = tbsDivider
     end
     object tbRadarMap: TToolButton
-      Left = 424
+      Left = 429
       Hint = 'Radar Map'
       Top = 2
       Caption = 'Radar Map'
@@ -978,49 +978,49 @@ object frmMain: TfrmMain
       ShowHint = True
     end
     object tbVirtualLayer: TToolButton
-      Left = 220
+      Left = 223
       Top = 2
       Action = acVirtualLayer
     end
     object tbFilter: TToolButton
-      Left = 243
+      Left = 246
       Top = 2
       Action = acFilter
       OnMouseMove = tbFilterMouseMove
       Style = tbsCheck
     end
     object tbFlat: TToolButton
-      Left = 385
+      Left = 389
       Top = 2
       Action = acFlat
       DropdownMenu = pmFlatViewSettings
       Style = tbsDropDown
     end
     object tbNoDraw: TToolButton
-      Left = 316
+      Left = 320
       Top = 2
       Action = acNoDraw
       Style = tbsCheck
     end
     object tbSeparator2: TToolButton
-      Left = 166
+      Left = 167
       Top = 2
-      Width = 4
+      Width = 5
       Caption = 'tbSeparator2'
       Style = tbsDivider
     end
     object tbUndo: TToolButton
-      Left = 170
+      Left = 172
       Top = 2
       Action = acUndo
     end
     object tbLightlevel: TToolButton
-      Left = 362
+      Left = 366
       Top = 2
       Action = acLightlevel
     end
     object tbWalkable: TToolButton
-      Left = 339
+      Left = 343
       Top = 2
       Action = acWalkable
       Style = tbsCheck

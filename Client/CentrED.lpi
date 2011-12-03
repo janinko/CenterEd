@@ -25,7 +25,7 @@
       <Item1 Name="default" Default="True"/>
       <Item2 Name="Release Win32">
         <CompilerOptions>
-          <Version Value="10"/>
+          <Version Value="11"/>
           <Target>
             <Filename Value="../bin/CentrED"/>
           </Target>
@@ -50,7 +50,7 @@
           </CodeGeneration>
           <Linking>
             <Debugging>
-              <DebugInfoType Value="dsAuto"/>
+              <GenerateDebugInfo Value="False"/>
               <UseLineInfoUnit Value="False"/>
               <StripSymbols Value="True"/>
             </Debugging>
@@ -74,7 +74,7 @@
       </Item2>
       <Item3 Name="Release Linux GTK2 x86">
         <CompilerOptions>
-          <Version Value="10"/>
+          <Version Value="11"/>
           <Target>
             <Filename Value="../bin/CentrED"/>
           </Target>
@@ -99,7 +99,7 @@
           </CodeGeneration>
           <Linking>
             <Debugging>
-              <DebugInfoType Value="dsAuto"/>
+              <GenerateDebugInfo Value="False"/>
               <UseLineInfoUnit Value="False"/>
               <StripSymbols Value="True"/>
             </Debugging>
@@ -431,7 +431,7 @@
     </Units>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="10"/>
+    <Version Value="11"/>
     <Target>
       <Filename Value="../bin/CentrED"/>
     </Target>
@@ -455,7 +455,6 @@
     </CodeGeneration>
     <Linking>
       <Debugging>
-        <GenerateDebugInfo Value="True"/>
         <DebugInfoType Value="dsStabs"/>
         <UseHeaptrc Value="True"/>
       </Debugging>
