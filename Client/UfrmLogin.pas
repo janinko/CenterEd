@@ -79,9 +79,7 @@ var
 implementation
 
 uses
-  UdmNetwork;
-  
-{$I version.inc}
+  UdmNetwork, vinfo;
 
 { TfrmLogin }
 
@@ -171,8 +169,8 @@ procedure TfrmLogin.FormCreate(Sender: TObject);
 var
   searchRec: TSearchRec;
 begin
-  lblCopyright.Caption := Format('UO CentrED Client Version %s (c) %s',
-    [ProductVersion, Copyright]);
+  lblCopyright.Caption := Format('UO CentrED Client Version %s %s',
+    [VersionInfo.GetProductVersionString, VersionInfo.GetCopyright]);
 
   FProfilePath := GetAppConfigDir(False) + 'Profiles' + PathDelim;
   ForceDirectories(FProfilePath);

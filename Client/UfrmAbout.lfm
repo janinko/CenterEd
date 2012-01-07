@@ -116,7 +116,7 @@ object frmAbout: TfrmAbout
         Align = alTop
         Alignment = taCenter
         BorderSpacing.Around = 4
-        Caption = 'Copyright 2011 Andreas Schneider'
+        Caption = 'Copyright 2012 Andreas Schneider'
         ParentColor = False
       end
     end

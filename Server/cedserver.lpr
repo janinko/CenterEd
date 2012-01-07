@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2011 Andreas Schneider
+ *      Portions Copyright 2012 Andreas Schneider
  *)
 program cedserver;
 
@@ -37,8 +37,8 @@ uses
 
 begin
   Writeln('');
-  Writeln('CentrED Server Version ', versionInfo.GetProductVersionString);
-  Writeln('Copyright 2011 Andreas Schneider');
+  Writeln('CentrED Server Version ', VersionInfo.GetProductVersionString);
+  Writeln(VersionInfo.GetCopyright(True));
   //Writeln('================================');
   Writeln('');
 

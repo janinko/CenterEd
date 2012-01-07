@@ -29,6 +29,8 @@ type
 
     //Helper functions
     function GetProductVersionString(AMinPrecision: TVersionPrecision = 2): String;
+    function GetCopyright(ALong: Boolean = false): String;
+    procedure PrintStringFileInfo;
   end;
 
 var
@@ -97,6 +99,31 @@ begin
     Result := Result + IntToStr(productVersion[i]);
     if i < lastVersion then
       Result := Result + '.';
+  end;
+end;
+
+function TVersionInfo.GetCopyright(ALong: Boolean = False): String;
+begin
+  Result := StringFileInfo[0]['LegalCopyright'];
+  if ALong then
+    Result := StringReplace(Result, '(c) ', 'Copyright ', []);
+end;
+
+procedure TVersionInfo.PrintStringFileInfo;
+var
+  verStringInfo: TVersionStringFileInfo;
+  verStringTable: TVersionStringTable;
+  i, j: Integer;
+begin
+  verStringInfo := GetStringFileInfo;
+  for i := 0 to verStringInfo.Count - 1 do
+  begin
+    writeln('Version String Info ', i + 1);
+    verStringTable := verStringInfo.Items[i];
+    for j := 0 to verStringTable.Count - 1 do
+    begin
+      writeln('  ', verStringTable.Keys[j], ' = ', verStringTable.ValuesByIndex[j]);
+    end;
   end;
 end;
 

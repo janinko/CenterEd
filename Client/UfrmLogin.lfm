@@ -1,20 +1,20 @@
 object frmLogin: TfrmLogin
   Left = 290
-  Height = 250
+  Height = 265
   Top = 201
   Width = 483
   ActiveControl = btnOK
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'UO CentrED'
-  ClientHeight = 250
+  ClientHeight = 265
   ClientWidth = 483
   Font.Height = -11
   OnClose = FormClose
   OnCreate = FormCreate
   Position = poScreenCenter
   ShowInTaskBar = stAlways
-  LCLVersion = '0.9.29'
+  LCLVersion = '0.9.31'
   object lblCopyright: TLabel
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = gbData
@@ -24,12 +24,13 @@ object frmLogin: TfrmLogin
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 1
+    Height = 14
     Top = 249
     Width = 483
     Alignment = taCenter
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Top = 8
+    Caption = ' '
     ParentColor = False
   end
   object gbConnection: TGroupBox

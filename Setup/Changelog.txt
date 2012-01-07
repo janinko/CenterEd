@@ -1,6 +1,14 @@
 Changelog:
 [C] = Client, [S] = Server, [-] = Both/Unrelated
 
+Version 0.6.2
+=============
+[C] Added random pool for hues
+[C] Added more infos to the account list (for admins)
+[C] Added sorting to account list
+[C] Fixed possible crash with light sources enabled
+[-] Added support for new tiledata from High Seas expansion
+
 Version 0.6.1
 =============
 [C] Added highlighting for (un)walkable tiles
@@ -8,7 +16,6 @@ Version 0.6.1
 [C] Fixed static drawing order (again)
 [C] Fixed flickering that occured in some cases
 [S] Fixed server not always saving changes
-
 
 Version 0.6
 ===========

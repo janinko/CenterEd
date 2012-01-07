@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=CentrED
-AppVerName=CentrED 0.6.1
+AppVerName=CentrED 0.6.2
 AppPublisher=AKS DataBasis
 AppPublisherURL=http://www.aksdb.de/CentrED
 AppSupportURL=http://www.aksdb.de/CentrED
@@ -13,15 +13,15 @@ DefaultGroupName=AKS DataBasis\CentrED
 OutputBaseFilename=CentrED_win32
 Compression=lzma
 SolidCompression=true
-VersionInfoVersion=0.6.1
+VersionInfoVersion=0.6.2
 VersionInfoCompany=AKS DataBasis
 VersionInfoDescription=Client/Server based multiuser map editor
-VersionInfoTextVersion=0.6.1
+VersionInfoTextVersion=0.6.2
 VersionInfoCopyright=Andreas Schneider
 AppCopyright=Andreas Schneider
 InfoBeforeFile=Changelog.txt
 SignTool=defsign $f
-AppVersion=0.6.1
+AppVersion=0.6.2
 AppID={{77BCACC0-C2D9-470D-858F-A3D94A5F27A5}
 SignedUninstaller=true
 
@@ -44,4 +44,4 @@ Name: {commondesktop}\CentrED; Filename: {app}\CentrED.exe; Tasks: desktopicon
 [Run]
 Filename: {app}\CentrED.exe; Description: {cm:LaunchProgram,CentrED}; Flags: nowait postinstall skipifsilent
 [Messages]
-BeveledLabel=Copyright 2009 Andreas Schneider
+BeveledLabel=Copyright 2012 Andreas Schneider
