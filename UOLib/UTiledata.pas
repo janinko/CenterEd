@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2012 Andreas Schneider
  *)
 unit UTiledata;
 
@@ -49,12 +49,19 @@ type
                    tdfStairRight);
   TTileDataFlags = set of TTileDataFlag;
 
+  TTileDataVersion = (tdvLegacy, tdvHighSeas);
+
   { TTiledata }
 
   TTiledata = class(TMulBlock)
   protected
+    FVersion: TTileDataVersion;
     FFlags: TTileDataFlags;
+    FNewFlags: LongWord; //HighSeas added new flags
     FTileName: string;
+    procedure ReadFlags(AData: TStream);
+    procedure WriteFlags(AData: TStream);
+    procedure PopulateClone(const AClone: TTiledata);
   public
     property Flags: TTileDataFlags read FFlags write FFlags;
     property TileName: string read FTileName write FTileName;
@@ -63,13 +70,14 @@ type
   { TLandTiledata }
 
   TLandTiledata = class(TTiledata)
-    constructor Create(AData: TStream);
+    constructor Create(AData: TStream; AVersion: TTileDataVersion = tdvLegacy);
     destructor Destroy; override;
     function Clone: TLandTiledata; override;
     function GetSize: Integer; override;
     procedure Write(AData: TStream); override;
   protected
     FTextureID: Word;
+    procedure PopulateClone(const AClone: TLandTiledata);
   public
     property TextureID: Word read FTextureID write FTextureID;
   end;
@@ -77,7 +85,7 @@ type
   { TStaticTiledata }
 
   TStaticTiledata = class(TTiledata)
-    constructor Create(AData: TStream);
+    constructor Create(AData: TStream; AVersion: TTileDataVersion = tdvLegacy);
     destructor Destroy; override;
     function Clone: TStaticTiledata; override;
     function GetSize: Integer; override;
@@ -93,6 +101,7 @@ type
     FHue: Byte;
     FUnknown4: Word;
     FHeight: Byte;
+    procedure PopulateClone(const AClone: TStaticTiledata);
   public
     property Weight: Byte read FWeight write FWeight;
     property Quality: Byte read FQuality write FQuality;
@@ -109,7 +118,7 @@ type
   { TLandTileGroup }
 
   TLandTileGroup = class(TMulBlock)
-    constructor Create(AData: TStream);
+    constructor Create(AData: TStream; AVersion: TTileDataVersion = tdvLegacy);
     destructor Destroy; override;
     function Clone: TLandTileGroup; override;
     function GetSize: Integer; override;
@@ -124,7 +133,7 @@ type
   { TStaticTileGroup }
 
   TStaticTileGroup = class(TMulBlock)
-    constructor Create(AData: TStream);
+    constructor Create(AData: TStream; AVersion: TTileDataVersion = tdvLegacy);
     destructor Destroy; override;
     function Clone: TStaticTileGroup; override;
     function GetSize: Integer; override;
@@ -161,14 +170,43 @@ begin
   end;
 end;
 
+{ TTiledata }
+
+procedure TTiledata.ReadFlags(AData: TStream);
+begin
+  AData.Read(FFlags, SizeOf(LongWord));
+  if FVersion >= tdvHighSeas then
+    AData.Read(FNewFlags, SizeOf(LongWord));
+end;
+
+procedure TTiledata.WriteFlags(AData: TStream);
+begin
+  AData.Write(FFlags, SizeOf(LongWord));
+  if FVersion >= tdvHighSeas then
+    AData.Write(FNewFlags, SizeOf(LongWord));
+end;
+
+procedure TTiledata.PopulateClone(const AClone: TTiledata);
+begin
+  AClone.FVersion := FVersion;
+  AClone.FFlags := FFlags;
+  AClone.FNewFlags := FNewFlags;
+  AClone.FTileName := FTileName;
+end;
+
 { TLandTiledata }
 
-constructor TLandTiledata.Create(AData: TStream);
+constructor TLandTiledata.Create(AData: TStream;
+  AVersion: TTileDataVersion = tdvLegacy);
+var
+  legacyFlags: LongWord;
+  highSeasFlags: QWord;
 begin
+  FVersion := AVersion;
   SetLength(FTileName, 20);
   if assigned(AData) then
   begin
-    AData.Read(FFlags, SizeOf(LongWord));
+    ReadFlags(AData);
     AData.Read(FTextureID, SizeOf(Word));
     AData.Read(PChar(FTileName)^, 20);
   end;
@@ -184,9 +222,7 @@ end;
 function TLandTiledata.Clone: TLandTiledata;
 begin
   Result := TLandTiledata.Create(nil);
-  Result.FFlags := FFlags;
-  Result.FTextureID := FTextureID;
-  Result.FTileName := FTileName;
+  PopulateClone(Result);
 end;
 
 procedure TLandTiledata.Write(AData: TStream);
@@ -196,9 +232,16 @@ begin
   if Length(FTileName) < 20 then
     for i := Length(FTileName) to 20 do
       FTileName := FTileName + #0;
-  AData.Write(FFlags, SizeOf(LongWord));
+
+  WriteFlags(AData);
   AData.Write(FTextureID, SizeOf(Word));
   AData.Write(PChar(FTileName)^, 20);
+end;
+
+procedure TLandTiledata.PopulateClone(const AClone: TLandTiledata);
+begin
+  inherited PopulateClone(AClone);
+  AClone.FTextureID := FTextureID;
 end;
 
 function TLandTiledata.GetSize: Integer;
@@ -208,12 +251,14 @@ end;
 
 { TStaticTiledata}
 
-constructor TStaticTiledata.Create(AData: TStream);
+constructor TStaticTiledata.Create(AData: TStream;
+  AVersion: TTileDataVersion = tdvLegacy);
 begin
+  FVersion := AVersion;
   SetLength(FTileName, 20);
   if AData <> nil then
   begin
-    AData.Read(FFlags, SizeOf(LongWord));
+    ReadFlags(AData);
     AData.Read(FWeight, SizeOf(Byte));
     AData.Read(FQuality, SizeOf(Byte));
     AData.Read(FUnknown1, SizeOf(Word));
@@ -238,18 +283,7 @@ end;
 function TStaticTiledata.Clone: TStaticTiledata;
 begin
   Result := TStaticTiledata.Create(nil);
-  Result.FFlags := FFlags;
-  Result.FWeight := FWeight;
-  Result.FQuality := FQuality;
-  Result.FUnknown1 := FUnknown1;
-  Result.FUnknown2 := FUnknown2;
-  Result.FQuantity := FQuantity;
-  Result.FAnimID := FAnimID;
-  Result.FUnknown3 := FUnknown3;
-  Result.FHue := FHue;
-  Result.FUnknown4 := FUnknown4;
-  Result.FHeight := FHeight;
-  Result.FTileName := FTileName;
+  PopulateClone(Result);
 end;
 
 procedure TStaticTiledata.Write(AData: TStream);
@@ -259,7 +293,8 @@ begin
   if Length(FTileName) < 20 then
     for i := Length(FTileName) to 20 do
       FTileName := FTileName + #0;
-  AData.Write(FFlags, SizeOf(LongWord));
+
+  WriteFlags(AData);
   AData.Write(FWeight, SizeOf(Byte));
   AData.Write(FQuality, SizeOf(Byte));
   AData.Write(FUnknown1, SizeOf(Word));
@@ -273,6 +308,21 @@ begin
   AData.Write(PChar(FTileName)^, 20);
 end;
 
+procedure TStaticTiledata.PopulateClone(const AClone: TStaticTiledata);
+begin
+  inherited PopulateClone(AClone);
+  AClone.FWeight := FWeight;
+  AClone.FQuality := FQuality;
+  AClone.FUnknown1 := FUnknown1;
+  AClone.FUnknown2 := FUnknown2;
+  AClone.FQuantity := FQuantity;
+  AClone.FAnimID := FAnimID;
+  AClone.FUnknown3 := FUnknown3;
+  AClone.FHue := FHue;
+  AClone.FUnknown4 := FUnknown4;
+  AClone.FHeight := FHeight;
+end;
+
 function TStaticTiledata.GetSize: Integer;
 begin
   GetSize := StaticTileDataSize;
@@ -280,7 +330,8 @@ end;
 
 { TLandTileGroup }
 
-constructor TLandTileGroup.Create(AData: TStream);
+constructor TLandTileGroup.Create(AData: TStream;
+  AVersion: TTileDataVersion = tdvLegacy);
 var
   i: Integer;
 begin
@@ -289,7 +340,7 @@ begin
     AData.Read(FUnknown, SizeOf(LongInt));
   end;
   for i := 0 to 31 do
-    LandTileData[i] := TLandTiledata.Create(AData);
+    LandTileData[i] := TLandTiledata.Create(AData, AVersion);
 end;
 
 destructor TLandTileGroup.Destroy;
@@ -327,7 +378,8 @@ end;
 
 { TStaticTileGroup }
 
-constructor TStaticTileGroup.Create(AData: TStream);
+constructor TStaticTileGroup.Create(AData: TStream;
+  AVersion: TTileDataVersion = tdvLegacy);
 var
   i: Integer;
 begin
@@ -336,7 +388,7 @@ begin
     AData.Read(FUnknown, SizeOf(LongInt));
   end;
   for i := 0 to 31 do
-    StaticTileData[i] := TStaticTiledata.Create(AData);
+    StaticTileData[i] := TStaticTiledata.Create(AData, AVersion);
 end;
 
 destructor TStaticTileGroup.Destroy;

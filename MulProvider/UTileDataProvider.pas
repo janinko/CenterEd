@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2012 Andreas Schneider
  *)
 unit UTileDataProvider;
 
@@ -114,14 +114,24 @@ end;
 procedure TTiledataProvider.InitArray;
 var
   i: Integer;
+  version: TTileDataVersion;
 begin
+  //Guess the version by looking at the filesize.
+  if FData.Size >= 3188736 then
+    version := tdvHighSeas
+  else
+    version := tdvLegacy;
+
   FData.Position := 0;
   Logger.Send([lcInfo], 'Loading $4000 LandTiledata Entries');
   for i := $0 to $3FFF do
   begin
-    if i mod 32 = 0 then
+    //In High Seas, the first header comes AFTER the unknown tile (for whatever
+    //reason). Therefore special handling is required.
+    if ((version = tdvLegacy) and (i mod 32 = 0)) or
+      ((version >= tdvHighSeas) and ((i = 1) or ((i > 1) and (i mod 32 = 0)))) then
       FData.Seek(4, soFromCurrent);
-    FLandTiles[i] := TLandTileData.Create(FData);
+    FLandTiles[i] := TLandTileData.Create(FData, version);
   end;
 
   FStaticCount := ((FData.Size - FData.Position) div StaticTileGroupSize) * 32;
@@ -132,7 +142,7 @@ begin
   begin
     if i mod 32 = 0 then
       FData.Seek(4, soFromCurrent);
-    FStaticTiles[i] := TStaticTileData.Create(FData);
+    FStaticTiles[i] := TStaticTileData.Create(FData, version);
   end;
 end;
 
