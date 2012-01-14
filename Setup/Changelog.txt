@@ -1,6 +1,12 @@
 Changelog:
 [C] = Client, [S] = Server, [-] = Both/Unrelated
 
+Version 0.6.3
+=============
+[C] Fixed crash when opening the filter dialog
+[C] Fixed crash when performing Undo
+[S] Fixed crash when moving items
+
 Version 0.6.2
 =============
 [C] Added random pool for hues

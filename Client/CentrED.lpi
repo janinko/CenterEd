@@ -17,9 +17,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="6"/>
-      <RevisionNr Value="2"/>
-      <BuildNr Value="238"/>
-      <StringTable CompanyName="AKS DataBasis" ProductName="CentrED" InternalName="CentrED" LegalCopyright="(c) 2012 Andreas Schneider" ProductVersion="0.6.2" FileDescription="UO CentrED" OriginalFilename="CentrED.exe"/>
+      <RevisionNr Value="3"/>
+      <BuildNr Value="241"/>
+      <StringTable CompanyName="AKS DataBasis" ProductName="CentrED" InternalName="CentrED" LegalCopyright="(c) 2012 Andreas Schneider" ProductVersion="0.6.3" FileDescription="UO CentrED" OriginalFilename="CentrED.exe"/>
     </VersionInfo>
     <BuildModes Count="3">
       <Item1 Name="default" Default="True"/>
