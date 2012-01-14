@@ -138,6 +138,11 @@
         <FormatVersion Value="1"/>
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
+      <environment>
+        <UserOverrides Count="1">
+          <Variable0 Name="HEAPTRC" Value="log=CentrED.trc"/>
+        </UserOverrides>
+      </environment>
     </RunParams>
     <RequiredPackages Count="6">
       <Item1>
@@ -163,7 +168,7 @@
         <MinVersion Major="4" Minor="5" Valid="True" Release="1"/>
       </Item6>
     </RequiredPackages>
-    <Units Count="46">
+    <Units Count="48">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -434,6 +439,16 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="UfrmLightlevel"/>
       </Unit45>
+      <Unit46>
+        <Filename Value="../heContnrs.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="heContnrs"/>
+      </Unit46>
+      <Unit47>
+        <Filename Value="../UContnrExt.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UContnrExt"/>
+      </Unit47>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -462,7 +477,6 @@
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsStabs"/>
-        <UseHeaptrc Value="True"/>
       </Debugging>
     </Linking>
     <Other>
@@ -470,8 +484,7 @@
         <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
         <UseMsgFile Value="True"/>
       </CompilerMessages>
-      <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+      <CustomOptions Value="-FE../bin/"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>

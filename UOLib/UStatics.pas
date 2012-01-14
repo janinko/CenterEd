@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2012 Andreas Schneider
  *)
 unit UStatics;
 
@@ -30,7 +30,7 @@ unit UStatics;
 interface
 
 uses
-  SysUtils, Classes, fgl, UGenericIndex, UWorldItem, UTiledata;
+  SysUtils, Classes, heContnrs, UGenericIndex, UWorldItem, UTiledata;
 
 type
   { TStaticItem }
@@ -56,7 +56,7 @@ type
     procedure Write(AData: TStream); override;
   end;
 
-  TStaticItemList = specialize TFPGObjectList<TStaticItem>;
+  TStaticItemList = specialize TheObjectVector<TStaticItem>;
 
   { TStaticBlock}
 

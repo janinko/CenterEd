@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2012 Andreas Schneider
  *)
 unit UWorldItem;
 
@@ -30,7 +30,7 @@ unit UWorldItem;
 interface
 
 uses
-  Classes, fgl, UMulBlock;
+  Classes, heContnrs, UMulBlock;
 
 type
   TWorldBlock = class;
@@ -81,7 +81,7 @@ type
     property RawZ: ShortInt read FZ;
   end;
 
-  TWorldItemList = specialize TFPGObjectList<TWorldItem>;
+  TWorldItemList = specialize TheObjectVector<TWorldItem>;
 
   { TWorldBlock }
 

@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2012 Andreas Schneider
  *)
 unit UMap;
 
@@ -30,7 +30,7 @@ unit UMap;
 interface
 
 uses
-  SysUtils, Classes, fgl, UWorldItem;
+  SysUtils, Classes, heContnrs, UWorldItem;
 
 const
   MapCellSize = 3;
@@ -60,7 +60,7 @@ type
     procedure Write(AData: TStream); override;
   end;
 
-  TMapCellList = specialize TFPGObjectList<TMapCell>;
+  TMapCellList = specialize TheObjectVector<TMapCell>;
 
   { TMapBlock }
 

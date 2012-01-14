@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2011 Andreas Schneider
+ *      Portions Copyright 2012 Andreas Schneider
  *)
 unit ULightManager;
 
@@ -31,8 +31,8 @@ interface
 
 uses
   Classes, SysUtils, Imaging, ImagingTypes, ImagingClasses, ImagingCanvases,
-  ImagingOpenGL, GL, GLu, GLext, fgl, ULandscape, UWorldItem, UCacheManager,
-  Math;
+  ImagingOpenGL, GL, GLu, GLext, Math, heContnrs, ULandscape, UWorldItem,
+  UCacheManager;
 
 type
 
@@ -70,7 +70,7 @@ type
     property Material: TLightMaterial read FMaterial;
   end;
 
-  TLightSources = specialize TFPGObjectList<TLightSource>;
+  TLightSources = specialize TheObjectVector<TLightSource>;
 
   { TLightManager }
 

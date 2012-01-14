@@ -28,6 +28,7 @@ program cedserver;
 {$mode objfpc}{$H+}
 
 uses
+  {$IFNDEF NoLogging}heaptrc,{$ENDIF}
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
@@ -36,6 +37,10 @@ uses
 {$R *.res}
 
 begin
+  {$IFNDEF NoLogging}
+  SetHeapTraceOutput('cedserver.trc');
+  {$ENDIF}
+
   Writeln('');
   Writeln('CentrED Server Version ', VersionInfo.GetProductVersionString);
   Writeln(VersionInfo.GetCopyright(True));

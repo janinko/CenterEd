@@ -28,6 +28,7 @@ program CentrED;
 {$mode objfpc}{$H+}
 
 uses
+  {$IFNDEF NoLogging}heaptrc,{$ENDIF}
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
@@ -43,7 +44,12 @@ begin
 end;
 
 begin
+  {$IFNDEF NoLogging}
+  SetHeapTraceOutput('CentrED.trc');
+  {$ENDIF}
+
   OnGetApplicationName := @GetApplicationName;
+
   Application.Initialize;
   Application.CreateForm(TdmNetwork, dmNetwork);
   Application.Run;

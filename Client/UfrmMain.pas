@@ -34,8 +34,9 @@ uses
   ComCtrls, OpenGLContext, GL, GLu, UGameResources, ULandscape, ExtCtrls,
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
-  XMLPropStorage, fgl, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
-  UGLFont, DOM, XMLRead, XMLWrite, strutils, ULightManager;
+  XMLPropStorage, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
+  UGLFont, DOM, XMLRead, XMLWrite, strutils, ULightManager, heContnrs,
+  UContnrExt;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -43,12 +44,12 @@ type
   TScreenBufferState = (sbsValid, sbsIndexed, sbsFiltered);
   TScreenBufferStates = set of TScreenBufferState;
 
-  TBlockInfoList = specialize TFPGList<PBlockInfo>;
+  TBlockInfoList = specialize TheVector<PBlockInfo>;
 
   TGhostTile = class(TStaticItem);
-  TPacketList = specialize TFPGObjectList<TPacket>;
-  TAccessChangedListeners = specialize TFPGList<TAccessChangedListener>;
-  TSelectionListeners = specialize TFPGList<TSelectionListener>;
+  TPacketList = specialize TheObjectVector<TPacket>;
+  TAccessChangedListeners = specialize TPointerVectorSet<TAccessChangedListener>;
+  TSelectionListeners = specialize TPointerVectorSet<TSelectionListener>;
 
   TTileHintInfo = record
     Name: String;
@@ -650,6 +651,7 @@ var
   tileX, tileY, newX, newY: Word;
   targetBlocks: TBlockInfoList;
   targetTile: TWorldItem;
+  selectionListener: TSelectionListener;
 begin
   Logger.EnterMethod([lcClient, lcDebug], 'MouseUp');
   if Button <> mbLeft then
@@ -677,8 +679,8 @@ begin
       mnuGrabTileIDClick(nil);
     end;
 
-    for i := FSelectionListeners.Count - 1 downto 0 do
-      FSelectionListeners[i](CurrentTile);
+    for selectionListener in FSelectionListeners.Reversed do
+      selectionListener(CurrentTile);
   end;
 
   if (not acSelect.Checked) and (targetTile <> nil) and (SelectedTile <> nil) then
@@ -1123,14 +1125,16 @@ end;
 
 procedure TfrmMain.acUndoExecute(Sender: TObject);
 var
-  i: Integer;
+  packet: TPacket;
 begin
-  for i := FUndoList.Count - 1 downto 0 do
-  begin
-    dmNetwork.Send(FUndoList[i]);
-    FUndoList[i] := nil;
-  end;
-  FUndoList.Clear;
+  //Send each reversed action in reverse order.
+  for packet in FUndoList.Reversed do
+    dmNetwork.Send(packet);
+
+  //Cleanup without freeing the objects (this was already done by dmNetwork.Send)
+  FUndoList.Wipe;
+
+  //No Undo packets, nothing to undo.
   acUndo.Enabled := False;
 end;
 
@@ -1912,25 +1916,23 @@ end;
 procedure TfrmMain.RegisterAccessChangedListener(
   AListener: TAccessChangedListener);
 begin
-  if FAccessChangedListeners.IndexOf(AListener) < 0 then
-    FAccessChangedListeners.Add(AListener);
+  FAccessChangedListeners.Include(AListener);
 end;
 
 procedure TfrmMain.RegisterSelectionListener(AListener: TSelectionListener);
 begin
-  if FSelectionListeners.IndexOf(AListener) < 0 then
-    FSelectionListeners.Add(AListener);
+  FSelectionListeners.Include(AListener);
 end;
 
 procedure TfrmMain.UnregisterAccessChangedListener(
   AListener: TAccessChangedListener);
 begin
-  FAccessChangedListeners.Remove(AListener);
+  FAccessChangedListeners.Exclude(AListener);
 end;
 
 procedure TfrmMain.UnregisterSelectionListener(AListener: TSelectionListener);
 begin
-  FSelectionListeners.Remove(AListener);
+  FSelectionListeners.Exclude(AListener);
 end;
 
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
@@ -3057,6 +3059,7 @@ var
   sender, msg: string;
   i: Integer;
   accessLevel: TAccessLevel;
+  accessChangedListener: TAccessChangedListener;
 begin
   case ABuffer.ReadByte of
     $01: //client connected
@@ -3111,8 +3114,8 @@ begin
           end;
         end;
 
-        for i := FAccessChangedListeners.Count - 1 downto 0 do
-          FAccessChangedListeners[i](accessLevel);
+        for accessChangedListener in FAccessChangedListeners.Reversed do
+          accessChangedListener(accessLevel);
       end;
   end;
 end;

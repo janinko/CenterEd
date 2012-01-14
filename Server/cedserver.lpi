@@ -237,15 +237,13 @@
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2Set"/>
-        <UseHeaptrc Value="True"/>
       </Debugging>
     </Linking>
     <Other>
       <CompilerMessages>
         <UseMsgFile Value="True"/>
       </CompilerMessages>
-      <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+      <CustomOptions Value="-FE../bin/"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
