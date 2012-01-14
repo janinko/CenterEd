@@ -1588,7 +1588,7 @@ begin
   end
   else if FShortCuts[0] <> nil then
   begin
-    stepSize := FCount div 10;
+    stepSize := FCount div 10 + 1;
     nextStep := stepSize;
     step := 0;
     shortcut := 1;
