@@ -1,5 +1,5 @@
 {
-  $Id: ImagingFormats.pas 176 2009-10-12 10:53:17Z galfar $
+  $Id: ImagingFormats.pas 174 2009-09-08 09:37:59Z galfar $
   Vampyre Imaging Library
   by Marek Mauder 
   http://imaginglib.sourceforge.net

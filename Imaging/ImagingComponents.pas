@@ -336,7 +336,7 @@ implementation
 uses
 {$IF Defined(LCL)}
   {$IF Defined(LCLGTK2)}
-    GLib2, GDK2, GTK2, GTK2Def, GTK2Proc,
+    GLib2, GDK2, GTK2, GTKDef, GTKProc,
   {$ELSEIF Defined(LCLGTK)}
     GDK, GTK, GTKDef, GTKProc,
   {$IFEND}

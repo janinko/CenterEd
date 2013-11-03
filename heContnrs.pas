@@ -1499,7 +1499,7 @@ end;
 
 function TheObjectVector.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheObjectVector.Has(const Item: TItem): Boolean;
@@ -1733,7 +1733,7 @@ end;
 
 function TheVector.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheVector.Has(const Item: TItem): Boolean;
@@ -1944,7 +1944,7 @@ end;
 
 function TheCmpVector.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheCmpVector.Has(const Item: TItem): Boolean;
@@ -2105,7 +2105,7 @@ end;
 
 function TheSortVector.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheSortVector.Has(const Item: TItem): Boolean;
@@ -2267,7 +2267,7 @@ end;
 
 function TheCmpSortVector.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheCmpSortVector.Has(const Item: TItem): Boolean;
@@ -2439,7 +2439,7 @@ end;
 
 function TheObjectSortVector.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheObjectSortVector.Has(const Item: TItem): Boolean;
@@ -2621,7 +2621,7 @@ end;
 
 function TheVectorSet.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheVectorSet.Include(const Item: TItem): Boolean;
@@ -2778,7 +2778,7 @@ end;
 
 function TheCmpVectorSet.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheCmpVectorSet.Include(const Item: TItem): Boolean;
@@ -2941,7 +2941,7 @@ end;
 
 function TheObjectVectorSet.GetEnumerator: TEnumerator;
 begin
-  Result.Init(-1, @MoveNext, @GetCurrent);
+  Result.Init(-1, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheObjectVectorSet.Include(const Item: TItem): Boolean;
@@ -3732,7 +3732,7 @@ end;
 
 function TheList.GetEnumerator: TEnumerator;
 begin
-  Result.Init(NewIterator, @MoveNext, @CurrentItem);
+  Result.Init(NewIterator, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@CurrentItem));
 end;
 
 function TheList.CurrentItem(var Iterator: TIterator): TItem;
@@ -3937,7 +3937,7 @@ end;
 
 function TheObjectList.GetEnumerator: TEnumerator;
 begin
-  Result.Init(NewIterator, @MoveNext, @CurrentItem);
+  Result.Init(NewIterator, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@CurrentItem));
 end;
 
 function TheObjectList.CurrentItem(var Iterator: TIterator): TItem;
@@ -4163,7 +4163,7 @@ begin
   Iterator.Index := -1;
   Iterator.UseSentinel := False;
   Assert(Iterator.Page = Iterator.Page); // hint off
-  Result.Init(Iterator, @MoveNext, @GetCurrent);
+  Result.Init(Iterator, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheBTreeSet.Include(const Item: TItem): Boolean;
@@ -5273,7 +5273,7 @@ begin
   Iterator.Index := -1;
   Iterator.UseSentinel := False;
   Assert(Iterator.Page = Iterator.Page); // hint off
-  Result.Init(Iterator, @MoveNext, @GetCurrent);
+  Result.Init(Iterator, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheCmpBTreeSet.Include(const Item: TItem): Boolean;
@@ -5781,7 +5781,7 @@ begin
   Iterator.Index := -1;
   Iterator.UseSentinel := False;
   Assert(Iterator.Page = Iterator.Page); // hint off
-  Result.Init(Iterator, @MoveNext, @GetCurrent);
+  Result.Init(Iterator, TEnumerator.TMoveNext(@MoveNext), TEnumerator.TGetCurrent(@GetCurrent));
 end;
 
 function TheObjectBTreeSet.Include(const Item: TItem): Boolean;

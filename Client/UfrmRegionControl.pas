@@ -460,7 +460,7 @@ var
   node: PVirtualNode;
   areaInfo: PRect;
 begin
-  node := vstArea.GetFirstSelected;
+node := vstArea.GetFirstSelected;
   if node <> nil then
   begin
     areaInfo := vstArea.GetNodeData(node);
@@ -494,10 +494,18 @@ begin
   if selected then
   begin
     areaInfo := Sender.GetNodeData(Node);
+    seX1.OnChange := nil;
+    seX2.OnChange := nil;
+    seY1.OnChange := nil;
+    seY2.OnChange := nil;
     seX1.Value := areaInfo^.Left;
     seX2.Value := areaInfo^.Right;
     seY1.Value := areaInfo^.Top;
     seY2.Value := areaInfo^.Bottom;
+    seX1.OnChange := @seX1Change;
+    seX2.OnChange := @seX1Change;
+    seY1.OnChange := @seX1Change;
+    seY2.OnChange := @seX1Change;
   end;
   pbArea.Repaint;
 end;

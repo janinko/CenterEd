@@ -1,5 +1,5 @@
 {
-  $Id: ImagingJpeg.pas 180 2009-10-16 01:07:26Z galfar $
+  $Id: ImagingJpeg.pas 168 2009-08-22 18:50:21Z galfar $
   Vampyre Imaging Library
   by Marek Mauder
   http://imaginglib.sourceforge.net
@@ -330,7 +330,7 @@ begin
   if Saver.FGrayScale then
     jc.c.in_color_space := JCS_GRAYSCALE
   else
-    jc.c.in_color_space := JCS_RGB;
+    jc.c.in_color_space := JCS_YCbCr;
   jpeg_set_defaults(@jc.c);
   jpeg_set_quality(@jc.c, Saver.FQuality, True);
   if Saver.FProgressive then
@@ -371,8 +371,9 @@ var
   jc: TJpegContext;
   Info: TImageFormatInfo;
   Col32: PColor32Rec;
-  NeedsRedBlueSwap: Boolean;
+{$IFDEF RGBSWAPPED}
   Pix: PColor24Rec;
+{$ENDIF}
 begin
   // Copy IO functions to global var used in JpegLib callbacks
   Result := False;
@@ -396,18 +397,11 @@ begin
     LinesPerCall := 1;
     Dest := Bits;
 
-    // If Jpeg's colorspace is RGB and not YCbCr we need to swap
-    // R and B to get Imaging's native order
-    NeedsRedBlueSwap := jc.d.jpeg_color_space = JCS_RGB;
-  {$IFDEF RGBSWAPPED}
-    // Force R-B swap for FPC's PasJpeg
-    NeedsRedBlueSwap := True;
-  {$ENDIF}
-
     while jc.d.output_scanline < jc.d.output_height do
     begin
       LinesRead := jpeg_read_scanlines(@jc.d, @Dest, LinesPerCall);
-      if NeedsRedBlueSwap and (Format = ifR8G8B8) then
+    {$IFDEF RGBSWAPPED}
+      if Format = ifR8G8B8 then
       begin
         Pix := PColor24Rec(Dest);
         for I := 0 to Width - 1 do
@@ -416,6 +410,7 @@ begin
           Inc(Pix);
         end;
       end;
+    {$ENDIF}
       Inc(Dest, PtrInc * LinesRead);
     end;
 
@@ -557,10 +552,6 @@ initialization
 
  -- TODOS ----------------------------------------------------
     - nothing now
-
-  -- 0.26.5 Changes/Bug Fixes ---------------------------------
-    - Fixed swapped Red-Blue order when loading Jpegs with
-      jc.d.jpeg_color_space = JCS_RGB.
 
   -- 0.26.3 Changes/Bug Fixes ---------------------------------
     - Changed the Jpeg error manager, messages were not properly formated.

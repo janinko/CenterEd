@@ -666,10 +666,18 @@ begin
   if selected then
   begin
     nodeInfo := Sender.GetNodeData(Node);
+    seX1.OnChange := nil;
+    seX2.OnChange := nil;
+    seY1.OnChange := nil;
+    seY2.OnChange := nil;
     seX1.Value := nodeInfo^.Left;
     seX2.Value := nodeInfo^.Right;
     seY1.Value := nodeInfo^.Top;
     seY2.Value := nodeInfo^.Bottom;
+    seX1.OnChange := @seX1Change;
+    seX2.OnChange := @seX1Change;
+    seY1.OnChange := @seX1Change;
+    seY2.OnChange := @seX1Change;
   end;
   pbArea.Repaint;
 end;

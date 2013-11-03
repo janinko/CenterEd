@@ -83,14 +83,6 @@
   {$ENDIF}
 {$ENDIF}
 
-{$IF (Defined(DCC) and (CompilerVersion >= 18.5))}
-  {$IFDEF RELEASE}
-    {$UNDEF DEBUG} // If we are using Delphi 2007+ where you can set
-                   // DEBUG/RELEASE mode in project options and RELEASE
-                   // is currently set we undef DEBUG mode
-  {$ENDIF}
-{$IFEND}
-
 {$IF Defined(IMAGING_DEBUG)}
   {$ASSERTIONS ON}
   {$DEBUGINFO ON}
@@ -128,18 +120,13 @@
 
 // Define if compiler supports inlining of functions and procedures
 // Note that FPC inline support crashed in older versions (1.9.8)
-{$IF (Defined(DCC) and (CompilerVersion >= 17)) or (Defined(FPC) and Defined(CPU86))}
+{$IF (Defined(FPC) and Defined(CPU86))}
   {$DEFINE HAS_INLINE}
-{$IFEND}
-
-// Define if compiler supports advanced records with methods
-{$IF (Defined(DCC) and (CompilerVersion >= 18)) }
-  {$DEFINE HAS_ADVANCED_RECORDS}
 {$IFEND}
 
 // Define if compiler supports operator overloading
 // (unfortunately Delphi and FPC operator overloaing is not compatible)
-{$IF (Defined(DCC) and (CompilerVersion >= 18)) or Defined(FPC)}
+{$IF Defined(FPC)}
   {$DEFINE HAS_OPERATOR_OVERLOADING}
 {$IFEND}
 
