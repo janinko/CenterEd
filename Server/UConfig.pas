@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2013 Andreas Schneider
  *)
 unit UConfig;
 
@@ -30,8 +30,8 @@ unit UConfig;
 interface
 
 uses
-  Classes, SysUtils, DOM, XMLRead, XMLWrite, md5, Keyboard, UAccount,
-  UXmlHelper, UInterfaces, UEnums, URegions;
+  Classes, SysUtils, DOM, XMLRead, XMLWrite, Keyboard, UAccount, UXmlHelper,
+  UInterfaces, UEnums, URegions;
 
 type
 
@@ -292,8 +292,8 @@ begin
   until stringValue <> '';
   Write  ('Password [hidden]: ');
   password := QueryPassword;
-  FAccounts.Add(TAccount.Create(FAccounts, stringValue,
-    MD5Print(MD5String(password)), alAdministrator, nil));
+  FAccounts.Add(TAccount.Create(FAccounts, stringValue, password,
+    alAdministrator, nil));
   
   FChanged := True;
 end;

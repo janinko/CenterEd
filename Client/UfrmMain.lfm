@@ -5,7 +5,7 @@ object frmMain: TfrmMain
   Width = 755
   ActiveControl = oglGameWindow
   Caption = 'UO CentrED'
-  ClientHeight = 559
+  ClientHeight = 558
   ClientWidth = 755
   Constraints.MinHeight = 500
   Constraints.MinWidth = 750
@@ -23,7 +23,7 @@ object frmMain: TfrmMain
   object pnlBottom: TPanel
     Left = 0
     Height = 31
-    Top = 528
+    Top = 527
     Width = 755
     Align = alBottom
     BevelOuter = bvNone
@@ -34,7 +34,7 @@ object frmMain: TfrmMain
       Left = 11
       Height = 13
       Top = 7
-      Width = 9
+      Width = 11
       Caption = 'X:'
       ParentColor = False
     end
@@ -42,7 +42,7 @@ object frmMain: TfrmMain
       Left = 88
       Height = 13
       Top = 7
-      Width = 8
+      Width = 10
       Caption = 'Y:'
       ParentColor = False
     end
@@ -50,15 +50,15 @@ object frmMain: TfrmMain
       Left = 240
       Height = 13
       Top = 7
-      Width = 3
+      Width = 4
       Caption = ' '
       ParentColor = False
     end
     object lblTip: TLabel
-      Left = 524
+      Left = 501
       Height = 31
       Top = 0
-      Width = 223
+      Width = 246
       Align = alRight
       Alignment = taRightJustify
       BorderSpacing.Right = 8
@@ -67,10 +67,10 @@ object frmMain: TfrmMain
       ParentColor = False
     end
     object lblTipC: TLabel
-      Left = 502
+      Left = 473
       Height = 31
       Top = 0
-      Width = 22
+      Width = 28
       Align = alRight
       Caption = 'Tip: '
       Font.Height = -11
@@ -81,7 +81,7 @@ object frmMain: TfrmMain
     end
     object edX: TSpinEdit
       Left = 24
-      Height = 21
+      Height = 25
       Top = 3
       Width = 55
       MaxValue = 100000
@@ -89,7 +89,7 @@ object frmMain: TfrmMain
     end
     object edY: TSpinEdit
       Left = 104
-      Height = 21
+      Height = 25
       Top = 3
       Width = 52
       MaxValue = 100000
@@ -108,7 +108,7 @@ object frmMain: TfrmMain
   end
   object pcLeft: TPageControl
     Left = 0
-    Height = 504
+    Height = 503
     Top = 24
     Width = 224
     ActivePage = tsTiles
@@ -117,16 +117,16 @@ object frmMain: TfrmMain
     TabOrder = 1
     object tsTiles: TTabSheet
       Caption = 'Tiles'
-      ClientHeight = 478
-      ClientWidth = 216
+      ClientHeight = 472
+      ClientWidth = 218
       object lblFilter: TLabel
         AnchorSideLeft.Control = cbTerrain
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = cbTerrain
-        Left = 75
+        Left = 89
         Height = 13
         Top = 8
-        Width = 29
+        Width = 31
         BorderSpacing.Left = 16
         Caption = 'Filter:'
         ParentColor = False
@@ -140,10 +140,10 @@ object frmMain: TfrmMain
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = spTileList
         Left = 4
-        Height = 240
+        Height = 224
         Hint = '-'
-        Top = 50
-        Width = 208
+        Top = 60
+        Width = 210
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Left = 4
         BorderSpacing.Top = 4
@@ -200,12 +200,12 @@ object frmMain: TfrmMain
         AnchorSideBottom.Side = asrBottom
         Left = 0
         Height = 183
-        Top = 295
-        Width = 216
+        Top = 289
+        Width = 218
         Anchors = [akTop, akLeft, akRight, akBottom]
         Caption = 'Random pool'
-        ClientHeight = 165
-        ClientWidth = 212
+        ClientHeight = 169
+        ClientWidth = 216
         TabOrder = 1
         object btnAddRandom: TSpeedButton
           AnchorSideLeft.Control = gbRandom
@@ -359,10 +359,10 @@ object frmMain: TfrmMain
         object btnRandomPresetSave: TSpeedButton
           AnchorSideTop.Control = cbRandomPreset
           AnchorSideRight.Control = btnRandomPresetDelete
-          Left = 160
+          Left = 164
           Height = 22
           Hint = 'Save Preset'
-          Top = 140
+          Top = 138
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -411,10 +411,10 @@ object frmMain: TfrmMain
           AnchorSideTop.Control = btnRandomPresetSave
           AnchorSideRight.Control = gbRandom
           AnchorSideRight.Side = asrBottom
-          Left = 186
+          Left = 190
           Height = 22
           Hint = 'Delete Preset'
-          Top = 140
+          Top = 138
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -469,9 +469,9 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = cbRandomPreset
           Cursor = 63
           Left = 4
-          Height = 112
+          Height = 110
           Top = 24
-          Width = 204
+          Width = 208
           Anchors = [akTop, akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
           BorderSpacing.Top = 2
@@ -517,14 +517,14 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = gbRandom
           AnchorSideBottom.Side = asrBottom
           Left = 4
-          Height = 21
-          Top = 140
-          Width = 152
+          Height = 27
+          Top = 138
+          Width = 156
           Anchors = [akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
           BorderSpacing.Bottom = 4
-          ItemHeight = 13
+          ItemHeight = 0
           OnChange = cbRandomPresetChange
           Sorted = True
           Style = csDropDownList
@@ -538,8 +538,8 @@ object frmMain: TfrmMain
         Cursor = crVSplit
         Left = 0
         Height = 5
-        Top = 290
-        Width = 216
+        Top = 284
+        Width = 218
         Align = alNone
         Anchors = [akLeft, akRight, akBottom]
         ResizeAnchor = akBottom
@@ -549,10 +549,10 @@ object frmMain: TfrmMain
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = vdtTiles
         AnchorSideBottom.Side = asrBottom
-        Left = 108
-        Height = 21
+        Left = 110
+        Height = 23
         Hint = 'Append S or T to restrict the search to Statics or Terrain.'
-        Top = 261
+        Top = 253
         Width = 96
         Anchors = [akRight, akBottom]
         BorderSpacing.Right = 8
@@ -571,10 +571,10 @@ object frmMain: TfrmMain
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = tsTiles
         AnchorSideRight.Side = asrBottom
-        Left = 75
-        Height = 21
+        Left = 89
+        Height = 23
         Top = 21
-        Width = 125
+        Width = 113
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Right = 16
         OnEditingDone = edFilterEditingDone
@@ -585,10 +585,10 @@ object frmMain: TfrmMain
         AnchorSideLeft.Side = asrCenter
         AnchorSideTop.Control = cbTerrain
         AnchorSideTop.Side = asrBottom
-        Left = 5
-        Height = 19
-        Top = 27
-        Width = 53
+        Left = 3
+        Height = 24
+        Top = 32
+        Width = 71
         Caption = 'Statics'
         Checked = True
         OnChange = cbStaticsChange
@@ -599,9 +599,9 @@ object frmMain: TfrmMain
         AnchorSideLeft.Control = tsTiles
         AnchorSideTop.Control = tsTiles
         Left = 4
-        Height = 19
+        Height = 24
         Top = 8
-        Width = 55
+        Width = 69
         BorderSpacing.Left = 4
         BorderSpacing.Top = 8
         Caption = 'Terrain'
@@ -613,8 +613,8 @@ object frmMain: TfrmMain
     end
     object tsClients: TTabSheet
       Caption = 'Clients'
-      ClientHeight = 478
-      ClientWidth = 216
+      ClientHeight = 472
+      ClientWidth = 218
       object lbClients: TListBox
         Left = 0
         Height = 478
@@ -624,14 +624,16 @@ object frmMain: TfrmMain
         ItemHeight = 0
         OnDblClick = mnuGoToClientClick
         PopupMenu = pmClients
+        ScrollWidth = 214
         Sorted = True
         TabOrder = 0
+        TopIndex = -1
       end
     end
     object tsLocations: TTabSheet
       Caption = 'Locations'
-      ClientHeight = 478
-      ClientWidth = 216
+      ClientHeight = 472
+      ClientWidth = 218
       object btnClearLocations: TSpeedButton
         AnchorSideLeft.Control = btnDeleteLocation
         AnchorSideLeft.Side = asrBottom
@@ -1027,7 +1029,7 @@ object frmMain: TfrmMain
     AnchorSideBottom.Control = spChat
     Left = 224
     Height = 22
-    Top = 392
+    Top = 391
     Width = 531
     Anchors = [akLeft, akRight, akBottom]
     BevelInner = bvRaised
@@ -1040,7 +1042,7 @@ object frmMain: TfrmMain
       Left = 10
       Height = 18
       Top = 2
-      Width = 100
+      Width = 113
       Align = alLeft
       BorderSpacing.Left = 8
       Caption = 'Chat and Messages'
@@ -1061,7 +1063,7 @@ object frmMain: TfrmMain
     AnchorSideBottom.Control = pnlBottom
     Left = 224
     Height = 109
-    Top = 419
+    Top = 418
     Width = 531
     Anchors = [akTop, akLeft, akRight, akBottom]
     BevelOuter = bvNone
@@ -1072,7 +1074,7 @@ object frmMain: TfrmMain
     object vstChat: TVirtualStringTree
       Cursor = 63
       Left = 0
-      Height = 88
+      Height = 86
       Top = 0
       Width = 531
       Align = alClient
@@ -1092,7 +1094,7 @@ object frmMain: TfrmMain
         item
           Position = 2
           Text = 'Message'
-          Width = 377
+          Width = 379
         end>
       Header.DefaultHeight = 17
       Header.MainColumn = 2
@@ -1110,8 +1112,8 @@ object frmMain: TfrmMain
     end
     object edChat: TEdit
       Left = 0
-      Height = 21
-      Top = 88
+      Height = 23
+      Top = 86
       Width = 531
       Align = alBottom
       OnKeyPress = edChatKeyPress
@@ -1126,7 +1128,7 @@ object frmMain: TfrmMain
     Cursor = crVSplit
     Left = 224
     Height = 5
-    Top = 414
+    Top = 413
     Width = 531
     Align = alNone
     Anchors = [akLeft, akRight, akBottom]
@@ -1143,7 +1145,7 @@ object frmMain: TfrmMain
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = pnlChatHeader
     Left = 224
-    Height = 368
+    Height = 367
     Top = 24
     Width = 531
     Anchors = [akTop, akLeft, akRight, akBottom]
@@ -1164,6 +1166,13 @@ object frmMain: TfrmMain
     top = 33
     object mnuCentrED: TMenuItem
       Caption = '&CentrED'
+      object mnuChangePassword: TMenuItem
+        Caption = '&Change Password'
+        OnClick = mnuChangePasswordClick
+      end
+      object mnuSeparator1: TMenuItem
+        Caption = '-'
+      end
       object mnuDisconnect: TMenuItem
         Caption = '&Disconnect'
         Bitmap.Data = {
@@ -1204,9 +1213,6 @@ object frmMain: TfrmMain
         }
         ImageIndex = 0
         OnClick = mnuDisconnectClick
-      end
-      object mnuSeparator1: TMenuItem
-        Caption = '-'
       end
       object mnuExit: TMenuItem
         Caption = 'E&xit'
@@ -2728,4 +2734,4 @@ object frmMain: TfrmMain
     left = 368
     top = 208
   end
-end
+end

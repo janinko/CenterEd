@@ -56,6 +56,11 @@ type
                          mrModified        = 1);
   TDeleteRegionStatus = (drNotFound = 0,
                          drDeleted  = 1);
+
+  TPasswordChangeStatus = (pcSuccess      = 0,
+                           pcOldPwInvalid = 1,
+                           pcNewPwInvalid = 2,
+                           pcIdentical    = 3);
                        
 function GetAccessLevelString(AAccessLevel: TAccessLevel): string;
 

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
     <Version Value="9"/>
@@ -13,9 +13,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="6"/>
-      <RevisionNr Value="3"/>
+      <RevisionNr Value="4"/>
       <BuildNr Value="240"/>
-      <StringTable CompanyName="AKS DataBasis" ProductName="CentrED" InternalName="CentrED Server" LegalCopyright="(c) 2012 Andreas Schneider" ProductVersion="0.6.3" FileDescription="CentrED Server" OriginalFilename="cedserver.exe"/>
+      <StringTable CompanyName="AKS DataBasis" FileDescription="CentrED Server" InternalName="CentrED Server" LegalCopyright="(c) 2013 Andreas Schneider" OriginalFilename="cedserver.exe" ProductName="CentrED" ProductVersion="0.6.4"/>
     </VersionInfo>
     <BuildModes Count="3">
       <Item1 Name="default" Default="True"/>
@@ -69,7 +69,7 @@
       </Item2>
       <Item3 Name="Release Win32">
         <MacroValues Count="1">
-          <Macro1 Name="LCLWidgetType" Value="win32"/>
+          <Macro2 Name="LCLWidgetType" Value="win32"/>
         </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
@@ -115,6 +115,10 @@
           </Other>
         </CompilerOptions>
       </Item3>
+      <SharedMatrixOptions Count="2">
+        <Item1 ID="285940101796" Modes="Release Linux i686" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
+        <Item2 ID="285439860087" Modes="Release Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
+      </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
@@ -231,7 +235,6 @@
     <Parsing>
       <SyntaxOptions>
         <CStyleOperator Value="False"/>
-        <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
     <Linking>

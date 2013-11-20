@@ -71,6 +71,12 @@ type
     constructor Create(AAccount: TAccount);
   end;
 
+  { TPasswordChangeStatusPacket }
+
+  TPasswordChangeStatusPacket = class(TPacket)
+    constructor Create(AResult: TPasswordChangeStatus);
+  end;
+
 procedure OnClientHandlerPacket(ABuffer: TEnhancedMemoryStream;
   ANetState: TNetState);
 procedure OnUpdateClientPosPacket(ABuffer: TEnhancedMemoryStream;
@@ -78,6 +84,8 @@ procedure OnUpdateClientPosPacket(ABuffer: TEnhancedMemoryStream;
 procedure OnChatMessagePacket(ABuffer: TEnhancedMemoryStream;
   ANetState: TNetState);
 procedure OnGotoClientPosPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+procedure OnChangePasswordPacket(ABuffer: TEnhancedMemoryStream;
   ANetState: TNetState);
 
 procedure WriteAccountRestrictions(AStream: TEnhancedMemoryStream;
@@ -128,6 +136,44 @@ begin
   if account <> nil then
     CEDServerInstance.SendPacket(ANetState,
       TSetClientPosPacket.Create(account.LastPos));
+end;
+
+procedure OnChangePasswordPacket(ABuffer: TEnhancedMemoryStream;
+  ANetState: TNetState);
+var
+  oldPwd, newPwd: String;
+begin
+  oldPwd := ABuffer.ReadStringNull;
+  newPwd := ABuffer.ReadStringNull;
+  if ANetState.Account.CheckPassword(oldPwd) then
+  begin
+    //Check if the passwords actually differ. Changing them isn't allowed
+    //otherwise. Might be open for configuration, though.
+    if oldPwd <> newPwd then
+    begin
+      //Just a simple restriction to disallow too easy passwords.
+      //TODO: Configurable restrictions
+      if Length(newPwd) >= 4 then
+      begin
+        //Everything fine, update the password and report success.
+        ANetState.Account.UpdatePassword(newPwd);
+        CEDServerInstance.SendPacket(ANetState,
+          TPasswordChangeStatusPacket.Create(pcSuccess));
+      end else
+      begin
+        CEDServerInstance.SendPacket(ANetState,
+          TPasswordChangeStatusPacket.Create(pcNewPwInvalid));
+      end;
+    end else
+    begin
+      CEDServerInstance.SendPacket(ANetState,
+        TPasswordChangeStatusPacket.Create(pcIdentical));
+    end;
+  end else
+  begin
+    CEDServerInstance.SendPacket(ANetState,
+      TPasswordChangeStatusPacket.Create(pcOldPwInvalid));
+  end;
 end;
 
 procedure WriteAccountRestrictions(AStream: TEnhancedMemoryStream;
@@ -236,6 +282,15 @@ begin
   WriteAccountRestrictions(FStream, AAccount);
 end;
 
+{ TPasswordChangeStatusPacket }
+
+constructor TPasswordChangeStatusPacket.Create(AResult: TPasswordChangeStatus);
+begin
+  inherited Create($0C, 0);
+  FStream.WriteByte($08);
+  FStream.WriteByte(Byte(AResult));
+end;
+
 {$WARNINGS OFF}
 var
   i: Integer;
@@ -246,6 +301,7 @@ initialization
   ClientPacketHandlers[$04] := TPacketHandler.Create(0, @OnUpdateClientPosPacket);
   ClientPacketHandlers[$05] := TPacketHandler.Create(0, @OnChatMessagePacket);
   ClientPacketHandlers[$06] := TPacketHandler.Create(0, @OnGotoClientPosPacket);
+  ClientPacketHandlers[$08] := TPacketHandler.Create(0, @OnChangePasswordPacket);
 finalization
   for i := 0 to $FF do
     if ClientPacketHandlers[i] <> nil then

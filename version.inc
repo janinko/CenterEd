@@ -1,2 +1,2 @@
 const
-  ProtocolVersion = 6;
+  ProtocolVersion = 7;

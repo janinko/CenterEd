@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2013 Andreas Schneider
  *)
 unit UConnectionHandling;
 
@@ -63,7 +63,7 @@ var
 implementation
 
 uses
-  md5, UCEDServer, UClientHandling, UPackets;
+  UCEDServer, UClientHandling, UPackets;
 
 procedure OnConnectionHandlerPacket(ABuffer: TEnhancedMemoryStream; ANetState: TNetState);
 var
@@ -77,19 +77,19 @@ end;
 procedure OnLoginRequestPacket(ABuffer: TEnhancedMemoryStream;
   ANetState: TNetState);
 var
-  username, passwordHash: string;
+  username, password: string;
   account: TAccount;
   netState: TNetState;
   invalid: Boolean;
 begin
   username := ABuffer.ReadStringNull;
-  passwordHash := MD5Print(MD5String(ABuffer.ReadStringNull));
+  password := ABuffer.ReadStringNull;
   account := Config.Accounts.Find(username);
   if account <> nil then
   begin
     if account.AccessLevel > alNone then
     begin
-      if account.PasswordHash = passwordHash then
+      if account.CheckPassword(password) then
       begin
         invalid := False;
         CEDServerInstance.TCPServer.IterReset;

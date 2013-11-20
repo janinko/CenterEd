@@ -141,6 +141,7 @@ initialization
   //$06-$0B --> handled by TLandscape
   //$0C --> ClientHandling, done by TfrmMain
   //$0D --> RadarMapHandling, done by TfrmRadarMap
+  //$0E --> LargeScaleCommands, done by TfrmLargeScaleCommands
 finalization
   for i := 0 to $FF do
     if PacketHandlers[i] <> nil then

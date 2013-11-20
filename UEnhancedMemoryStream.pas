@@ -118,7 +118,7 @@ var
   length: Integer;
 begin
   Result := '';
-  buffer := Pointer(LongInt(Memory) + Position);
+  buffer := Pointer(PtrInt(Memory) + Position);
   length := 0;
   while (buffer[length] <> #0) and (length < (Size - Position)) do
   begin
@@ -138,7 +138,7 @@ var
   length: Integer;
 begin
   Result := '';
-  buffer := Pointer(LongInt(FMemory) + FPosition);
+  buffer := Pointer(PtrInt(FMemory) + FPosition);
   length := 0;
   while (length < ALength) and (length < (FSize - (FPosition - FLockOffset))) do
   begin
@@ -158,7 +158,7 @@ var
   length: Integer;
 begin
   Result := '';
-  buffer := Pointer(LongInt(FMemory) + FPosition);
+  buffer := Pointer(PtrInt(FMemory) + FPosition);
   length := 0;
   while (buffer^[length] <> 0) and (length < (FSize - (FPosition - FLockOffset))) do
   begin

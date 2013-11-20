@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2013 Andreas Schneider
  *)
 unit UPackets;
 
@@ -132,6 +132,12 @@ type
 
   TGotoClientPosPacket = class(TPacket)
     constructor Create(AUsername: string);
+  end;
+
+  { TChangePasswordPacket }
+
+  TChangePasswordPacket = class(TPacket)
+    constructor Create(AOldPassword, ANewPassword: String);
   end;
   
   { TRequestRadarChecksumPacket }
@@ -344,6 +350,16 @@ begin
   inherited Create($0C, 0);
   FStream.WriteByte($06);
   FStream.WriteStringNull(AUsername);
+end;
+
+{ TChangePasswordPacket }
+
+constructor TChangePasswordPacket.Create(AOldPassword, ANewPassword: String);
+begin
+  inherited Create($0C, 0);
+  FStream.WriteByte($08);
+  FStream.WriteStringNull(AOldPassword);
+  FStream.WriteStringNull(ANewPassword);
 end;
 
 { TRequestRadarChecksumPacket }

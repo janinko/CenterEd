@@ -17,11 +17,11 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="6"/>
-      <RevisionNr Value="3"/>
-      <BuildNr Value="241"/>
-      <StringTable CompanyName="AKS DataBasis" ProductName="CentrED" InternalName="CentrED" LegalCopyright="(c) 2012 Andreas Schneider" ProductVersion="0.6.3" FileDescription="UO CentrED" OriginalFilename="CentrED.exe"/>
+      <RevisionNr Value="4"/>
+      <BuildNr Value="245"/>
+      <StringTable CompanyName="AKS DataBasis" FileDescription="UO CentrED" InternalName="CentrED" LegalCopyright="(c) 2013 Andreas Schneider" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.6.4"/>
     </VersionInfo>
-    <BuildModes Count="3">
+    <BuildModes Count="4">
       <Item1 Name="default" Default="True"/>
       <Item2 Name="Release Win32">
         <MacroValues Count="1">
@@ -127,9 +127,61 @@
           </Other>
         </CompilerOptions>
       </Item3>
+      <Item4 Name="Release Linux GTK2 x64">
+        <MacroValues Count="1">
+          <Macro2 Name="LCLWidgetType" Value="gtk2"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../bin/CentrED"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging;../Imaging/JpegLib;../Imaging/ZLib;Tools"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
+            <SrcPath Value="$(LazarusDir)/lcl;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType);..;../UOLib;../MulProvider;../Imaging;../Imaging/JpegLib;../Imaging/ZLib;Tools"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <SmartLinkUnit Value="True"/>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
+            <Optimizations>
+              <OptimizationLevel Value="3"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <UseLineInfoUnit Value="False"/>
+              <StripSymbols Value="True"/>
+            </Debugging>
+            <LinkSmart Value="True"/>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+          <Other>
+            <CompilerMessages>
+              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-FE../bin/
+-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
+      </Item4>
       <SharedMatrixOptions Count="2">
         <Item1 ID="851019893220" Modes="Release Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
-        <Item2 ID="521965364444" Modes="Release Linux GTK2 x86" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
+        <Item2 ID="521965364444" Modes="Release Linux GTK2 x86,Release Linux GTK2 x64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
       </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
@@ -172,7 +224,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item6>
     </RequiredPackages>
-    <Units Count="48">
+    <Units Count="49">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -190,6 +242,7 @@
         <Filename Value="UdmNetwork.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="dmNetwork"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
         <UnitName Value="UdmNetwork"/>
       </Unit2>
@@ -197,6 +250,7 @@
         <Filename Value="UfrmLogin.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmLogin"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="UfrmLogin"/>
       </Unit3>
@@ -455,6 +509,14 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UContnrExt"/>
       </Unit47>
+      <Unit48>
+        <Filename Value="UfrmChangePassword.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmChangePassword"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UfrmChangePassword"/>
+      </Unit48>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -494,4 +556,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-</CONFIG>
+</CONFIG>

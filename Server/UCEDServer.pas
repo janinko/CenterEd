@@ -217,7 +217,7 @@ begin
   try
     buffer := ANetState.ReceiveQueue;
     buffer.Position := 0;
-    while (buffer.Size >= 1) and ANetState.Socket.Connected do
+    while (buffer.Size >= 1) and (ANetState.Socket.ConnectionStatus = scConnected) do
     begin
       packetID := buffer.ReadByte;
       packetHandler := PacketHandlers[packetID];
@@ -268,7 +268,7 @@ begin
     netState := TNetState(FTCPServer.Iterator.UserData);
     if netState <> nil then
     begin
-      if FTCPServer.Iterator.Connected then
+      if FTCPServer.Iterator.ConnectionStatus = scConnected then
       begin
         if (SecondsBetween(netState.LastAction, Now) > 120) then
         begin
@@ -326,7 +326,7 @@ begin
     while FTCPServer.IterNext do
     begin
       netState := TNetState(FTCPServer.Iterator.UserData);
-      if (netState <> nil) and (FTCPServer.Iterator.Connected) then
+      if (netState <> nil) and (FTCPServer.Iterator.ConnectionStatus = scConnected) then
       begin
         netState.SendQueue.Seek(0, soFromEnd);
         netState.SendQueue.CopyFrom(APacket.Stream, 0);
@@ -340,7 +340,7 @@ end;
 
 procedure TCEDServer.Disconnect(ASocket: TLSocket);
 begin
-  if ASocket.Connected then
+  if ASocket.ConnectionStatus = scConnected then
   begin
     ASocket.Disconnect;
     //OnDisconnect(ASocket);

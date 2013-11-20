@@ -78,7 +78,8 @@ uses
   UGameResources, UfrmAccountControl, UfrmEditAccount, UfrmDrawSettings,
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
-  UfrmVirtualLayer, UfrmFilter, UfrmRegionControl, UfrmLightlevel;
+  UfrmVirtualLayer, UfrmFilter, UfrmRegionControl, UfrmLightlevel,
+  UfrmChangePassword;
   
 {$I version.inc}
 
@@ -212,6 +213,7 @@ begin
           frmVirtualLayer := TfrmVirtualLayer.Create(frmMain);
           frmLightlevel := TfrmLightlevel.Create(frmMain);
           frmAbout := TfrmAbout.Create(frmMain);
+          frmChangePassword := TfrmChangePassword.Create(frmMain);
           frmMain.Show;
           frmInitialize.Hide;
           tmNoOp.Enabled := True;
@@ -308,6 +310,7 @@ begin
   FreeAndNil(frmLargeScaleCommand);
   FreeAndNil(frmRadarMap);
   FreeAndNil(frmLightlevel);
+  FreeAndNil(frmChangePassword);
 
   if frmMain <> nil then
   begin

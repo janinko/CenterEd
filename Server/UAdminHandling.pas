@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2013 Andreas Schneider
  *)
 unit UAdminHandling;
 
@@ -88,7 +88,7 @@ var
 implementation
 
 uses
-  md5, UCEDServer, UPackets, UClientHandling;
+  UCEDServer, UPackets, UClientHandling;
 
 procedure AdminBroadcast(AAccessLevel: TAccessLevel; APacket: TPacket);
 var
@@ -146,7 +146,7 @@ begin
   if account <> nil then
   begin
     if password <> '' then
-      account.PasswordHash := MD5Print(MD5String(password));
+      account.UpdatePassword(password);
 
     account.AccessLevel := accessLevel;
 
@@ -181,8 +181,8 @@ begin
       for i := 0 to regionCount - 1 do
         regions.Add(ABuffer.ReadStringNull);
 
-      account := TAccount.Create(Config.Accounts, username,
-        MD5Print(MD5String(password)), accessLevel, regions);
+      account := TAccount.Create(Config.Accounts, username, password,
+        accessLevel, regions);
 
       Config.Accounts.Add(account);
       Config.Accounts.Invalidate;

@@ -139,7 +139,7 @@ begin
     begin
       subscriptions := CEDServerInstance.Landscape.BlockSubscriptions[ACoords[i].X, ACoords[i].Y];
       subscriptions.Delete(ANetState);
-      subscriptions.Add(Integer(ANetState), ANetState);
+      subscriptions.Add(PtrInt(ANetState), ANetState);
       if ANetState.Subscriptions.IndexOf(subscriptions) = -1 then
         ANetState.Subscriptions.Add(subscriptions);
     end;

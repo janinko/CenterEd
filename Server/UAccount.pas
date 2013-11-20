@@ -21,7 +21,7 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2008 Andreas Schneider
+ *      Portions Copyright 2013 Andreas Schneider
  *)
 unit UAccount;
 
@@ -37,7 +37,7 @@ type
   { TAccount }
 
   TAccount = class(TObject, ISerializable, IInvalidate)
-    constructor Create(AOwner: IInvalidate; AName, APasswordHash: string;
+    constructor Create(AOwner: IInvalidate; AName, APassword: string;
       AAccessLevel: TAccessLevel; ARegions: TStringList);
     constructor Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
     destructor Destroy; override;
@@ -58,7 +58,9 @@ type
     property PasswordHash: string read FPasswordHash write SetPasswordHash;
     property LastPos: TPoint read FLastPos write SetLastPos;
     property Regions: TStringList read FRegions;
+    function CheckPassword(APassword: String): Boolean;
     procedure Invalidate;
+    procedure UpdatePassword(APassword: String);
   end;
 
   { TAccountList }
@@ -79,17 +81,17 @@ type
 implementation
 
 uses
-  UCEDServer, UConfig;
+  UCEDServer, UConfig, md5;
 
 { TAccount }
 
-constructor TAccount.Create(AOwner: IInvalidate; AName, APasswordHash: string;
+constructor TAccount.Create(AOwner: IInvalidate; AName, APassword: string;
   AAccessLevel: TAccessLevel; ARegions: TStringList);
 begin
   inherited Create;
   FOwner := AOwner;
   FName := AName;
-  FPasswordHash := APasswordHash;
+  FPasswordHash := MD5Print(MD5String(APassword));
   FAccessLevel := AAccessLevel;
   if ARegions <> nil then
     FRegions := ARegions
@@ -154,9 +156,25 @@ begin
   Invalidate;
 end;
 
+function TAccount.CheckPassword(APassword: String): Boolean;
+var
+  testHash: String;
+begin
+  //Since I want to change to PBKDF2 sometime, we compare strings instead
+  //of MD5Digest, so we can (later) check what type of hash the string has
+  //been created with.
+  testHash := MD5Print(MD5String(APassword));
+  Result := FPasswordHash = testHash;
+end;
+
 procedure TAccount.Invalidate;
 begin
   FOwner.Invalidate;
+end;
+
+procedure TAccount.UpdatePassword(APassword: String);
+begin
+  PasswordHash := MD5Print(MD5String(APassword));
 end;
 
 procedure TAccount.Serialize(AElement: TDOMElement);

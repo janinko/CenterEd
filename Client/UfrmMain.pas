@@ -103,6 +103,7 @@ type
     lblY: TLabel;
     lbClients: TListBox;
     MainMenu1: TMainMenu;
+    mnuChangePassword: TMenuItem;
     mnuWhiteBackground: TMenuItem;
     mnuSecurityQuestion: TMenuItem;
     mnuShowAnimations: TMenuItem;
@@ -222,6 +223,7 @@ type
     procedure lblChatHeaderCaptionClick(Sender: TObject);
     procedure lblChatHeaderCaptionMouseEnter(Sender: TObject);
     procedure lblChatHeaderCaptionMouseLeave(Sender: TObject);
+    procedure mnuChangePasswordClick(Sender: TObject);
     procedure mnuAboutClick(Sender: TObject);
     procedure mnuAccountControlClick(Sender: TObject);
     procedure mnuDisconnectClick(Sender: TObject);
@@ -407,7 +409,7 @@ uses
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
   UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmRegionControl,
-  Logging, LConvEncoding, LCLType, UfrmLightlevel;
+  Logging, LConvEncoding, LCLType, UfrmLightlevel, UfrmChangePassword;
 
 type
   TGLArrayf4 = array[0..3] of GLfloat;
@@ -1415,6 +1417,11 @@ end;
 procedure TfrmMain.lblChatHeaderCaptionMouseLeave(Sender: TObject);
 begin
   lblChatHeaderCaption.Font.Underline := False;
+end;
+
+procedure TfrmMain.mnuChangePasswordClick(Sender: TObject);
+begin
+  frmChangePassword.ShowModal;
 end;
 
 procedure TfrmMain.mnuAboutClick(Sender: TObject);
@@ -3060,6 +3067,7 @@ var
   i: Integer;
   accessLevel: TAccessLevel;
   accessChangedListener: TAccessChangedListener;
+  pwdChangeStatus: TPasswordChangeStatus;
 begin
   case ABuffer.ReadByte of
     $01: //client connected
@@ -3116,6 +3124,23 @@ begin
 
         for accessChangedListener in FAccessChangedListeners.Reversed do
           accessChangedListener(accessLevel);
+      end;
+    $08: //password change status
+      begin
+        pwdChangeStatus := TPasswordChangeStatus(ABuffer.ReadByte);
+        case pwdChangeStatus of
+          pcSuccess:
+            Messagedlg('Password Change', 'Your password has been changed', mtInformation, [mbOK], 0);
+          pcOldPwInvalid:
+            Messagedlg('Password Change', 'The old password is wrong.' + sLineBreak +
+              'Your password has NOT been changed.', mtWarning, [mbOK], 0);
+          pcNewPwInvalid:
+            Messagedlg('Password Change', 'The new password is not allowed.' + sLineBreak +
+              'Your password has NOT been changed.', mtWarning, [mbOK], 0);
+          pcIdentical:
+            Messagedlg('Password Change', 'The new password matched the old password.' + sLineBreak +
+              'Your password has NOT been changed.', mtWarning, [mbOK], 0);
+        end;
       end;
   end;
 end;
