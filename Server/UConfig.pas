@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, DOM, XMLRead, XMLWrite, Keyboard, UAccount, UXmlHelper,
-  UInterfaces, UEnums, URegions;
+  UInterfaces, UEnums, URegions, UMapManagement;
 
 type
 
@@ -78,6 +78,7 @@ type
     FRadarcol: string;
     FRegions: TRegionList;
     FAccounts: TAccountList;
+    FMapStates: TMapStates;
     FChanged: Boolean;
     procedure SetPort(const AValue: Integer);
     procedure SetRadarcol(const AValue: string);
@@ -89,6 +90,7 @@ type
     property Radarcol: string read FRadarcol write SetRadarcol;
     property Regions: TRegionList read FRegions;
     property Accounts: TAccountList read FAccounts;
+    property MapStates: TMapStates read FMapStates;
     procedure Flush;
     procedure Invalidate;
   end;
@@ -210,7 +212,7 @@ begin
   FPort := TXmlHelper.ReadInteger(xmlDoc.DocumentElement, 'Port', 2597);
 
   xmlElement := TDOMElement(xmlDoc.DocumentElement.FindNode('Map'));
-  if not assigned(xmlElement) then
+  if not Assigned(xmlElement) then
     raise TInvalidConfigException.Create('Map information not found');
   FMap := TMapInfo.Deserialize(Self, xmlElement);
   
@@ -218,15 +220,21 @@ begin
   FRadarcol := TXmlHelper.ReadString(xmlDoc.DocumentElement, 'Radarcol', 'radarcol.mul');
 
   xmlElement := TDOMElement(xmlDoc.DocumentElement.FindNode('Regions'));
-  if assigned(xmlElement) then
+  if Assigned(xmlElement) then
     FRegions := TRegionList.Deserialize(Self, xmlElement)
   else
-    Fregions := TRegionList.Create(Self);
+    FRegions := TRegionList.Create(Self);
 
   xmlElement := TDOMElement(xmlDoc.DocumentElement.FindNode('Accounts'));
-  if not assigned(xmlElement) then
+  if not Assigned(xmlElement) then
     raise TInvalidConfigException.Create('Account information not found');
   FAccounts := TAccountList.Deserialize(Self, xmlElement);
+
+  xmlElement := TDOMElement(xmlDoc.DocumentElement.FindNode('MapStates'));
+  if Assigned(xmlElement) then
+    FMapStates := TMapStates.Deserialize(Self, xmlElement)
+  else
+    FMapStates := TMapStates.Create(Self);
 
   xmlDoc.Free;
   
@@ -243,6 +251,7 @@ begin
   FMap := TMapInfo.Create(Self);
   FAccounts := TAccountList.Create(Self);
   FRegions := TRegionList.Create(Self);
+  FMapStates := TMapStates.Create(Self);
   
   Writeln('Configuring Network');
   Writeln('===================');
@@ -303,6 +312,7 @@ begin
   if Assigned(FMap) then FreeAndNil(FMap);
   if Assigned(FAccounts) then FreeAndNil(FAccounts);
   if Assigned(FRegions) then FreeAndNil(FRegions);
+  if Assigned(FMapStates) then FreeAndNil(FMapStates);
   inherited Destroy;
 end;
 
@@ -314,6 +324,7 @@ begin
   TXmlHelper.WriteString(AElement, 'Radarcol', FRadarcol);
   FAccounts.Serialize(TXmlHelper.AssureElement(AElement, 'Accounts'));
   FRegions.Serialize(TXmlHelper.AssureElement(AElement, 'Regions'));
+  FMapStates.Serialize(TXmlHelper.AssureElement(AElement, 'MapStates'));
 end;
 
 procedure TConfig.SetPort(const AValue: Integer);

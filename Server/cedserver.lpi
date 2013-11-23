@@ -173,7 +173,7 @@
         <PackageName Value="lnetbase"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="16">
+    <Units Count="18">
       <Unit0>
         <Filename Value="cedserver.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -254,6 +254,16 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UMap"/>
       </Unit15>
+      <Unit16>
+        <Filename Value="UMapManagement.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UMapManagement"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="URegions.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="URegions"/>
+      </Unit17>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -25,7 +25,7 @@
  *)
 unit UXmlHelper;
 
-{$mode delphi}{$H+}
+{$mode objfpc}{$H+}
 
 interface
 
@@ -49,7 +49,46 @@ type
     class function ReadCoords(AParent: TDOMElement; AName: string; out X, Y: Integer): Boolean;
   end;
 
+  { TDOMNodeListEnumerator }
+
+  TDOMNodeListEnumerator = class
+  private
+    FNodeList: TDOMNodeList;
+    FIndex: Integer;
+    function GetCurrent: TDOMNode;
+  public
+    constructor Create(const ANodeList: TDOMNodeList);
+    function MoveNext: Boolean;
+    property Current: TDOMNode read GetCurrent;
+  end;
+
+operator Enumerator(const ANodeList: TDOMNodeList): TDOMNodeListEnumerator;
+
 implementation
+
+operator Enumerator(const ANodeList: TDOMNodeList): TDOMNodeListEnumerator;
+begin
+  Result := TDOMNodeListEnumerator.Create(ANodeList);
+end;
+
+{ TDOMNodeListEnumerator }
+
+function TDOMNodeListEnumerator.GetCurrent: TDOMNode;
+begin
+  Result := FNodeList[FIndex];
+end;
+
+constructor TDOMNodeListEnumerator.Create(const ANodeList: TDOMNodeList);
+begin
+  FNodeList := ANodeList;
+  FIndex := -1;
+end;
+
+function TDOMNodeListEnumerator.MoveNext: Boolean;
+begin
+  Inc(FIndex);
+  Result := FIndex < FNodeList.Count;
+end;
 
 { TXmlHelper }
 

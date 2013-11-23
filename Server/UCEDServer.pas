@@ -113,6 +113,7 @@ begin
     Config.Map.StaIdxFile, Config.Tiledata, Config.Radarcol, Config.Map.Width,
     Config.Map.Height, FValid);
   FTCPServer := TLTcp.Create(nil);
+  FTCPServer.ReuseAddress := True;
   FTCPServer.OnAccept := @OnAccept;
   FTCPServer.OnCanSend := @OnCanSend;
   FTCPServer.OnDisconnect := @OnDisconnect;
