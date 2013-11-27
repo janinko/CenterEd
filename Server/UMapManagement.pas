@@ -30,7 +30,7 @@ unit UMapManagement;
 interface
 
 uses
-  Classes, SysUtils, UPacket, UInterfaces, UXmlHelper,
+  Classes, SysUtils, UPacket, UInterfaces, UXmlHelper, UEnhancedMemoryStream,
   DOM, fgl;
 
 type
@@ -43,6 +43,7 @@ type
     FName: String;
     FPath: String;
     FDescription: String;
+    procedure WriteToStream(AStream: TEnhancedMemoryStream);
   public
     constructor Create(AOwner: IInvalidate);
     constructor Deserialize(AOwner: IInvalidate; AElement: TDOMElement);
@@ -66,9 +67,24 @@ type
     function Remove(const Item: TMapState): Integer;
   end;
 
+  //Network
+
+  { TMapStateListPacket }
+
+  TMapStateListPacket = class(TPacket)
+    constructor Create(AMapStates: TMapStates);
+  end;
+
 implementation
 
 { TMapState }
+
+procedure TMapState.WriteToStream(AStream: TEnhancedMemoryStream);
+begin
+  AStream.WriteStringNull(FName);
+  AStream.WriteStringNull(FPath);
+  AStream.WriteStringNull(FDescription);
+end;
 
 constructor TMapState.Create(AOwner: IInvalidate);
 begin
@@ -147,6 +163,14 @@ function TMapStates.Remove(const Item: TMapState): Integer;
 begin
   Result := inherited Remove(Item);
   Invalidate;
+end;
+
+{ TMapStateListPacket }
+
+constructor TMapStateListPacket.Create(AMapStates: TMapStates);
+begin
+  inherited Create($0F, 0);
+  FStream.WriteByte($01);
 end;
 
 end.
