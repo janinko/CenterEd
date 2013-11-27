@@ -75,14 +75,14 @@
           </Other>
         </CompilerOptions>
       </Item2>
-      <Item3 Name="Release Linux GTK2 x86">
+      <Item3 Name="Release Linux x86">
         <MacroValues Count="1">
           <Macro2 Name="LCLWidgetType" Value="gtk2"/>
         </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../bin/CentrED"/>
+            <Filename Value="../bin/CentrED.x86"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
@@ -127,14 +127,14 @@
           </Other>
         </CompilerOptions>
       </Item3>
-      <Item4 Name="Release Linux GTK2 x64">
+      <Item4 Name="Release Linux x64">
         <MacroValues Count="1">
           <Macro2 Name="LCLWidgetType" Value="gtk2"/>
         </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../bin/CentrED"/>
+            <Filename Value="../bin/CentrED.x64"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
@@ -181,7 +181,7 @@
       </Item4>
       <SharedMatrixOptions Count="2">
         <Item1 ID="851019893220" Modes="Release Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
-        <Item2 ID="521965364444" Modes="Release Linux GTK2 x86,Release Linux GTK2 x64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
+        <Item2 ID="521965364444" Modes="Release Linux x86,Release Linux x64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
       </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
@@ -556,4 +556,4 @@
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
-</CONFIG>
+</CONFIG>

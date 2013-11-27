@@ -17,60 +17,9 @@
       <BuildNr Value="240"/>
       <StringTable CompanyName="AKS DataBasis" FileDescription="CentrED Server" InternalName="CentrED Server" LegalCopyright="(c) 2013 Andreas Schneider" OriginalFilename="cedserver.exe" ProductName="CentrED" ProductVersion="0.6.4"/>
     </VersionInfo>
-    <BuildModes Count="3">
+    <BuildModes Count="4">
       <Item1 Name="default" Default="True"/>
-      <Item2 Name="Release Linux i686">
-        <MacroValues Count="1">
-          <Macro1 Name="LCLWidgetType" Value="gtk2"/>
-        </MacroValues>
-        <CompilerOptions>
-          <Version Value="11"/>
-          <Target>
-            <Filename Value="../bin/cedserver"/>
-          </Target>
-          <SearchPaths>
-            <IncludeFiles Value="..;../Imaging"/>
-            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
-            <UnitOutputDirectory Value="../obj"/>
-            <SrcPath Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
-          </SearchPaths>
-          <Parsing>
-            <SyntaxOptions>
-              <CStyleOperator Value="False"/>
-              <UseAnsiStrings Value="False"/>
-            </SyntaxOptions>
-          </Parsing>
-          <CodeGeneration>
-            <SmartLinkUnit Value="True"/>
-            <TargetProcessor Value="pentiumm"/>
-            <TargetCPU Value="i386"/>
-            <TargetOS Value="linux"/>
-            <Optimizations>
-              <OptimizationLevel Value="3"/>
-            </Optimizations>
-          </CodeGeneration>
-          <Linking>
-            <Debugging>
-              <GenerateDebugInfo Value="False"/>
-              <UseLineInfoUnit Value="False"/>
-              <StripSymbols Value="True"/>
-            </Debugging>
-            <LinkSmart Value="True"/>
-          </Linking>
-          <Other>
-            <CompilerMessages>
-              <UseMsgFile Value="True"/>
-            </CompilerMessages>
-            <CustomOptions Value="-FE../bin/
--dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
-          </Other>
-        </CompilerOptions>
-      </Item2>
-      <Item3 Name="Release Win32">
-        <MacroValues Count="1">
-          <Macro2 Name="LCLWidgetType" Value="win32"/>
-        </MacroValues>
+      <Item2 Name="Release Win32">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -114,11 +63,96 @@
             <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
+      </Item2>
+      <Item3 Name="Release Linux x86">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../bin/cedserver.x86"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="..;../Imaging"/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
+            <UnitOutputDirectory Value="../obj"/>
+            <SrcPath Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+              <UseAnsiStrings Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <SmartLinkUnit Value="True"/>
+            <TargetProcessor Value="pentiumm"/>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="linux"/>
+            <Optimizations>
+              <OptimizationLevel Value="3"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <UseLineInfoUnit Value="False"/>
+              <StripSymbols Value="True"/>
+            </Debugging>
+            <LinkSmart Value="True"/>
+          </Linking>
+          <Other>
+            <CompilerMessages>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-FE../bin/
+-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
       </Item3>
-      <SharedMatrixOptions Count="2">
-        <Item1 ID="285940101796" Modes="Release Linux i686" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
-        <Item2 ID="285439860087" Modes="Release Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
-      </SharedMatrixOptions>
+      <Item4 Name="Release Linux x64">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../bin/cedserver.x64"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="..;../Imaging"/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
+            <UnitOutputDirectory Value="../obj"/>
+            <SrcPath Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+              <UseAnsiStrings Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <SmartLinkUnit Value="True"/>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
+            <Optimizations>
+              <OptimizationLevel Value="3"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <UseLineInfoUnit Value="False"/>
+              <StripSymbols Value="True"/>
+            </Debugging>
+            <LinkSmart Value="True"/>
+          </Linking>
+          <Other>
+            <CompilerMessages>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-FE../bin/
+-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
+      </Item4>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
