@@ -30,7 +30,7 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../bin/CentrED"/>
+            <Filename Value="../Client.bin/CentrED"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
@@ -69,8 +69,7 @@
               <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
               <UseMsgFile Value="True"/>
             </CompilerMessages>
-            <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+            <CustomOptions Value="-dNoLogging"/>
             <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
@@ -82,7 +81,7 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../bin/CentrED.x86"/>
+            <Filename Value="../Client.bin/CentrED.x86"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
@@ -121,8 +120,7 @@
               <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
               <UseMsgFile Value="True"/>
             </CompilerMessages>
-            <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+            <CustomOptions Value="-dNoLogging"/>
             <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
@@ -134,7 +132,7 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../bin/CentrED.x64"/>
+            <Filename Value="../Client.bin/CentrED.x64"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
@@ -173,8 +171,7 @@
               <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
               <UseMsgFile Value="True"/>
             </CompilerMessages>
-            <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+            <CustomOptions Value="-dNoLogging"/>
             <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
@@ -522,7 +519,7 @@
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="../bin/CentrED"/>
+      <Filename Value="../Client.bin/CentrED"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
@@ -552,7 +549,6 @@
         <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
         <UseMsgFile Value="True"/>
       </CompilerMessages>
-      <CustomOptions Value="-FE../bin/"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>

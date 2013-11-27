@@ -23,12 +23,12 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../bin/cedserver"/>
+            <Filename Value="../Server.bin/cedserver"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="..;../Imaging"/>
             <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
-            <UnitOutputDirectory Value="../obj"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
             <SrcPath Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
           </SearchPaths>
           <Parsing>
@@ -58,8 +58,7 @@
             <CompilerMessages>
               <UseMsgFile Value="True"/>
             </CompilerMessages>
-            <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+            <CustomOptions Value="-dNoLogging"/>
             <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
@@ -68,12 +67,12 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../bin/cedserver.x86"/>
+            <Filename Value="../Server.bin/cedserver.x86"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="..;../Imaging"/>
             <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
-            <UnitOutputDirectory Value="../obj"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
             <SrcPath Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
           </SearchPaths>
           <Parsing>
@@ -103,8 +102,7 @@
             <CompilerMessages>
               <UseMsgFile Value="True"/>
             </CompilerMessages>
-            <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+            <CustomOptions Value="-dNoLogging"/>
             <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
@@ -113,12 +111,12 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../bin/cedserver.x64"/>
+            <Filename Value="../Server.bin/cedserver.x64"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="..;../Imaging"/>
             <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
-            <UnitOutputDirectory Value="../obj"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
             <SrcPath Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
           </SearchPaths>
           <Parsing>
@@ -147,8 +145,7 @@
             <CompilerMessages>
               <UseMsgFile Value="True"/>
             </CompilerMessages>
-            <CustomOptions Value="-FE../bin/
--dNoLogging"/>
+            <CustomOptions Value="-dNoLogging"/>
             <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
@@ -269,12 +266,12 @@
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="../bin/cedserver"/>
+      <Filename Value="../Server.bin/cedserver"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="..;../Imaging"/>
       <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
-      <UnitOutputDirectory Value="../obj"/>
+      <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>
@@ -290,7 +287,6 @@
       <CompilerMessages>
         <UseMsgFile Value="True"/>
       </CompilerMessages>
-      <CustomOptions Value="-FE../bin/"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
