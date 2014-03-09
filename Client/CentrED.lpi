@@ -21,7 +21,7 @@
       <BuildNr Value="245"/>
       <StringTable CompanyName="AKS DataBasis" FileDescription="UO CentrED" InternalName="CentrED" LegalCopyright="(c) 2013 Andreas Schneider" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.6.4"/>
     </VersionInfo>
-    <BuildModes Count="4">
+    <BuildModes Count="7">
       <Item1 Name="default" Default="True"/>
       <Item2 Name="Release Win32">
         <MacroValues Count="1">
@@ -176,6 +176,105 @@
           </Other>
         </CompilerOptions>
       </Item4>
+      <Item5 Name="Debug Win32">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../Client.bin/CentrED"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging;../Imaging/JpegLib;../Imaging/ZLib;Tools"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Checks>
+              <OverflowChecks Value="True"/>
+            </Checks>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
+          </CodeGeneration>
+          <Other>
+            <CompilerMessages>
+              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
+      </Item5>
+      <Item6 Name="Debug Linux x86">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../Client.bin/CentrED"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging;../Imaging/JpegLib;../Imaging/ZLib;Tools"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Checks>
+              <OverflowChecks Value="True"/>
+            </Checks>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="linux"/>
+          </CodeGeneration>
+          <Other>
+            <CompilerMessages>
+              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
+      </Item6>
+      <Item7 Name="Debug Linux x64">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../Client.bin/CentrED"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir);../Imaging;.."/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging;../Imaging/JpegLib;../Imaging/ZLib;Tools"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Checks>
+              <OverflowChecks Value="True"/>
+            </Checks>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
+          </CodeGeneration>
+          <Other>
+            <CompilerMessages>
+              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
+      </Item7>
       <SharedMatrixOptions Count="2">
         <Item1 ID="851019893220" Modes="Release Win32" Type="IDEMacro" MacroName="LCLWidgetType" Value="win32"/>
         <Item2 ID="521965364444" Modes="Release Linux x86,Release Linux x64" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
