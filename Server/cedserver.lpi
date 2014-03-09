@@ -17,7 +17,7 @@
       <BuildNr Value="240"/>
       <StringTable CompanyName="AKS DataBasis" FileDescription="CentrED Server" InternalName="CentrED Server" LegalCopyright="(c) 2013 Andreas Schneider" OriginalFilename="cedserver.exe" ProductName="CentrED" ProductVersion="0.6.4"/>
     </VersionInfo>
-    <BuildModes Count="4">
+    <BuildModes Count="7">
       <Item1 Name="default" Default="True"/>
       <Item2 Name="Release Win32">
         <CompilerOptions>
@@ -150,6 +150,107 @@
           </Other>
         </CompilerOptions>
       </Item4>
+      <Item5 Name="Debug Win32">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../Server.bin/cedserver"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="..;../Imaging"/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+              <UseAnsiStrings Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Checks>
+              <OverflowChecks Value="True"/>
+            </Checks>
+            <TargetProcessor Value="pentiumm"/>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
+          </CodeGeneration>
+          <Other>
+            <CompilerMessages>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
+      </Item5>
+      <Item6 Name="Debug Linux x86">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../Server.bin/cedserver"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="..;../Imaging"/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+              <UseAnsiStrings Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Checks>
+              <OverflowChecks Value="True"/>
+            </Checks>
+            <TargetProcessor Value="pentiumm"/>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="linux"/>
+          </CodeGeneration>
+          <Other>
+            <CompilerMessages>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
+      </Item6>
+      <Item7 Name="Debug Linux x64">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="../Server.bin/cedserver"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="..;../Imaging"/>
+            <OtherUnitFiles Value="..;../UOLib;../MulProvider;../Imaging/ZLib"/>
+            <UnitOutputDirectory Value="../obj/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <CStyleOperator Value="False"/>
+              <UseAnsiStrings Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Checks>
+              <OverflowChecks Value="True"/>
+            </Checks>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
+          </CodeGeneration>
+          <Other>
+            <CompilerMessages>
+              <UseMsgFile Value="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-dNoLogging"/>
+            <CompilerPath Value="$(CompPath)"/>
+          </Other>
+        </CompilerOptions>
+      </Item7>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
