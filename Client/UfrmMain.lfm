@@ -18,7 +18,7 @@ object frmMain: TfrmMain
   Position = poScreenCenter
   SessionProperties = 'acFlat.Checked;acNoDraw.Checked;Height;Left;mnuFlatShowHeight.Checked;mnuSecurityQuestion.Checked;mnuShowAnimations.Checked;spTileList.Top;tbStatics.Down;tbTerrain.Down;Top;Width;WindowState;mnuWhiteBackground.Checked'
   ShowInTaskBar = stAlways
-  LCLVersion = '1.3'
+  LCLVersion = '1.5'
   WindowState = wsMaximized
   object pnlBottom: TPanel
     Left = 0
@@ -81,7 +81,7 @@ object frmMain: TfrmMain
     end
     object edX: TSpinEdit
       Left = 24
-      Height = 25
+      Height = 21
       Top = 3
       Width = 55
       MaxValue = 100000
@@ -89,7 +89,7 @@ object frmMain: TfrmMain
     end
     object edY: TSpinEdit
       Left = 104
-      Height = 25
+      Height = 21
       Top = 3
       Width = 52
       MaxValue = 100000
@@ -117,13 +117,13 @@ object frmMain: TfrmMain
     TabOrder = 1
     object tsTiles: TTabSheet
       Caption = 'Tiles'
-      ClientHeight = 472
-      ClientWidth = 218
+      ClientHeight = 476
+      ClientWidth = 220
       object lblFilter: TLabel
         AnchorSideLeft.Control = cbTerrain
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = cbTerrain
-        Left = 89
+        Left = 85
         Height = 13
         Top = 8
         Width = 31
@@ -140,10 +140,10 @@ object frmMain: TfrmMain
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = spTileList
         Left = 4
-        Height = 224
+        Height = 228
         Hint = '-'
         Top = 60
-        Width = 210
+        Width = 212
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Left = 4
         BorderSpacing.Top = 4
@@ -200,11 +200,11 @@ object frmMain: TfrmMain
         AnchorSideBottom.Side = asrBottom
         Left = 0
         Height = 183
-        Top = 289
-        Width = 218
+        Top = 293
+        Width = 220
         Anchors = [akTop, akLeft, akRight, akBottom]
         Caption = 'Random pool'
-        ClientHeight = 169
+        ClientHeight = 168
         ClientWidth = 216
         TabOrder = 1
         object btnAddRandom: TSpeedButton
@@ -362,7 +362,7 @@ object frmMain: TfrmMain
           Left = 164
           Height = 22
           Hint = 'Save Preset'
-          Top = 138
+          Top = 139
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -414,7 +414,7 @@ object frmMain: TfrmMain
           Left = 190
           Height = 22
           Hint = 'Delete Preset'
-          Top = 138
+          Top = 139
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -469,7 +469,7 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = cbRandomPreset
           Cursor = 63
           Left = 4
-          Height = 110
+          Height = 111
           Top = 24
           Width = 208
           Anchors = [akTop, akLeft, akRight, akBottom]
@@ -517,8 +517,8 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = gbRandom
           AnchorSideBottom.Side = asrBottom
           Left = 4
-          Height = 27
-          Top = 138
+          Height = 25
+          Top = 139
           Width = 156
           Anchors = [akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
@@ -538,8 +538,8 @@ object frmMain: TfrmMain
         Cursor = crVSplit
         Left = 0
         Height = 5
-        Top = 284
-        Width = 218
+        Top = 288
+        Width = 220
         Align = alNone
         Anchors = [akLeft, akRight, akBottom]
         ResizeAnchor = akBottom
@@ -549,10 +549,10 @@ object frmMain: TfrmMain
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = vdtTiles
         AnchorSideBottom.Side = asrBottom
-        Left = 110
+        Left = 112
         Height = 23
         Hint = 'Append S or T to restrict the search to Statics or Terrain.'
-        Top = 253
+        Top = 257
         Width = 96
         Anchors = [akRight, akBottom]
         BorderSpacing.Right = 8
@@ -571,10 +571,10 @@ object frmMain: TfrmMain
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = tsTiles
         AnchorSideRight.Side = asrBottom
-        Left = 89
+        Left = 85
         Height = 23
         Top = 21
-        Width = 113
+        Width = 119
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Right = 16
         OnEditingDone = edFilterEditingDone
@@ -585,10 +585,10 @@ object frmMain: TfrmMain
         AnchorSideLeft.Side = asrCenter
         AnchorSideTop.Control = cbTerrain
         AnchorSideTop.Side = asrBottom
-        Left = 3
+        Left = 4
         Height = 24
         Top = 32
-        Width = 71
+        Width = 65
         Caption = 'Statics'
         Checked = True
         OnChange = cbStaticsChange
@@ -601,7 +601,7 @@ object frmMain: TfrmMain
         Left = 4
         Height = 24
         Top = 8
-        Width = 69
+        Width = 65
         BorderSpacing.Left = 4
         BorderSpacing.Top = 8
         Caption = 'Terrain'
@@ -613,8 +613,8 @@ object frmMain: TfrmMain
     end
     object tsClients: TTabSheet
       Caption = 'Clients'
-      ClientHeight = 472
-      ClientWidth = 218
+      ClientHeight = 476
+      ClientWidth = 220
       object lbClients: TListBox
         Left = 0
         Height = 478
@@ -632,8 +632,8 @@ object frmMain: TfrmMain
     end
     object tsLocations: TTabSheet
       Caption = 'Locations'
-      ClientHeight = 472
-      ClientWidth = 218
+      ClientHeight = 476
+      ClientWidth = 220
       object btnClearLocations: TSpeedButton
         AnchorSideLeft.Control = btnDeleteLocation
         AnchorSideLeft.Side = asrBottom
@@ -851,6 +851,7 @@ object frmMain: TfrmMain
     end
     object tbSeparator1: TToolButton
       Left = 24
+      Height = 22
       Top = 2
       Width = 5
       Style = tbsDivider
@@ -911,6 +912,7 @@ object frmMain: TfrmMain
     end
     object tbSeparator3: TToolButton
       Left = 195
+      Height = 22
       Top = 2
       Width = 5
       Caption = 'tbSeparator3'
@@ -925,6 +927,7 @@ object frmMain: TfrmMain
     end
     object tbSeparator4: TToolButton
       Left = 269
+      Height = 22
       Top = 2
       Width = 5
       Caption = 'tbSeparator4'
@@ -956,6 +959,7 @@ object frmMain: TfrmMain
     end
     object tbSeparator5: TToolButton
       Left = 424
+      Height = 22
       Top = 2
       Width = 5
       Caption = 'tbSeparator5'
@@ -998,6 +1002,7 @@ object frmMain: TfrmMain
     end
     object tbSeparator2: TToolButton
       Left = 167
+      Height = 22
       Top = 2
       Width = 5
       Caption = 'tbSeparator2'
@@ -2734,4 +2739,4 @@ object frmMain: TfrmMain
     left = 368
     top = 208
   end
-end
+end

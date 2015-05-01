@@ -28,7 +28,7 @@ program CentrED;
 {$mode objfpc}{$H+}
 
 uses
-  {$IFNDEF NoLogging}heaptrc,{$ENDIF}
+  {$IFNDEF NoLogging}heaptrc, Logging, filechannel,{$ENDIF}
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
@@ -46,6 +46,7 @@ end;
 begin
   {$IFNDEF NoLogging}
   SetHeapTraceOutput('CentrED.trc');
+  Logger.Channels.Add(TFileChannel.Create('CentrED.log'));
   {$ENDIF}
 
   OnGetApplicationName := @GetApplicationName;

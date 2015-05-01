@@ -19,7 +19,7 @@
       <MinorVersionNr Value="6"/>
       <RevisionNr Value="4"/>
       <BuildNr Value="245"/>
-      <StringTable CompanyName="AKS DataBasis" FileDescription="UO CentrED" InternalName="CentrED" LegalCopyright="(c) 2013 Andreas Schneider" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.6.4"/>
+      <StringTable CompanyName="AKS DataBasis" FileDescription="UO CentrED" InternalName="CentrED" LegalCopyright="(c) 2015 Andreas Schneider" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.6.4"/>
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="default" Default="True"/>
@@ -66,11 +66,9 @@
           </Linking>
           <Other>
             <CompilerMessages>
-              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
-              <UseMsgFile Value="True"/>
+              <IgnoredMessages idx5028="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
             </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item2>
@@ -117,11 +115,9 @@
           </Linking>
           <Other>
             <CompilerMessages>
-              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
-              <UseMsgFile Value="True"/>
+              <IgnoredMessages idx5028="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
             </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item3>
@@ -168,11 +164,9 @@
           </Linking>
           <Other>
             <CompilerMessages>
-              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
-              <UseMsgFile Value="True"/>
+              <IgnoredMessages idx5028="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
             </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item4>
@@ -204,11 +198,8 @@
           </CodeGeneration>
           <Other>
             <CompilerMessages>
-              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
-              <UseMsgFile Value="True"/>
+              <IgnoredMessages idx5028="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
             </CompilerMessages>
-            <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item5>
@@ -240,11 +231,9 @@
           </CodeGeneration>
           <Other>
             <CompilerMessages>
-              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
-              <UseMsgFile Value="True"/>
+              <IgnoredMessages idx5028="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
             </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item6>
@@ -276,11 +265,9 @@
           </CodeGeneration>
           <Other>
             <CompilerMessages>
-              <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
-              <UseMsgFile Value="True"/>
+              <IgnoredMessages idx5028="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
             </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item7>
@@ -333,7 +320,6 @@
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="CentrED"/>
       </Unit0>
       <Unit1>
         <Filename Value="UfrmMain.pas"/>
@@ -357,14 +343,12 @@
         <ComponentName Value="frmLogin"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmLogin"/>
       </Unit3>
       <Unit4>
         <Filename Value="UfrmInitialize.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmInitialize"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmInitialize"/>
       </Unit4>
       <Unit5>
         <Filename Value="UfrmAccountControl.pas"/>
@@ -372,111 +356,94 @@
         <ComponentName Value="frmAccountControl"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmAccountControl"/>
       </Unit5>
       <Unit6>
         <Filename Value="UfrmEditAccount.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmEditAccount"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmEditAccount"/>
       </Unit6>
       <Unit7>
         <Filename Value="Tools/UfrmDrawSettings.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmDrawSettings"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmDrawSettings"/>
       </Unit7>
       <Unit8>
         <Filename Value="Tools/UfrmBoundaries.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmBoundaries"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmBoundaries"/>
       </Unit8>
       <Unit9>
         <Filename Value="Tools/UfrmElevateSettings.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmElevateSettings"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmElevateSettings"/>
       </Unit9>
       <Unit10>
         <Filename Value="UOverlayUI.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UOverlayUI"/>
       </Unit10>
       <Unit11>
         <Filename Value="UResourceManager.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UResourceManager"/>
       </Unit11>
       <Unit12>
         <Filename Value="Tools/UfrmConfirmation.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmConfirmation"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmConfirmation"/>
       </Unit12>
       <Unit13>
         <Filename Value="Tools/UfrmMoveSettings.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmMoveSettings"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmMoveSettings"/>
       </Unit13>
       <Unit14>
         <Filename Value="UfrmAbout.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmAbout"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmAbout"/>
       </Unit14>
       <Unit15>
         <Filename Value="Tools/UfrmHueSettings.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmHueSettings"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmHueSettings"/>
       </Unit15>
       <Unit16>
         <Filename Value="UfrmRadar.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmRadarMap"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmRadar"/>
       </Unit16>
       <Unit17>
         <Filename Value="UfrmLargeScaleCommand.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmLargeScaleCommand"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmLargeScaleCommand"/>
       </Unit17>
       <Unit18>
         <Filename Value="Tools/UfrmVirtualLayer.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmVirtualLayer"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmVirtualLayer"/>
       </Unit18>
       <Unit19>
         <Filename Value="Tools/UfrmFilter.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmFilter"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmFilter"/>
       </Unit19>
       <Unit20>
         <Filename Value="UGUIPlatformUtils.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UGUIPlatformUtils"/>
       </Unit20>
       <Unit21>
         <Filename Value="UPlatformTypes.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UPlatformTypes"/>
       </Unit21>
       <Unit22>
         <Filename Value="UfrmRegionControl.pas"/>
@@ -484,7 +451,6 @@
         <ComponentName Value="frmRegionControl"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmRegionControl"/>
       </Unit22>
       <Unit23>
         <Filename Value="UPacketHandlers.pas"/>
@@ -499,84 +465,68 @@
       <Unit25>
         <Filename Value="ULandscape.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULandscape"/>
       </Unit25>
       <Unit26>
         <Filename Value="UGameResources.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UGameResources"/>
       </Unit26>
       <Unit27>
         <Filename Value="UAdminHandling.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UAdminHandling"/>
       </Unit27>
       <Unit28>
         <Filename Value="Tools/UfrmToolWindow.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmToolWindow"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmToolWindow"/>
       </Unit28>
       <Unit29>
         <Filename Value="../Logging.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Logging"/>
       </Unit29>
       <Unit30>
         <Filename Value="../UOLib/UStatics.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UStatics"/>
       </Unit30>
       <Unit31>
         <Filename Value="../UOLib/UWorldItem.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UWorldItem"/>
       </Unit31>
       <Unit32>
         <Filename Value="../UOLib/UMap.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UMap"/>
       </Unit32>
       <Unit33>
         <Filename Value="../UOLib/UTiledata.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UTiledata"/>
       </Unit33>
       <Unit34>
         <Filename Value="UGLFont.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UGLFont"/>
       </Unit34>
       <Unit35>
         <Filename Value="../UOLib/UAnimData.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UAnimData"/>
       </Unit35>
       <Unit36>
         <Filename Value="../MulProvider/UTileDataProvider.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UTileDataProvider"/>
       </Unit36>
       <Unit37>
         <Filename Value="../MulProvider/UAnimDataProvider.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UAnimDataProvider"/>
       </Unit37>
       <Unit38>
         <Filename Value="../MulProvider/UMulManager.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UMulManager"/>
       </Unit38>
       <Unit39>
         <Filename Value="../MulProvider/UArtProvider.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UArtProvider"/>
       </Unit39>
       <Unit40>
         <Filename Value="../MulProvider/UTexmapProvider.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UTexmapProvider"/>
       </Unit40>
       <Unit41>
         <Filename Value="../version.inc"/>
@@ -585,34 +535,28 @@
       <Unit42>
         <Filename Value="ULightManager.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULightManager"/>
       </Unit42>
       <Unit43>
         <Filename Value="../UOLib/ULight.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULight"/>
       </Unit43>
       <Unit44>
         <Filename Value="../MulProvider/ULightProvider.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULightProvider"/>
       </Unit44>
       <Unit45>
         <Filename Value="Tools/UfrmLightlevel.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmLightlevel"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmLightlevel"/>
       </Unit45>
       <Unit46>
         <Filename Value="../heContnrs.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="heContnrs"/>
       </Unit46>
       <Unit47>
         <Filename Value="../UContnrExt.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UContnrExt"/>
       </Unit47>
       <Unit48>
         <Filename Value="UfrmChangePassword.pas"/>
@@ -654,10 +598,8 @@
     </Linking>
     <Other>
       <CompilerMessages>
-        <IgnoredMessages idx4079="True" idx4080="True" idx4081="True" idx5024="True" idx5028="True"/>
-        <UseMsgFile Value="True"/>
+        <IgnoredMessages idx5028="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
       </CompilerMessages>
-      <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
 </CONFIG>
