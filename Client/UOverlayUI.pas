@@ -30,7 +30,7 @@ unit UOverlayUI;
 interface
 
 uses
-  Classes, SysUtils, Gl, GLU, Imaging, ImagingTypes, ImagingClasses,
+  Classes, SysUtils, LCLType, Gl, GLU, Imaging, ImagingTypes, ImagingClasses,
   ImagingOpenGL, OpenGLContext, ImagingUtility;
   
 type

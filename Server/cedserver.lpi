@@ -19,7 +19,7 @@
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="default" Default="True"/>
-      <Item2 Name="Release Win32">
+      <Item2 Name="Release.Win32">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -55,15 +55,11 @@
             <LinkSmart Value="True"/>
           </Linking>
           <Other>
-            <CompilerMessages>
-              <UseMsgFile Value="True"/>
-            </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item2>
-      <Item3 Name="Release Linux x86">
+      <Item3 Name="Release.Linux.x86">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -99,15 +95,11 @@
             <LinkSmart Value="True"/>
           </Linking>
           <Other>
-            <CompilerMessages>
-              <UseMsgFile Value="True"/>
-            </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item3>
-      <Item4 Name="Release Linux x64">
+      <Item4 Name="Release.Linux.x64">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -142,15 +134,11 @@
             <LinkSmart Value="True"/>
           </Linking>
           <Other>
-            <CompilerMessages>
-              <UseMsgFile Value="True"/>
-            </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item4>
-      <Item5 Name="Debug Win32">
+      <Item5 Name="Debug.Win32">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -176,15 +164,11 @@
             <TargetOS Value="win32"/>
           </CodeGeneration>
           <Other>
-            <CompilerMessages>
-              <UseMsgFile Value="True"/>
-            </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item5>
-      <Item6 Name="Debug Linux x86">
+      <Item6 Name="Debug.Linux.x86">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -210,15 +194,11 @@
             <TargetOS Value="linux"/>
           </CodeGeneration>
           <Other>
-            <CompilerMessages>
-              <UseMsgFile Value="True"/>
-            </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item6>
-      <Item7 Name="Debug Linux x64">
+      <Item7 Name="Debug.Linux.x64">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
@@ -243,11 +223,7 @@
             <TargetOS Value="linux"/>
           </CodeGeneration>
           <Other>
-            <CompilerMessages>
-              <UseMsgFile Value="True"/>
-            </CompilerMessages>
             <CustomOptions Value="-dNoLogging"/>
-            <CompilerPath Value="$(CompPath)"/>
           </Other>
         </CompilerOptions>
       </Item7>
@@ -260,7 +236,6 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <LaunchingApplication PathPlusParams="/usr/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
     <RequiredPackages Count="2">
@@ -275,92 +250,74 @@
       <Unit0>
         <Filename Value="cedserver.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="cedserver"/>
       </Unit0>
       <Unit1>
         <Filename Value="UConfig.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UConfig"/>
       </Unit1>
       <Unit2>
         <Filename Value="UCEDServer.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UCEDServer"/>
       </Unit2>
       <Unit3>
         <Filename Value="UNetState.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UNetState"/>
       </Unit3>
       <Unit4>
         <Filename Value="UAccount.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UAccount"/>
       </Unit4>
       <Unit5>
         <Filename Value="UConnectionHandling.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UConnectionHandling"/>
       </Unit5>
       <Unit6>
         <Filename Value="URadarMap.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="URadarMap"/>
       </Unit6>
       <Unit7>
         <Filename Value="ULargeScaleOperations.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULargeScaleOperations"/>
       </Unit7>
       <Unit8>
         <Filename Value="../UInterfaces.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UInterfaces"/>
       </Unit8>
       <Unit9>
         <Filename Value="UPacketHandlers.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UPacketHandlers"/>
       </Unit9>
       <Unit10>
         <Filename Value="ULandscape.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULandscape"/>
       </Unit10>
       <Unit11>
         <Filename Value="UPackets.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UPackets"/>
       </Unit11>
       <Unit12>
         <Filename Value="UAdminHandling.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UAdminHandling"/>
       </Unit12>
       <Unit13>
         <Filename Value="UClientHandling.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UClientHandling"/>
       </Unit13>
       <Unit14>
         <Filename Value="../UOLib/UStatics.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UStatics"/>
       </Unit14>
       <Unit15>
         <Filename Value="../UOLib/UMap.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UMap"/>
       </Unit15>
       <Unit16>
         <Filename Value="UMapManagement.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UMapManagement"/>
       </Unit16>
       <Unit17>
         <Filename Value="URegions.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="URegions"/>
       </Unit17>
     </Units>
   </ProjectOptions>
@@ -384,11 +341,5 @@
         <DebugInfoType Value="dsDwarf2Set"/>
       </Debugging>
     </Linking>
-    <Other>
-      <CompilerMessages>
-        <UseMsgFile Value="True"/>
-      </CompilerMessages>
-      <CompilerPath Value="$(CompPath)"/>
-    </Other>
   </CompilerOptions>
 </CONFIG>
