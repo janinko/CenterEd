@@ -21,7 +21,8 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2012 Andreas Schneider
+ *      Portions Copyright 2015 Andreas Schneider
+ *      Portions Copyright 2015 StaticZ
  *)
 unit ULightManager;
 
@@ -32,9 +33,21 @@ interface
 uses
   Classes, SysUtils, Imaging, ImagingTypes, ImagingClasses, ImagingCanvases,
   ImagingOpenGL, GL, GLu, GLext, Math, heContnrs, ULandscape, UWorldItem,
-  UCacheManager;
+  UCacheManager, DOM, XMLRead;
+
+const
+  ColorsCount = 15;
 
 type
+
+  TLightColor = record
+    r: Float;
+    g: Float;
+    b: Float;
+  end;
+  PLightColor = ^TLightColor;
+
+  TColorRefArray = array of Byte;
 
   TCalculateOffset = procedure(AX, AY: Integer; out DrawX, DrawY: Integer) of object;
 
@@ -59,11 +72,13 @@ type
     constructor Create(AManager: TLightManager; AWorldItem: TWorldItem);
     destructor Destroy; override;
   protected
+    FColorID: Byte;
     FX: Integer;
     FY: Integer;
     FZ: SmallInt;
     FMaterial: TLightMaterial;
   public
+    property ColorID: Byte read FColorID;
     property X: Integer read FX;
     property Y: Integer read FY;
     property Z: SmallInt read FZ;
@@ -87,15 +102,20 @@ type
     FLightCache: TLightCache;
     FUseFBO: Boolean;
     FInitialized: Boolean;
+    FLightColors: array[1..ColorsCount] of TLightColor;
+    FTileCol: TColorRefArray;
     function GetLight(AID: Integer): TLightMaterial;
     procedure SetLightLevel(AValue: Byte);
     procedure UpdateOverlay(AScreenRect: TRect);
+  private
+    property TileCol: TColorRefArray read FTileCol;
   public
     property LightLevel: Byte read FLightLevel write SetLightLevel;
     procedure InitGL;
     procedure UpdateLightMap(ALeft, AWidth, ATop, AHeight: Integer;
       AScreenBuffer: TScreenBuffer);
     procedure Draw(AScreenRect: TRect);
+    procedure LoadConfig(AFileName: String);
   end;
 
 implementation
@@ -154,6 +174,7 @@ var
   lightMaterial: TLightMaterial;
   colorGL: GLclampf;
   fbo: GLuint;
+  colorref: PLightColor;
 begin
   glDeleteTextures(1, @FOverlayTexture);
   if FUseFBO then
@@ -183,7 +204,9 @@ begin
         lightMaterial := FLightSources[i].Material;
         if lightMaterial <> nil then
         begin
+          colorref := @FLightColors[FLightSources[i].ColorID];
           glBindTexture(GL_TEXTURE_2D, lightMaterial.Texture);
+          glColor3f(colorref^.R, colorref^.G, colorref^.B);
           glBegin(GL_QUADS);
             glTexCoord2i(0, 0);
             glVertex2i(FLightSources[i].FX - lightMaterial.RealWidth div 2,
@@ -340,6 +363,104 @@ begin
   glEnd;
 end;
 
+procedure TLightManager.LoadConfig(AFileName: String);
+var
+  XMLDoc:  TXMLDocument;
+  iNode, node: TDOMNode;
+  s: string;
+  i, id, col, r, g, b: Integer;
+begin
+  writeln('Loading Colors from ', AFileName); //TODO
+  for i := 1 to ColorsCount do begin
+    FLightColors[i].R := 1.0;
+    FLightColors[i].G := 1.0;
+    FLightColors[i].B := 1.0;
+  end;
+  SetLength(FTileCol, ResMan.Landscape.MaxStaticID + 1);
+  for i := 0 to ResMan.Landscape.MaxStaticID do
+    FTileCol[i] := 1;
+
+  //frmInitialize.SetStatusLabel(Format(frmInitialize.SplashLoading, ['ColorLight.xml']));
+  // Read xml file from your hard drive
+  ReadXMLFile(XMLDoc, AFileName);
+  if LowerCase(XMLDoc.DocumentElement.NodeName) = 'colorlight' then
+  begin
+    iNode := XMLDoc.DocumentElement.FirstChild;
+    while iNode <> nil do
+    begin
+      if LowerCase(iNode.NodeName) = 'colors' then
+      begin
+        node := iNode.FirstChild;
+        while node <> nil do
+        begin
+          if (LowerCase(node.NodeName) = 'color') then
+          begin
+            id := -1;
+            r := 255;
+            g := 255;
+            b := 255;
+            for i := node.Attributes.Length - 1 downto 0 do
+            begin
+              s := LowerCase(node.Attributes[i].NodeName);
+              if (s = 'id') then
+                TryStrToInt(node.Attributes[i].NodeValue, id);
+              if (s = 'r') then
+                TryStrToInt(node.Attributes[i].NodeValue, r);
+              if (s = 'g') then
+                TryStrToInt(node.Attributes[i].NodeValue, g);
+              if (s = 'b') then
+                TryStrToInt(node.Attributes[i].NodeValue, b);
+            end;
+            if (id > 0) and (id <= ColorsCount) then
+            begin
+              if (r <   0) then r :=   0;
+              if (g <   0) then g :=   0;
+              if (b <   0) then b :=   0;
+              if (r > 255) then r := 255;
+              if (g > 255) then g := 255;
+              if (b > 255) then b := 255;
+              FLightColors[id].R := (Float(r)) / 255.0;
+              FLightColors[id].G := (Float(g)) / 255.0;
+              FLightColors[id].B := (Float(b)) / 255.0;
+            end;
+          end;
+          node := node.NextSibling;
+        end;
+      end;
+      if LowerCase(iNode.NodeName) = 'sources' then
+      begin
+        node := iNode.FirstChild;
+        while node <> nil do
+        begin
+          s := LowerCase(node.NodeName);
+          if (s = 'tile') or (s = 'item') then begin
+            col := 1;
+            id := -1;
+            for i := node.Attributes.Length - 1 downto 0 do begin
+              if LowerCase(node.Attributes[i].NodeName) = 'id' then
+                if TryStrToInt(node.Attributes[i].NodeValue, id) then
+                begin
+                  if s = 'tile' then
+                    Dec(id, $4000);
+                end;
+              if LowerCase(node.Attributes[i].NodeName) = 'color' then
+                if TryStrToInt(node.Attributes[i].NodeValue, col) then
+                begin
+                  if (col < 1) or (col > ColorsCount) then
+                    col := 1;
+                end;
+            end;
+            if (id >= 0) and (id <= ResMan.Landscape.MaxStaticID) then
+              FTileCol[id] := col;
+          end;
+          node := node.NextSibling;
+        end;
+      end;
+      iNode := iNode.NextSibling;
+    end;
+  end;
+end;
+
 { TLightSource }
 
 constructor TLightSource.Create(AManager: TLightManager; AWorldItem: TWorldItem);
@@ -350,6 +471,9 @@ begin
   FMaterial := AManager.GetLight(lightID);
   if FMaterial <> nil then
   begin
+    FColorID := AManager.TileCol[AWorldItem.TileID];
+    if (FColorID < 1) or (FColorID > ColorsCount) then
+      FColorID := 1;
     AManager.FCalculateOffset(AWorldItem.X, AWorldItem.Y, FX, FY);
     FZ := AWorldItem.Z * 4;
     FY := FY + 22 - FZ;

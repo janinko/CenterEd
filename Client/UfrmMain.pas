@@ -922,6 +922,7 @@ begin
   edY.MaxValue := FLandscape.CellHeight;
   FOverlayUI := TOverlayUI.Create;
   FLightManager := TLightManager.Create(@GetDrawOffset);
+  FLightManager.LoadConfig(FAppDir + 'ColorLight.xml');
   
   ProcessAccessLevel;
   
