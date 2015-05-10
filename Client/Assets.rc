@@ -1,0 +1,5 @@
+LEFTTOPARROW		RCDATA "Overlay/LeftTopArrow.tga"
+TOPARROW			RCDATA "Overlay/TopArrow.tga"
+VIRTUALLAYER		RCDATA "Overlay/VirtualLayer.tga"
+DEJAVU				RCDATA "GLFont/DejaVu.png"
+DEJAVUDAT			RCDATA "GLFont/DejaVu.fnt"

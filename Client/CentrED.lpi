@@ -16,10 +16,10 @@
     <LazDoc Paths="../doc"/>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="6"/>
-      <RevisionNr Value="4"/>
-      <BuildNr Value="245"/>
-      <StringTable CompanyName="AKS DataBasis" FileDescription="UO CentrED" InternalName="CentrED" LegalCopyright="(c) 2015 Andreas Schneider" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.6.4"/>
+      <AutoIncrementBuild Value="True"/>
+      <MinorVersionNr Value="7"/>
+      <BuildNr Value="253"/>
+      <StringTable CompanyName="AKS DataBasis" FileDescription="UO CentrED" InternalName="CentrED" LegalCopyright="(c) 2015 Andreas Schneider and StaticZ" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.7.0"/>
     </VersionInfo>
     <BuildModes Count="7">
       <Item1 Name="default" Default="True"/>
@@ -327,7 +327,6 @@
         <ComponentName Value="frmMain"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmMain"/>
       </Unit1>
       <Unit2>
         <Filename Value="UdmNetwork.pas"/>
@@ -335,7 +334,6 @@
         <ComponentName Value="dmNetwork"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
-        <UnitName Value="UdmNetwork"/>
       </Unit2>
       <Unit3>
         <Filename Value="UfrmLogin.pas"/>
@@ -455,12 +453,10 @@
       <Unit23>
         <Filename Value="UPacketHandlers.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UPacketHandlers"/>
       </Unit23>
       <Unit24>
         <Filename Value="UPackets.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UPackets"/>
       </Unit24>
       <Unit25>
         <Filename Value="ULandscape.pas"/>
@@ -564,7 +560,6 @@
         <ComponentName Value="frmChangePassword"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UfrmChangePassword"/>
       </Unit48>
     </Units>
   </ProjectOptions>

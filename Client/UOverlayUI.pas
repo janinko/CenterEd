@@ -78,9 +78,6 @@ type
 
 implementation
 
-uses
-  UResourceManager;
-
 { TGLArrow }
 
 constructor TGLArrow.Create(AGraphic: TSingleImage);
@@ -172,12 +169,19 @@ constructor TOverlayUI.Create;
 var
   i: Integer;
   arrow: TSingleImage;
+  resStream: TResourceStream;
 begin
   inherited Create;
   FActiveArrow := -1;
   FVisible := False;
-  
-  arrow := TSingleImage.CreateFromStream(ResourceManager.GetResource(0));
+
+  resStream := TResourceStream.Create(HINSTANCE, 'LEFTTOPARROW', RT_RCDATA);
+  try
+    arrow := TSingleImage.CreateFromStream(resStream);
+  finally
+    resStream.Free;
+  end;
+
   for i := 0 to 3 do
   begin
     FArrows[2*i] := TGLArrow.Create(arrow);
@@ -186,7 +190,13 @@ begin
   end;
   arrow.Free;
 
-  arrow := TSingleImage.CreateFromStream(ResourceManager.GetResource(1));
+  resStream := TResourceStream.Create(HINSTANCE, 'TOPARROW', RT_RCDATA);
+  try
+    arrow := TSingleImage.CreateFromStream(resStream);
+  finally
+    resStream.Free;
+  end;
+
   for i := 0 to 3 do
   begin
     FArrows[2*i+1] := TGLArrow.Create(arrow);

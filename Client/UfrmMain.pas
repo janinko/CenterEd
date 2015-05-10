@@ -408,7 +408,7 @@ uses
   UfrmAccountControl, UGraphicHelper, ImagingComponents, UfrmDrawSettings,
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
-  UfrmLogin, UResourceManager, UfrmVirtualLayer, UfrmFilter, UfrmRegionControl,
+  UfrmLogin, UfrmVirtualLayer, UfrmFilter, UfrmRegionControl,
   Logging, LConvEncoding, LCLType, UfrmLightlevel, UfrmChangePassword;
 
 type
@@ -889,6 +889,8 @@ begin
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
+var
+  resStream: TResourceStream;
 begin
   FAppDir := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
   FConfigDir := GetAppConfigDir(False);
@@ -940,11 +942,21 @@ begin
 
   RegisterPacketHandler($0C, TPacketHandler.Create(0, @OnClientHandlingPacket));
 
-  FVLayerImage := TSingleImage.CreateFromStream(ResourceManager.GetResource(2));
+  resStream := nil;
+  try
+    resStream := TResourceStream.Create(HINSTANCE, 'VIRTUALLAYER', RT_RCDATA);
+    FVLayerImage := TSingleImage.CreateFromStream(resStream);
+    FreeAndNil(resStream);
 
-  FGLFont := TGLFont.Create;
-  FGLFont.LoadImage(ResourceManager.GetResource(3));
-  FGLFont.LoadFontInfo(ResourceManager.GetResource(4));
+    FGLFont := TGLFont.Create;
+    resStream := TResourceStream.Create(HINSTANCE, 'DEJAVU', RT_RCDATA);
+    FGLFont.LoadImage(resStream);
+    FreeAndNil(resStream);
+    resStream := TResourceStream.Create(HINSTANCE, 'DEJAVUDAT', RT_RCDATA);
+    FGLFont.LoadFontInfo(resStream);
+  finally
+    FreeAndNil(resStream);
+  end;
 
   FVirtualTiles := TWorldItemList.Create(True);
   FUndoList := TPacketList.Create(True);

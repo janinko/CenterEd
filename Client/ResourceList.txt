@@ -1,5 +1,0 @@
-Overlay/LeftTopArrow.tga
-Overlay/TopArrow.tga
-Overlay/VirtualLayer.tga
-GLFont/DejaVu.png
-GLFont/DejaVu.fnt

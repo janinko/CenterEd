@@ -37,6 +37,7 @@ uses
   Forms, UdmNetwork;
 
 {$R CentrED.res}
+{$R Assets.rc} // Beware: you need 'windres', which is part of mingw-binutils on *nix!
 
 function GetApplicationName: String;
 begin
