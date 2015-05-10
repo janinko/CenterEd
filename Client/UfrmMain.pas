@@ -21,7 +21,8 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2011 Andreas Schneider
+ *      Portions Copyright 2015 Andreas Schneider
+ *      Portions Copyright 2015 StaticZ
  *)
 unit UfrmMain;
 
@@ -36,7 +37,7 @@ uses
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
   XMLPropStorage, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
   UGLFont, DOM, XMLRead, XMLWrite, strutils, ULightManager, heContnrs,
-  UContnrExt;
+  UContnrExt, UTiledata;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -72,6 +73,7 @@ type
     acFlat: TAction;
     acNoDraw: TAction;
     acLightlevel: TAction;
+    acStatics: TAction;
     acWalkable: TAction;
     acUndo: TAction;
     acVirtualLayer: TAction;
@@ -104,6 +106,12 @@ type
     lbClients: TListBox;
     MainMenu1: TMainMenu;
     mnuChangePassword: TMenuItem;
+    mnuShowBridges: TMenuItem;
+    mnuShowFoliage: TMenuItem;
+    mnuShowRoofs: TMenuItem;
+    mnuShowSurfaces: TMenuItem;
+    mnuShowWalls: TMenuItem;
+    mnuShowWater: TMenuItem;
     mnuWhiteBackground: TMenuItem;
     mnuSecurityQuestion: TMenuItem;
     mnuShowAnimations: TMenuItem;
@@ -138,6 +146,7 @@ type
     oglGameWindow: TOpenGLControl;
     pcLeft: TPageControl;
     pmGrabTileInfo: TPopupMenu;
+    pmViewStaticSettings: TPopupMenu;
     pnlBottom: TPanel;
     edX: TSpinEdit;
     edY: TSpinEdit;
@@ -194,6 +203,7 @@ type
     procedure acMoveExecute(Sender: TObject);
     procedure acNoDrawExecute(Sender: TObject);
     procedure acSelectExecute(Sender: TObject);
+    procedure acStaticsExecute(Sender: TObject);
     procedure acUndoExecute(Sender: TObject);
     procedure acVirtualLayerExecute(Sender: TObject);
     procedure acWalkableExecute(Sender: TObject);
@@ -236,6 +246,7 @@ type
     procedure mnuLargeScaleCommandsClick(Sender: TObject);
     procedure mnuRegionControlClick(Sender: TObject);
     procedure mnuShowAnimationsClick(Sender: TObject);
+    procedure mnuShowWallsClick(Sender: TObject);
     procedure mnuShutdownClick(Sender: TObject);
     procedure mnuWhiteBackgroundClick(Sender: TObject);
     procedure oglGameWindowDblClick(Sender: TObject);
@@ -257,7 +268,6 @@ type
     procedure tbFilterMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure tbRadarMapClick(Sender: TObject);
-    procedure tbStaticsClick(Sender: TObject);
     procedure tbTerrainClick(Sender: TObject);
     procedure tmGrabTileInfoTimer(Sender: TObject);
     procedure tmMovementTimer(Sender: TObject);
@@ -337,6 +347,7 @@ type
     FSelectionListeners: TSelectionListeners;
     FTileHint: TTileHintInfo;
     FLightManager: TLightManager;
+    FTileFilter: TTileDataFlags;
     { Methods }
     procedure BuildTileList;
     function  ConfirmAction: Boolean;
@@ -404,7 +415,7 @@ var
 implementation
 
 uses
-  UdmNetwork, UArt, UTiledata, UAdminHandling, UPackets,
+  UdmNetwork, UArt, UAdminHandling, UPackets,
   UfrmAccountControl, UGraphicHelper, ImagingComponents, UfrmDrawSettings,
   UfrmBoundaries, UfrmElevateSettings, UfrmConfirmation, UfrmMoveSettings,
   UfrmAbout, UPacketHandlers, UfrmHueSettings, UfrmRadar, UfrmLargeScaleCommand,
@@ -511,6 +522,27 @@ end;
 procedure TfrmMain.mnuShowAnimationsClick(Sender: TObject);
 begin
   FTextureManager.UseAnims := mnuShowAnimations.Checked;
+  RebuildScreenBuffer;
+end;
+
+procedure TfrmMain.mnuShowWallsClick(Sender: TObject);
+begin
+  // Update filters. First, start off empty.
+  FTileFilter := [];
+  if not mnuShowWalls.Checked then
+    FTileFilter := FTileFilter + [tdfWall, tdfWindow];
+  if not mnuShowBridges.Checked then
+    FTileFilter := FTileFilter + [tdfBridge, tdfStairBack, tdfStairRight];
+  if not mnuShowRoofs.Checked then
+    FTileFilter := FTileFilter + [tdfRoof];
+  if not mnuShowSurfaces.Checked then
+    FTileFilter := FTileFilter + [tdfSurface];
+  if not mnuShowFoliage.Checked then
+    FTileFilter := FTileFilter + [tdfFoliage];
+  if not mnuShowWater.Checked then
+    FTileFilter := FTileFilter + [tdfWet];
+
+  // Refresh screen
   RebuildScreenBuffer;
 end;
 
@@ -1138,6 +1170,12 @@ begin
   ProcessToolState;
 end;
 
+procedure TfrmMain.acStaticsExecute(Sender: TObject);
+begin
+  acStatics.Checked := not acStatics.Checked;
+  RebuildScreenBuffer;
+end;
+
 procedure TfrmMain.acUndoExecute(Sender: TObject);
 var
   packet: TPacket;
@@ -1490,11 +1528,6 @@ procedure TfrmMain.tbRadarMapClick(Sender: TObject);
 begin
   frmRadarMap.Show;
   frmRadarMap.BringToFront;
-end;
-
-procedure TfrmMain.tbStaticsClick(Sender: TObject);
-begin
-  RebuildScreenBuffer;
 end;
 
 procedure TfrmMain.tbTerrainClick(Sender: TObject);
@@ -2736,8 +2769,8 @@ begin
   //Logger.Send([lcClient, lcDebug], 'VirtualTiles', FVirtualTiles.Count);
 
   FLandscape.FillDrawList(FScreenBuffer, FX + FLowOffsetX, FY + FLowOffsetY,
-    FRangeX, FRangeY, tbTerrain.Down, tbStatics.Down, acNoDraw.Checked,
-    FVirtualTiles);
+    FRangeX, FRangeY, tbTerrain.Down, acStatics.Checked, acNoDraw.Checked,
+    FVirtualTiles, FTileFilter);
 
   //Pre-process the buffer
   blockInfo := nil;

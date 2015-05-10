@@ -21,7 +21,8 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2015 Andreas Schneider
+ *      Portions Copyright 2015 StaticZ
  *)
 unit ULandscape;
 
@@ -33,9 +34,7 @@ uses
   SysUtils, Classes, math, matrix, LCLIntf, GL, GLu, ImagingOpenGL, Imaging,
   ImagingClasses, ImagingTypes, ImagingUtility,
   UGenericIndex, UMap, UStatics, UArt, UTexture, UTiledata, UHue, UWorldItem,
-  UMulBlock, UAnimData,
-  UEnhancedMemoryStream, UGLFont,
-  UCacheManager;
+  UMulBlock, UAnimData, UEnhancedMemoryStream, UGLFont, UCacheManager;
 
 type
   TGlVector3f = array[0..2] of GLfloat;
@@ -226,7 +225,7 @@ type
     function CanWrite(AX, AY: Word): Boolean;
     procedure FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
       AHeight: Word; AMap, AStatics: Boolean; ANoDraw: Boolean;
-      AAdditionalTiles: TWorldItemList = nil);
+      AAdditionalTiles: TWorldItemList = nil; ATileFilters: TTileDataFlags = []);
     function GetEffectiveAltitude(ATile: TMapCell): ShortInt;
     function GetLandAlt(AX, AY: Word; ADefault: ShortInt): ShortInt;
     procedure GetNormals(AX, AY: Word; var ANormals: TNormals);
@@ -959,7 +958,7 @@ end;
 
 procedure TLandscape.FillDrawList(ADrawList: TScreenBuffer; AX, AY, AWidth,
   AHeight: Word; AMap, AStatics: Boolean; ANoDraw: Boolean;
-  AAdditionalTiles: TWorldItemList = nil);
+  AAdditionalTiles: TWorldItemList; ATileFilters: TTileDataFlags);
 var
   drawMapCell: TMapCell;
   drawStatics: TStaticItemList;
@@ -994,6 +993,10 @@ begin
             staticTileData := ResMan.Tiledata.StaticTiles[drawStatics[i].TileID];
             if ANoDraw or FDrawMap[drawStatics[i].TileID + $4000] then
             begin
+              // Check if filters match
+              if staticTileData.Flags * ATileFilters <> [] then
+                Continue;
+
               drawStatics[i].UpdatePriorities(staticTileData,
                 ADrawList.GetSerial);
               tempDrawList.Add(drawStatics[i]);

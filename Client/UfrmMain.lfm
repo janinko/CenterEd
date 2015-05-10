@@ -947,18 +947,15 @@ object frmMain: TfrmMain
     end
     object tbStatics: TToolButton
       Left = 297
-      Hint = 'Show Statics'
       Top = 2
-      Caption = 'Statics'
-      Down = True
-      ImageIndex = 11
-      OnClick = tbStaticsClick
+      Action = acStatics
+      DropdownMenu = pmViewStaticSettings
       ParentShowHint = False
       ShowHint = True
-      Style = tbsCheck
+      Style = tbsDropDown
     end
     object tbSeparator5: TToolButton
-      Left = 424
+      Left = 436
       Height = 22
       Top = 2
       Width = 5
@@ -966,7 +963,7 @@ object frmMain: TfrmMain
       Style = tbsDivider
     end
     object tbRadarMap: TToolButton
-      Left = 429
+      Left = 441
       Hint = 'Radar Map'
       Top = 2
       Caption = 'Radar Map'
@@ -988,14 +985,14 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbFlat: TToolButton
-      Left = 389
+      Left = 401
       Top = 2
       Action = acFlat
       DropdownMenu = pmFlatViewSettings
       Style = tbsDropDown
     end
     object tbNoDraw: TToolButton
-      Left = 320
+      Left = 332
       Top = 2
       Action = acNoDraw
       Style = tbsCheck
@@ -1014,12 +1011,12 @@ object frmMain: TfrmMain
       Action = acUndo
     end
     object tbLightlevel: TToolButton
-      Left = 366
+      Left = 378
       Top = 2
       Action = acLightlevel
     end
     object tbWalkable: TToolButton
-      Left = 343
+      Left = 355
       Top = 2
       Action = acWalkable
       Style = tbsCheck
@@ -2701,6 +2698,13 @@ object frmMain: TfrmMain
       OnExecute = acWalkableExecute
       ShortCut = 16471
     end
+    object acStatics: TAction
+      Category = 'Settings'
+      Checked = True
+      Hint = 'Show Statics'
+      ImageIndex = 11
+      OnExecute = acStaticsExecute
+    end
   end
   object tmGrabTileInfo: TTimer
     Enabled = False
@@ -2738,5 +2742,52 @@ object frmMain: TfrmMain
     OnRestoreProperties = XMLPropStorage1RestoreProperties
     left = 368
     top = 208
+  end
+  object pmViewStaticSettings: TPopupMenu
+    Images = ImageList1
+    left = 584
+    top = 33
+    object mnuShowWalls: TMenuItem
+      AutoCheck = True
+      Caption = 'Walls and Windows'
+      Checked = True
+      Hint = 'Display walls and windows'
+      OnClick = mnuShowWallsClick
+    end
+    object mnuShowBridges: TMenuItem
+      AutoCheck = True
+      Caption = 'Stairs'
+      Checked = True
+      Hint = 'Display ladders, bridges and other objects on which you can climb / descend'
+      OnClick = mnuShowWallsClick
+    end
+    object mnuShowSurfaces: TMenuItem
+      AutoCheck = True
+      Caption = 'Surfaces'
+      Checked = True
+      Hint = 'Show floors and other surfaces on which you can walk'
+      OnClick = mnuShowWallsClick
+    end
+    object mnuShowRoofs: TMenuItem
+      AutoCheck = True
+      Caption = 'Roofs'
+      Checked = True
+      Hint = 'Display roofs'
+      OnClick = mnuShowWallsClick
+    end
+    object mnuShowFoliage: TMenuItem
+      AutoCheck = True
+      Caption = 'Foliage'
+      Checked = True
+      Hint = 'Display the leaves on the trees'
+      OnClick = mnuShowWallsClick
+    end
+    object mnuShowWater: TMenuItem
+      AutoCheck = True
+      Caption = 'Water'
+      Checked = True
+      Hint = 'Display the water'
+      OnClick = mnuShowWallsClick
+    end
   end
 end
