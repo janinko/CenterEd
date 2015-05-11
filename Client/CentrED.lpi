@@ -18,7 +18,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="7"/>
-      <BuildNr Value="257"/>
+      <BuildNr Value="260"/>
       <StringTable CompanyName="AKS DataBasis" FileDescription="UO CentrED" InternalName="CentrED" LegalCopyright="(c) 2015 Andreas Schneider and StaticZ" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.7.0"/>
     </VersionInfo>
     <BuildModes Count="7">
@@ -371,6 +371,7 @@
         <Filename Value="Tools/UfrmBoundaries.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmBoundaries"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit8>
       <Unit9>
@@ -474,6 +475,7 @@
         <Filename Value="Tools/UfrmToolWindow.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmToolWindow"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit28>
       <Unit29>

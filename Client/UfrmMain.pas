@@ -37,7 +37,7 @@ uses
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
   XMLPropStorage, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
   UGLFont, DOM, XMLRead, XMLWrite, strutils, ULightManager, heContnrs,
-  UContnrExt, UTiledata;
+  UContnrExt, UTiledata, Types;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -2833,7 +2833,11 @@ begin
     begin
       blockInfo^.State := ssNormal;
       if (blockInfo^.Item.Z < frmBoundaries.tbMinZ.Position) or
-        (blockInfo^.Item.Z > frmBoundaries.tbMaxZ.Position) then
+        (blockInfo^.Item.Z > frmBoundaries.tbMaxZ.Position) or
+        (blockInfo^.Item.X < frmBoundaries.seMinX.Value) or
+        (blockInfo^.Item.X > frmBoundaries.seMaxX.Value) or
+        (blockInfo^.Item.Y < frmBoundaries.seMinY.Value) or
+        (blockInfo^.Item.Y > frmBoundaries.seMaxY.Value) then
       begin
         blockInfo^.State := ssFiltered;
       end else

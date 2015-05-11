@@ -21,7 +21,8 @@
  * CDDL HEADER END
  *
  *
- *      Portions Copyright 2009 Andreas Schneider
+ *      Portions Copyright 2015 Andreas Schneider
+ *      Portions Copyright 2015 StaticZ
  *)
 unit UfrmBoundaries;
 
@@ -38,13 +39,28 @@ type
   { TfrmBoundaries }
 
   TfrmBoundaries = class(TfrmToolWindow)
+    gbZRestriction: TGroupBox;
+    gbViewRestriction: TGroupBox;
+    lblYSep: TLabel;
+    lblXSep: TLabel;
+    lblY: TLabel;
+    lblX: TLabel;
     lblMaxZ: TLabel;
     lblMinZ: TLabel;
     seMaxZ: TSpinEdit;
     seMinZ: TSpinEdit;
-    tbMinZ: TTrackBar;
+    seMinX: TSpinEdit;
+    seMaxX: TSpinEdit;
+    seMinY: TSpinEdit;
+    seMaxY: TSpinEdit;
     tbMaxZ: TTrackBar;
+    tbMinZ: TTrackBar;
+    procedure FormCreate(Sender: TObject);
+    procedure seMaxXChange(Sender: TObject);
+    procedure seMaxYChange(Sender: TObject);
     procedure seMaxZChange(Sender: TObject);
+    procedure seMinXChange(Sender: TObject);
+    procedure seMinYChange(Sender: TObject);
     procedure seMinZChange(Sender: TObject);
     procedure tbMaxZChange(Sender: TObject);
     procedure tbMinZChange(Sender: TObject);
@@ -62,9 +78,40 @@ uses
 
 { TfrmBoundaries }
 
+procedure TfrmBoundaries.FormCreate(Sender: TObject);
+begin
+  seMinX.MaxValue := frmMain.Landscape.CellWidth - 1;
+  seMaxX.MaxValue := seMinX.MaxValue;
+  seMaxX.Value := seMaxX.MaxValue;
+
+  seMinY.MaxValue := frmMain.Landscape.CellHeight - 1;
+  seMaxY.MaxValue := seMinY.MaxValue;
+  seMaxY.Value := seMaxX.MaxValue;
+end;
+
+procedure TfrmBoundaries.seMaxXChange(Sender: TObject);
+begin
+  frmMain.InvalidateFilter;
+end;
+
+procedure TfrmBoundaries.seMaxYChange(Sender: TObject);
+begin
+  frmMain.InvalidateFilter;
+end;
+
 procedure TfrmBoundaries.seMaxZChange(Sender: TObject);
 begin
   tbMaxZ.Position := seMaxZ.Value;
+  frmMain.InvalidateFilter;
+end;
+
+procedure TfrmBoundaries.seMinXChange(Sender: TObject);
+begin
+  frmMain.InvalidateFilter;
+end;
+
+procedure TfrmBoundaries.seMinYChange(Sender: TObject);
+begin
   frmMain.InvalidateFilter;
 end;
 
