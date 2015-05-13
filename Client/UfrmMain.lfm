@@ -81,7 +81,7 @@ object frmMain: TfrmMain
     end
     object edX: TSpinEdit
       Left = 24
-      Height = 21
+      Height = 25
       Top = 3
       Width = 55
       MaxValue = 100000
@@ -89,7 +89,7 @@ object frmMain: TfrmMain
     end
     object edY: TSpinEdit
       Left = 104
-      Height = 21
+      Height = 25
       Top = 3
       Width = 52
       MaxValue = 100000
@@ -118,12 +118,12 @@ object frmMain: TfrmMain
     object tsTiles: TTabSheet
       Caption = 'Tiles'
       ClientHeight = 476
-      ClientWidth = 220
+      ClientWidth = 214
       object lblFilter: TLabel
         AnchorSideLeft.Control = cbTerrain
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = cbTerrain
-        Left = 85
+        Left = 91
         Height = 13
         Top = 8
         Width = 31
@@ -140,10 +140,10 @@ object frmMain: TfrmMain
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = spTileList
         Left = 4
-        Height = 228
+        Height = 224
         Hint = '-'
-        Top = 60
-        Width = 212
+        Top = 64
+        Width = 206
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Left = 4
         BorderSpacing.Top = 4
@@ -201,11 +201,11 @@ object frmMain: TfrmMain
         Left = 0
         Height = 183
         Top = 293
-        Width = 220
+        Width = 214
         Anchors = [akTop, akLeft, akRight, akBottom]
         Caption = 'Random pool'
         ClientHeight = 168
-        ClientWidth = 216
+        ClientWidth = 210
         TabOrder = 1
         object btnAddRandom: TSpeedButton
           AnchorSideLeft.Control = gbRandom
@@ -359,10 +359,10 @@ object frmMain: TfrmMain
         object btnRandomPresetSave: TSpeedButton
           AnchorSideTop.Control = cbRandomPreset
           AnchorSideRight.Control = btnRandomPresetDelete
-          Left = 164
+          Left = 158
           Height = 22
           Hint = 'Save Preset'
-          Top = 139
+          Top = 137
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -411,10 +411,10 @@ object frmMain: TfrmMain
           AnchorSideTop.Control = btnRandomPresetSave
           AnchorSideRight.Control = gbRandom
           AnchorSideRight.Side = asrBottom
-          Left = 190
+          Left = 184
           Height = 22
           Hint = 'Delete Preset'
-          Top = 139
+          Top = 137
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -469,9 +469,9 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = cbRandomPreset
           Cursor = 63
           Left = 4
-          Height = 111
+          Height = 109
           Top = 24
-          Width = 208
+          Width = 202
           Anchors = [akTop, akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
           BorderSpacing.Top = 2
@@ -517,9 +517,9 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = gbRandom
           AnchorSideBottom.Side = asrBottom
           Left = 4
-          Height = 25
-          Top = 139
-          Width = 156
+          Height = 27
+          Top = 137
+          Width = 150
           Anchors = [akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
           BorderSpacing.Right = 4
@@ -539,7 +539,7 @@ object frmMain: TfrmMain
         Left = 0
         Height = 5
         Top = 288
-        Width = 220
+        Width = 214
         Align = alNone
         Anchors = [akLeft, akRight, akBottom]
         ResizeAnchor = akBottom
@@ -549,7 +549,7 @@ object frmMain: TfrmMain
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = vdtTiles
         AnchorSideBottom.Side = asrBottom
-        Left = 112
+        Left = 106
         Height = 23
         Hint = 'Append S or T to restrict the search to Statics or Terrain.'
         Top = 257
@@ -571,10 +571,10 @@ object frmMain: TfrmMain
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = tsTiles
         AnchorSideRight.Side = asrBottom
-        Left = 85
+        Left = 91
         Height = 23
         Top = 21
-        Width = 119
+        Width = 107
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Right = 16
         OnEditingDone = edFilterEditingDone
@@ -585,10 +585,10 @@ object frmMain: TfrmMain
         AnchorSideLeft.Side = asrCenter
         AnchorSideTop.Control = cbTerrain
         AnchorSideTop.Side = asrBottom
-        Left = 4
-        Height = 24
-        Top = 32
-        Width = 65
+        Left = 3
+        Height = 26
+        Top = 34
+        Width = 73
         Caption = 'Statics'
         Checked = True
         OnChange = cbStaticsChange
@@ -599,9 +599,9 @@ object frmMain: TfrmMain
         AnchorSideLeft.Control = tsTiles
         AnchorSideTop.Control = tsTiles
         Left = 4
-        Height = 24
+        Height = 26
         Top = 8
-        Width = 65
+        Width = 71
         BorderSpacing.Left = 4
         BorderSpacing.Top = 8
         Caption = 'Terrain'
@@ -614,7 +614,7 @@ object frmMain: TfrmMain
     object tsClients: TTabSheet
       Caption = 'Clients'
       ClientHeight = 476
-      ClientWidth = 220
+      ClientWidth = 214
       object lbClients: TListBox
         Left = 0
         Height = 478
@@ -633,7 +633,7 @@ object frmMain: TfrmMain
     object tsLocations: TTabSheet
       Caption = 'Locations'
       ClientHeight = 476
-      ClientWidth = 220
+      ClientWidth = 214
       object btnClearLocations: TSpeedButton
         AnchorSideLeft.Control = btnDeleteLocation
         AnchorSideLeft.Side = asrBottom

@@ -36,8 +36,7 @@ uses
   StdCtrls, Spin, UEnums, VirtualTrees, Buttons, UMulBlock, UWorldItem, math,
   LCLIntf, UOverlayUI, UStatics, UEnhancedMemoryStream, ActnList,
   XMLPropStorage, ImagingClasses, dateutils, UPlatformTypes, UMap, UPacket,
-  UGLFont, DOM, XMLRead, XMLWrite, strutils, ULightManager, heContnrs,
-  UContnrExt, UTiledata, Types;
+  UGLFont, DOM, XMLRead, XMLWrite, strutils, ULightManager, fgl, UTiledata;
 
 type
   TAccessChangedListener = procedure(AAccessLevel: TAccessLevel) of object;
@@ -45,12 +44,12 @@ type
   TScreenBufferState = (sbsValid, sbsIndexed, sbsFiltered);
   TScreenBufferStates = set of TScreenBufferState;
 
-  TBlockInfoList = specialize TheVector<PBlockInfo>;
+  TBlockInfoList = specialize TFPGList<PBlockInfo>;
 
   TGhostTile = class(TStaticItem);
-  TPacketList = specialize TheObjectVector<TPacket>;
-  TAccessChangedListeners = specialize TPointerVectorSet<TAccessChangedListener>;
-  TSelectionListeners = specialize TPointerVectorSet<TSelectionListener>;
+  TPacketList = specialize TFPGObjectList<TPacket>;
+  TAccessChangedListeners = specialize TFPGList<TAccessChangedListener>;
+  TSelectionListeners = specialize TFPGList<TSelectionListener>;
 
   TTileHintInfo = record
     Name: String;
@@ -713,8 +712,10 @@ begin
       mnuGrabTileIDClick(nil);
     end;
 
-    for selectionListener in FSelectionListeners.Reversed do
+    for selectionListener in FSelectionListeners do
+    begin
       selectionListener(CurrentTile);
+    end;
   end;
 
   if (not acSelect.Checked) and (targetTile <> nil) and (SelectedTile <> nil) then
@@ -1178,14 +1179,14 @@ end;
 
 procedure TfrmMain.acUndoExecute(Sender: TObject);
 var
-  packet: TPacket;
+  i: Integer;
 begin
   //Send each reversed action in reverse order.
-  for packet in FUndoList.Reversed do
-    dmNetwork.Send(packet);
+  for i := FUndoList.Count - 1 downto 0 do
+    dmNetwork.Send(FUndoList[i]);
 
   //Cleanup without freeing the objects (this was already done by dmNetwork.Send)
-  FUndoList.Wipe;
+  FUndoList.Clear;
 
   //No Undo packets, nothing to undo.
   acUndo.Enabled := False;
@@ -1969,23 +1970,23 @@ end;
 procedure TfrmMain.RegisterAccessChangedListener(
   AListener: TAccessChangedListener);
 begin
-  FAccessChangedListeners.Include(AListener);
+  FAccessChangedListeners.Add(AListener);
 end;
 
 procedure TfrmMain.RegisterSelectionListener(AListener: TSelectionListener);
 begin
-  FSelectionListeners.Include(AListener);
+  FSelectionListeners.Add(AListener);
 end;
 
 procedure TfrmMain.UnregisterAccessChangedListener(
   AListener: TAccessChangedListener);
 begin
-  FAccessChangedListeners.Exclude(AListener);
+  FAccessChangedListeners.Remove(AListener);
 end;
 
 procedure TfrmMain.UnregisterSelectionListener(AListener: TSelectionListener);
 begin
-  FSelectionListeners.Exclude(AListener);
+  FSelectionListeners.Remove(AListener);
 end;
 
 procedure TfrmMain.SetCurrentTile(const AValue: TWorldItem);
@@ -3172,7 +3173,7 @@ begin
           end;
         end;
 
-        for accessChangedListener in FAccessChangedListeners.Reversed do
+        for accessChangedListener in FAccessChangedListeners do
           accessChangedListener(accessLevel);
       end;
     $08: //password change status

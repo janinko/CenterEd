@@ -32,13 +32,15 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ComCtrls, Spin, ExtCtrls, UfrmToolWindow;
+  ComCtrls, Spin, ExtCtrls, UfrmToolWindow, USelectionHelper;
 
 type
 
   { TfrmBoundaries }
 
   TfrmBoundaries = class(TfrmToolWindow)
+    btnSelectArea: TButton;
+    btnClear: TButton;
     gbZRestriction: TGroupBox;
     gbViewRestriction: TGroupBox;
     lblYSep: TLabel;
@@ -55,6 +57,8 @@ type
     seMaxY: TSpinEdit;
     tbMaxZ: TTrackBar;
     tbMinZ: TTrackBar;
+    procedure btnSelectAreaClick(Sender: TObject);
+    procedure btnClearClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure seMaxXChange(Sender: TObject);
     procedure seMaxYChange(Sender: TObject);
@@ -64,6 +68,8 @@ type
     procedure seMinZChange(Sender: TObject);
     procedure tbMaxZChange(Sender: TObject);
     procedure tbMinZChange(Sender: TObject);
+  protected
+    procedure RangeSelected(AX1, AY1, AX2, AY2: Word);
   public
     { public declarations }
   end; 
@@ -87,6 +93,20 @@ begin
   seMinY.MaxValue := frmMain.Landscape.CellHeight - 1;
   seMaxY.MaxValue := seMinY.MaxValue;
   seMaxY.Value := seMaxX.MaxValue;
+end;
+
+procedure TfrmBoundaries.btnSelectAreaClick(Sender: TObject);
+begin
+  SelectRange(@RangeSelected);
+end;
+
+procedure TfrmBoundaries.btnClearClick(Sender: TObject);
+begin
+  seMinX.Value := 0;
+  seMinY.Value := 0;
+  seMaxX.Value := seMaxX.MaxValue;
+  seMaxY.Value := seMaxY.MaxValue;
+  frmMain.InvalidateFilter;
 end;
 
 procedure TfrmBoundaries.seMaxXChange(Sender: TObject);
@@ -131,6 +151,15 @@ procedure TfrmBoundaries.tbMinZChange(Sender: TObject);
 begin
   seMinZ.Value := tbMinZ.Position;
   frmMain.InvalidateFilter;
+end;
+
+procedure TfrmBoundaries.RangeSelected(AX1, AY1, AX2, AY2: Word);
+begin
+  seMinX.Value := AX1;
+  seMinY.Value := AY1;
+  seMaxX.Value := AX2;
+  seMaxY.Value := AY2;
+  frmBoundaries.Show;
 end;
 
 initialization

@@ -18,7 +18,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="7"/>
-      <BuildNr Value="260"/>
+      <BuildNr Value="262"/>
       <StringTable CompanyName="AKS DataBasis" FileDescription="UO CentrED" InternalName="CentrED" LegalCopyright="(c) 2015 Andreas Schneider and StaticZ" OriginalFilename="CentrED.exe" ProductName="CentrED" ProductVersion="0.7.0"/>
     </VersionInfo>
     <BuildModes Count="7">
@@ -316,7 +316,7 @@
         <MinVersion Major="4" Minor="5" Release="1" Valid="True"/>
       </Item6>
     </RequiredPackages>
-    <Units Count="49">
+    <Units Count="50">
       <Unit0>
         <Filename Value="CentrED.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -422,6 +422,7 @@
         <Filename Value="UfrmLargeScaleCommand.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmLargeScaleCommand"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit17>
       <Unit18>
@@ -563,6 +564,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit48>
+      <Unit49>
+        <Filename Value="USelectionHelper.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit49>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -597,6 +602,7 @@
       <CompilerMessages>
         <IgnoredMessages idx5028="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
       </CompilerMessages>
+      <CustomOptions Value="-B"/>
     </Other>
   </CompilerOptions>
 </CONFIG>
