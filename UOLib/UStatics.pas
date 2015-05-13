@@ -30,7 +30,7 @@ unit UStatics;
 interface
 
 uses
-  SysUtils, Classes, heContnrs, UGenericIndex, UWorldItem, UTiledata;
+  SysUtils, Classes, fgl, UGenericIndex, UWorldItem, UTiledata;
 
 type
   { TStaticItem }
@@ -56,7 +56,7 @@ type
     procedure Write(AData: TStream); override;
   end;
 
-  TStaticItemList = specialize TheObjectVector<TStaticItem>;
+  TStaticItemList = specialize TFPGObjectList<TStaticItem>;
 
   { TStaticBlock}
 

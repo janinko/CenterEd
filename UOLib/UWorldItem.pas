@@ -30,7 +30,7 @@ unit UWorldItem;
 interface
 
 uses
-  Classes, heContnrs, UMulBlock;
+  Classes, fgl, UMulBlock;
 
 type
   TWorldBlock = class;
@@ -81,7 +81,7 @@ type
     property RawZ: ShortInt read FZ;
   end;
 
-  TWorldItemList = specialize TheObjectVector<TWorldItem>;
+  TWorldItemList = specialize TFPGObjectList<TWorldItem>;
 
   { TWorldBlock }
 

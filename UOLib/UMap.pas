@@ -30,7 +30,7 @@ unit UMap;
 interface
 
 uses
-  SysUtils, Classes, heContnrs, UWorldItem;
+  SysUtils, Classes, fgl, UWorldItem;
 
 const
   MapCellSize = 3;
@@ -60,7 +60,7 @@ type
     procedure Write(AData: TStream); override;
   end;
 
-  TMapCellList = specialize TheObjectVector<TMapCell>;
+  TMapCellList = specialize TFPGObjectList<TMapCell>;
 
   { TMapBlock }
 

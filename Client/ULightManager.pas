@@ -32,7 +32,7 @@ interface
 
 uses
   Classes, SysUtils, Imaging, ImagingTypes, ImagingClasses, ImagingCanvases,
-  ImagingOpenGL, GL, GLu, GLext, Math, heContnrs, ULandscape, UWorldItem,
+  ImagingOpenGL, GL, GLu, GLext, Math, fgl, ULandscape, UWorldItem,
   UCacheManager, DOM, XMLRead;
 
 const
@@ -85,7 +85,7 @@ type
     property Material: TLightMaterial read FMaterial;
   end;
 
-  TLightSources = specialize TheObjectVector<TLightSource>;
+  TLightSources = specialize TFPGObjectList<TLightSource>;
 
   { TLightManager }
 
