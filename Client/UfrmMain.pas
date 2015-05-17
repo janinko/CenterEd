@@ -73,6 +73,7 @@ type
     acNoDraw: TAction;
     acLightlevel: TAction;
     acStatics: TAction;
+    acTerrain: TAction;
     acWalkable: TAction;
     acUndo: TAction;
     acVirtualLayer: TAction;
@@ -104,6 +105,8 @@ type
     lblY: TLabel;
     lbClients: TListBox;
     MainMenu1: TMainMenu;
+    mnuShowBlocks: TMenuItem;
+    mnuShowGrid: TMenuItem;
     mnuChangePassword: TMenuItem;
     mnuShowBridges: TMenuItem;
     mnuShowFoliage: TMenuItem;
@@ -155,6 +158,7 @@ type
     pnlChat: TPanel;
     pnlChatHeader: TPanel;
     pmFlatViewSettings: TPopupMenu;
+    pmViewTerrainSettings: TPopupMenu;
     spChat: TSplitter;
     spTileList: TSplitter;
     tbFilter: TToolButton;
@@ -164,6 +168,7 @@ type
     tbUndo: TToolButton;
     tbLightlevel: TToolButton;
     tbWalkable: TToolButton;
+    tmToolbarFix: TTimer;
     tsLocations: TTabSheet;
     tbSetHue: TToolButton;
     tmGrabTileInfo: TTimer;
@@ -203,6 +208,7 @@ type
     procedure acNoDrawExecute(Sender: TObject);
     procedure acSelectExecute(Sender: TObject);
     procedure acStaticsExecute(Sender: TObject);
+    procedure acTerrainExecute(Sender: TObject);
     procedure acUndoExecute(Sender: TObject);
     procedure acVirtualLayerExecute(Sender: TObject);
     procedure acWalkableExecute(Sender: TObject);
@@ -245,6 +251,8 @@ type
     procedure mnuLargeScaleCommandsClick(Sender: TObject);
     procedure mnuRegionControlClick(Sender: TObject);
     procedure mnuShowAnimationsClick(Sender: TObject);
+    procedure mnuShowBlocksClick(Sender: TObject);
+    procedure mnuShowGridClick(Sender: TObject);
     procedure mnuShowWallsClick(Sender: TObject);
     procedure mnuShutdownClick(Sender: TObject);
     procedure mnuWhiteBackgroundClick(Sender: TObject);
@@ -263,13 +271,14 @@ type
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure oglGameWindowPaint(Sender: TObject);
     procedure oglGameWindowResize(Sender: TObject);
+    procedure pmFlatViewSettingsClose(Sender: TObject);
     procedure pmGrabTileInfoPopup(Sender: TObject);
     procedure tbFilterMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure tbRadarMapClick(Sender: TObject);
-    procedure tbTerrainClick(Sender: TObject);
     procedure tmGrabTileInfoTimer(Sender: TObject);
     procedure tmMovementTimer(Sender: TObject);
+    procedure tmToolbarFixTimer(Sender: TObject);
     procedure vdtRandomClick(Sender: TObject);
     procedure vdtRandomDragDrop(Sender: TBaseVirtualTree; Source: TObject;
       DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState;
@@ -522,6 +531,22 @@ procedure TfrmMain.mnuShowAnimationsClick(Sender: TObject);
 begin
   FTextureManager.UseAnims := mnuShowAnimations.Checked;
   RebuildScreenBuffer;
+end;
+
+procedure TfrmMain.mnuShowBlocksClick(Sender: TObject);
+begin
+  mnuShowBlocks.Checked := not mnuShowBlocks.Checked;
+  mnuShowGrid.Checked := False; //If ShowBlocks is active, ShowGrid cannot be.
+  RebuildScreenBuffer;
+  FRepaintNeeded := True;
+end;
+
+procedure TfrmMain.mnuShowGridClick(Sender: TObject);
+begin
+  mnuShowGrid.Checked := not mnuShowGrid.Checked;
+  mnuShowBlocks.Checked := False; //If ShowGrid is active, ShowBlocks cannot be.
+  RebuildScreenBuffer;
+  FRepaintNeeded := True;
 end;
 
 procedure TfrmMain.mnuShowWallsClick(Sender: TObject);
@@ -1177,6 +1202,12 @@ begin
   RebuildScreenBuffer;
 end;
 
+procedure TfrmMain.acTerrainExecute(Sender: TObject);
+begin
+  acTerrain.Checked := not acTerrain.Checked;
+  RebuildScreenBuffer;
+end;
+
 procedure TfrmMain.acUndoExecute(Sender: TObject);
 var
   i: Integer;
@@ -1513,6 +1544,11 @@ begin
   InvalidateScreenBuffer;
 end;
 
+procedure TfrmMain.pmFlatViewSettingsClose(Sender: TObject);
+begin
+  tmToolbarFix.Enabled := True;
+end;
+
 procedure TfrmMain.pmGrabTileInfoPopup(Sender: TObject);
 begin
   mnuGrabHue.Enabled := CurrentTile is TStaticItem;
@@ -1529,11 +1565,6 @@ procedure TfrmMain.tbRadarMapClick(Sender: TObject);
 begin
   frmRadarMap.Show;
   frmRadarMap.BringToFront;
-end;
-
-procedure TfrmMain.tbTerrainClick(Sender: TObject);
-begin
-  RebuildScreenBuffer;
 end;
 
 procedure TfrmMain.tmGrabTileInfoTimer(Sender: TObject);
@@ -1557,6 +1588,17 @@ begin
     6: MoveBy(0, 8);
     7: MoveBy(-8, 8);
   end;
+end;
+
+procedure TfrmMain.tmToolbarFixTimer(Sender: TObject);
+begin
+  // This is a workaround for the TToolButton to not stay "down" when
+  // a popup menu was shown. Thanks to StaticZ for finding that :-)
+  // Only necessary till this is fixed: http://bugs.freepascal.org/view.php?id=15263
+  tmToolbarFix.Enabled := False;
+  tbFlat.Down := acFlat.Checked;
+  tbTerrain.Down := acTerrain.Checked;
+  tbStatics.Down := acStatics.Checked;
 end;
 
 procedure TfrmMain.vdtRandomClick(Sender: TObject);
@@ -2237,8 +2279,8 @@ procedure TfrmMain.PrepareScreenBlock(ABlockInfo: PBlockInfo);
 var
   item: TWorldItem;
   drawX, drawY: Integer;
-  z, west, south, east: SmallInt;
-  rawZ, rawWest, rawSouth, rawEast: SmallInt;
+  z, west, south, east, tileNorth, tileWest, tileLeft, tileRight: SmallInt;
+  rawZ, rawWest, rawSouth, rawEast, rawTileNorth, rawTileWest, rawTileLeft, rawTileRight: SmallInt;
   staticItem: TStaticItem;
 begin
   //add normals to map tiles and materials where possible
@@ -2332,6 +2374,22 @@ begin
       ABlockInfo^.DrawQuad[2][1] := drawY + 44 - south * 4;
       ABlockInfo^.DrawQuad[3][0] := drawX - 22;
       ABlockInfo^.DrawQuad[3][1] := drawY + 22 - west * 4;
+
+      // Set lines to visualize the terrain mesh
+      if mnuShowGrid.Checked or mnuShowBlocks.Checked then
+      begin
+        ABlockInfo^.LineWidth[0] := 0.9;
+        ABlockInfo^.LineDraw[0][0] := ABlockInfo^.DrawQuad[0];
+        ABlockInfo^.LineDraw[0][1] := ABlockInfo^.DrawQuad[1];
+        ABlockInfo^.LineWidth[1] := 0.9;
+        ABlockInfo^.LineDraw[1][0] := ABlockInfo^.DrawQuad[0];
+        ABlockInfo^.LineDraw[1][1] := ABlockInfo^.DrawQuad[3];
+        ABlockInfo^.LineWidth[2] := 0.8;
+        //ABlockInfo^.LineDraw[2][0] := ABlockInfo^.DrawQuad[0];
+        //ABlockInfo^.LineDraw[2][1] := ABlockInfo^.DrawQuad[2];
+        ABlockInfo^.LineDraw[2][0] := ABlockInfo^.DrawQuad[1];
+        ABlockInfo^.LineDraw[2][1] := ABlockInfo^.DrawQuad[3];
+      end;
     end else
     begin
       ABlockInfo^.DrawQuad[0][0] := drawX - 22;
@@ -2342,6 +2400,32 @@ begin
       ABlockInfo^.DrawQuad[2][1] := drawY + ABlockInfo^.LowRes.Height - z * 4;
       ABlockInfo^.DrawQuad[3][0] := drawX - 22;
       ABlockInfo^.DrawQuad[3][1] := drawY + ABlockInfo^.LowRes.Height - z * 4;
+
+      // Set lines to visualize the terrain mesh
+      if mnuShowGrid.Checked or mnuShowBlocks.Checked then
+      begin
+        GetLandAlt(item.X, item.Y - 1, z, rawZ, tileNorth, rawTileNorth);
+        GetLandAlt(item.X - 1, item.Y, z, rawZ, tileWest, rawTileWest);
+        GetLandAlt(item.X - 1, item.Y + 1, z, rawZ, tileLeft, rawTileLeft);
+        GetLandAlt(item.X + 1, item.Y - 1, z, rawZ, tileRight, rawTileRight);
+        if (tileNorth <> z) or (tileRight <> z) then
+          ABlockInfo^.LineWidth[0] := 0.9
+        else
+          ABlockInfo^.LineWidth[0] := 0.8;
+        ABlockInfo^.LineDraw[0][0][0] := drawX;
+        ABlockInfo^.LineDraw[0][0][1] := ABlockInfo^.DrawQuad[0][1];
+        ABlockInfo^.LineDraw[0][1][0] := ABlockInfo^.DrawQuad[1][0];
+        ABlockInfo^.LineDraw[0][1][1] := ABlockInfo^.DrawQuad[1][1] + 22;
+        if (tileWest <> z) or (tileLeft <> z) then
+          ABlockInfo^.LineWidth[1] := 0.9
+        else
+          ABlockInfo^.LineWidth[1] := 0.8;
+        ABlockInfo^.LineDraw[1][0][0] := drawX;
+        ABlockInfo^.LineDraw[1][0][1] := ABlockInfo^.DrawQuad[0][1];
+        ABlockInfo^.LineDraw[1][1][0] := ABlockInfo^.DrawQuad[3][0];
+        ABlockInfo^.LineDraw[1][1][1] := ABlockInfo^.DrawQuad[3][1] - 22;
+        ABlockInfo^.LineWidth[2] := 0.0;
+      end;
     end;
   end else
   if item is TVirtualTile then
@@ -2493,6 +2577,86 @@ begin
 
     if (blockInfo^.Text <> nil) then
       blockInfo^.Text.Render(blockInfo^.ScreenRect);
+
+    // Rending mesh terrain
+    if (mnuShowGrid.Checked) and (blockInfo^.Item is TMapCell) then
+    begin
+      glDisable(GL_TEXTURE_2D);                // Do not use color texture
+      glEnable(GL_LINE_SMOOTH);                // smoothing lines
+      //glDisable(GL_LINE_SMOOTH);
+
+      if (tbFlat.Down) then
+      begin
+        glColor4f(0.8, 0.8, 0.8, 0.9);         // Color lines
+        glLineWidth(0.1);                      // line width
+        glBegin(GL_LINES);
+          glVertex2iv(@blockInfo^.LineDraw[0][0]);
+          glVertex2iv(@blockInfo^.LineDraw[0][1]);
+          glVertex2iv(@blockInfo^.LineDraw[1][0]);
+          glVertex2iv(@blockInfo^.LineDraw[1][1]);
+        glEnd;
+      end else
+      begin
+        if blockInfo^.LineWidth[0] < 0.85
+          then glColor4f(1.0, 1.0, 0.0, 0.5)   // Color lines
+          else glColor4f(1.0, 1.0, 1.0, 1.0);  // Color lines
+        glLineWidth(blockInfo^.LineWidth[0]);  // line width
+        glBegin(GL_LINES);
+          glVertex2iv(@blockInfo^.LineDraw[0][0]);
+          glVertex2iv(@blockInfo^.LineDraw[0][1]);
+        glEnd;
+        if blockInfo^.LineWidth[1] < 0.85
+          then glColor4f(1.0, 1.0, 0.0, 0.5)   // Color lines
+          else glColor4f(1.0, 1.0, 1.0, 1.0);  // Color lines
+        glLineWidth(blockInfo^.LineWidth[1]);  // line width
+        glBegin(GL_LINES);
+          glVertex2iv(@blockInfo^.LineDraw[1][0]);
+          glVertex2iv(@blockInfo^.LineDraw[1][1]);
+        glEnd;
+        if blockInfo^.LineWidth[2] > 0 then
+          begin
+            glColor4f(1.3281, 0.2510, 1.0, 0.8); // Color lines
+            glLineWidth(blockInfo^.LineWidth[2]);// line width
+            glBegin(GL_LINES);
+              glVertex2iv(@blockInfo^.LineDraw[2][0]);
+              glVertex2iv(@blockInfo^.LineDraw[2][1]);
+            glEnd;
+          end;
+      end;
+
+      glDisable(GL_LINE_SMOOTH);
+      glEnable(GL_TEXTURE_2D);
+    end else if (mnuShowBlocks.Checked) and (blockInfo^.Item is TMapCell) then
+    begin  // Rending the grid blocks
+      glDisable(GL_TEXTURE_2D);                // Do not use color texture
+      glEnable(GL_LINE_SMOOTH);                // smoothing lines
+
+      if (blockInfo^.Item.X mod 8 = 0) then begin
+        glLineWidth(2.0);
+        glColor4f(1.0, 1.0, 0.0, 0.5);
+      end else begin
+        glColor4f(0.8, 0.8, 0.8, 0.9);
+        glLineWidth(0.1);
+      end;
+      glBegin(GL_LINES);
+        glVertex2iv(@blockInfo^.LineDraw[1][0]);
+        glVertex2iv(@blockInfo^.LineDraw[1][1]);
+      glEnd;
+      if (blockInfo^.Item.Y mod 8 = 0) then begin
+        glLineWidth(2.0);
+        glColor4f(1.0, 1.0, 0.0, 0.5);
+      end else begin
+        glColor4f(0.8, 0.8, 0.8, 0.9);
+        glLineWidth(0.1);
+      end;
+      glBegin(GL_LINES);
+        glVertex2iv(@blockInfo^.LineDraw[0][0]);
+        glVertex2iv(@blockInfo^.LineDraw[0][1]);
+      glEnd;
+
+      glDisable(GL_LINE_SMOOTH);
+      glEnable(GL_TEXTURE_2D);
+    end
   end;
 
   if (FLightManager.LightLevel > 0) and not acFlat.Checked then

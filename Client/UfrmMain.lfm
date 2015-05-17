@@ -123,7 +123,7 @@ object frmMain: TfrmMain
         AnchorSideLeft.Control = cbTerrain
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = cbTerrain
-        Left = 91
+        Left = 88
         Height = 13
         Top = 8
         Width = 31
@@ -362,7 +362,7 @@ object frmMain: TfrmMain
           Left = 158
           Height = 22
           Hint = 'Save Preset'
-          Top = 137
+          Top = 139
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -414,7 +414,7 @@ object frmMain: TfrmMain
           Left = 184
           Height = 22
           Hint = 'Delete Preset'
-          Top = 137
+          Top = 139
           Width = 22
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 4
@@ -469,7 +469,7 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = cbRandomPreset
           Cursor = 63
           Left = 4
-          Height = 109
+          Height = 111
           Top = 24
           Width = 202
           Anchors = [akTop, akLeft, akRight, akBottom]
@@ -517,8 +517,8 @@ object frmMain: TfrmMain
           AnchorSideBottom.Control = gbRandom
           AnchorSideBottom.Side = asrBottom
           Left = 4
-          Height = 27
-          Top = 137
+          Height = 25
+          Top = 139
           Width = 150
           Anchors = [akLeft, akRight, akBottom]
           BorderSpacing.Left = 4
@@ -571,10 +571,10 @@ object frmMain: TfrmMain
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = tsTiles
         AnchorSideRight.Side = asrBottom
-        Left = 91
+        Left = 88
         Height = 23
         Top = 21
-        Width = 107
+        Width = 110
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Right = 16
         OnEditingDone = edFilterEditingDone
@@ -585,10 +585,10 @@ object frmMain: TfrmMain
         AnchorSideLeft.Side = asrCenter
         AnchorSideTop.Control = cbTerrain
         AnchorSideTop.Side = asrBottom
-        Left = 3
+        Left = 4
         Height = 26
         Top = 34
-        Width = 73
+        Width = 68
         Caption = 'Statics'
         Checked = True
         OnChange = cbStaticsChange
@@ -601,7 +601,7 @@ object frmMain: TfrmMain
         Left = 4
         Height = 26
         Top = 8
-        Width = 71
+        Width = 68
         BorderSpacing.Left = 4
         BorderSpacing.Top = 8
         Caption = 'Terrain'
@@ -935,18 +935,15 @@ object frmMain: TfrmMain
     end
     object tbTerrain: TToolButton
       Left = 274
-      Hint = 'Show Terrain'
       Top = 2
-      Caption = 'Terrain'
-      Down = True
-      ImageIndex = 10
-      OnClick = tbTerrainClick
+      Action = acTerrain
+      DropdownMenu = pmViewTerrainSettings
       ParentShowHint = False
       ShowHint = True
-      Style = tbsCheck
+      Style = tbsDropDown
     end
     object tbStatics: TToolButton
-      Left = 297
+      Left = 309
       Top = 2
       Action = acStatics
       DropdownMenu = pmViewStaticSettings
@@ -955,7 +952,7 @@ object frmMain: TfrmMain
       Style = tbsDropDown
     end
     object tbSeparator5: TToolButton
-      Left = 436
+      Left = 448
       Height = 22
       Top = 2
       Width = 5
@@ -963,7 +960,7 @@ object frmMain: TfrmMain
       Style = tbsDivider
     end
     object tbRadarMap: TToolButton
-      Left = 441
+      Left = 453
       Hint = 'Radar Map'
       Top = 2
       Caption = 'Radar Map'
@@ -985,14 +982,14 @@ object frmMain: TfrmMain
       Style = tbsCheck
     end
     object tbFlat: TToolButton
-      Left = 401
+      Left = 413
       Top = 2
       Action = acFlat
       DropdownMenu = pmFlatViewSettings
       Style = tbsDropDown
     end
     object tbNoDraw: TToolButton
-      Left = 332
+      Left = 344
       Top = 2
       Action = acNoDraw
       Style = tbsCheck
@@ -1011,12 +1008,12 @@ object frmMain: TfrmMain
       Action = acUndo
     end
     object tbLightlevel: TToolButton
-      Left = 378
+      Left = 390
       Top = 2
       Action = acLightlevel
     end
     object tbWalkable: TToolButton
-      Left = 355
+      Left = 367
       Top = 2
       Action = acWalkable
       Style = tbsCheck
@@ -2698,6 +2695,13 @@ object frmMain: TfrmMain
       OnExecute = acWalkableExecute
       ShortCut = 16471
     end
+    object acTerrain: TAction
+      Category = 'Settings'
+      Checked = True
+      Hint = 'Show Terrain'
+      ImageIndex = 10
+      OnExecute = acTerrainExecute
+    end
     object acStatics: TAction
       Category = 'Settings'
       Checked = True
@@ -2727,6 +2731,7 @@ object frmMain: TfrmMain
     end
   end
   object pmFlatViewSettings: TPopupMenu
+    OnClose = pmFlatViewSettingsClose
     left = 368
     top = 136
     object mnuFlatShowHeight: TMenuItem
@@ -2745,6 +2750,7 @@ object frmMain: TfrmMain
   end
   object pmViewStaticSettings: TPopupMenu
     Images = ImageList1
+    OnClose = pmFlatViewSettingsClose
     left = 584
     top = 33
     object mnuShowWalls: TMenuItem
@@ -2788,6 +2794,26 @@ object frmMain: TfrmMain
       Checked = True
       Hint = 'Display the water'
       OnClick = mnuShowWallsClick
+    end
+  end
+  object tmToolbarFix: TTimer
+    Enabled = False
+    Interval = 25
+    OnTimer = tmToolbarFixTimer
+    left = 584
+    top = 296
+  end
+  object pmViewTerrainSettings: TPopupMenu
+    OnClose = pmFlatViewSettingsClose
+    left = 584
+    top = 88
+    object mnuShowGrid: TMenuItem
+      Caption = 'Show Grid'
+      OnClick = mnuShowGridClick
+    end
+    object mnuShowBlocks: TMenuItem
+      Caption = 'Show Blocks'
+      OnClick = mnuShowBlocksClick
     end
   end
 end

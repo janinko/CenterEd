@@ -257,6 +257,8 @@ type
     ScreenRect: TRect;
     DrawQuad: array[0..3,0..1] of TGLint;
     RealQuad: array[0..3,0..1] of TGLint;
+    LineWidth: array[0..2] of GLfloat;
+    LineDraw: array[0..2,0..1,0..1] of TGLint;
     Item: TWorldItem;
     HighRes: TMaterial;
     LowRes: TMaterial;
